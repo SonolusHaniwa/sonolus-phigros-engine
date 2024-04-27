@@ -5,11 +5,11 @@ bool fileExists(string path) {
 	return fin.is_open();
 }
 
-#include"error.h"
 #include"json.h"
 #include"encrypt.h"
 #include"buffer.h"
 #include"gzip.h"
+#include"error.h"
 #include"MaxRects.h"
 #include"MaxRects.cpp"
 #include"png.h"

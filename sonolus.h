@@ -179,7 +179,8 @@ void buildArchetype() {
     compileCallback(touch);
     compileCallback(updateParallel);
     compileCallback(terminate);
-    newArchetype.data = archetype.data;
+    newArchetype.imports = archetype.imports;
+    newArchetype.exports = archetype.exports;
     engineData.archetypes.push_back(newArchetype);
     time_t d = millitime() - st;
     cout << "Solved Archetype \"" << archetype.name << "\" in " << d << "ms. Speed: " 
@@ -194,7 +195,7 @@ void buildArchetype() {
 	if (!T::disableGlobalPreprocess) { compileCallbackHead(preprocess); }
 	else { compileCallback(preprocess); }
     compileCallback(render);
-    newArchetype.data = archetype.data;
+    newArchetype.imports = archetype.imports;
     enginePreviewData.archetypes.push_back(newArchetype);
     time_t d = millitime() - st;
     cout << "Solved Archetype \"" << archetype.name << "\" in " << d << "ms. Speed: " 
@@ -215,7 +216,7 @@ void buildArchetype() {
     compileCallback(updateSequential);
     compileCallback(updateParallel);
     compileCallback(terminate);
-    newArchetype.data = archetype.data;
+    newArchetype.imports = archetype.imports;
     engineWatchData.archetypes.push_back(newArchetype);
     time_t d = millitime() - st;
     cout << "Solved Archetype \"" << archetype.name << "\" in " << d << "ms. Speed: " 

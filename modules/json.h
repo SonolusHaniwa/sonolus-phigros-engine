@@ -1,11 +1,7 @@
 #ifndef JSON_H
 #define JSON_H
 
-#ifdef __EMSCRIPTEN__
-#include"/usr/include/jsoncpp/json/json.h"
-#else
-#include<jsoncpp/json/json.h>
-#endif
+#include"../lib/jsoncpp/jsoncpp.h"
 
 using namespace std;
 
@@ -22,12 +18,6 @@ string json_pretty_encode(Json::Value val) {
 bool json_decode(string json, Json::Value& res) {
     Json::Reader reader;
     return reader.parse(json, res);
-}
-
-Json::Value json_decode(string json) {
-	Json::Value res;
-	json_decode(json, res);
-	return res;
 }
 
 #endif

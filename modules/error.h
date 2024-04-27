@@ -1,10 +1,10 @@
-#if !DISABLE_TRACE
+#if ENABLE_TRACE
 #include<cpptrace/cpptrace.hpp>
 #endif
 using namespace std;
 
 void DumpTraceback() {
-#if !DISABLE_TRACE
+#if ENABLE_TRACE
 	cpptrace::generate_trace().print();
 #endif
 }
