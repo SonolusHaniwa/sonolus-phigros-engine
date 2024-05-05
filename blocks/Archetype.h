@@ -63,7 +63,8 @@ class Archetype {
     	return VOID;
 	}
 
-    vector<pair<string, int> > data;
+    vector<pair<string, int> > imports;
+    vector<string> exports;
 };
 #elif preview
 class Archetype {
@@ -86,7 +87,7 @@ class Archetype {
     	return VOID;
 	}
 
-    vector<pair<string, int> > data;
+    vector<pair<string, int> > imports;
 };
 #elif watch
 class Archetype {
@@ -145,11 +146,13 @@ class Archetype {
     	return VOID;
 	}
 
-    vector<pair<string, int> > data;
+    vector<pair<string, int> > imports;
 };
 #endif
 
-#define defineEntityData(name) Variable<EntityDataId> name = Variable<EntityDataId>(0, true); \
+#define defineImports(name) Variable<EntityDataId> name = Variable<EntityDataId>(0, true); \
 	bool unused_##name##_unused = [&](){ \
-		name.offset = data.size(); allocatorSize[EntityDataId]++; \
-		data.push_back({ #name, data.size() }); return true; }(); 
+		name.offset = imports.size(); allocatorSize[EntityDataId]++; \
+		imports.push_back({ #name, imports.size() }); return true; }(); 
+#define defineExports(name) int name = [&](){ \
+		exports.push_back(#name); return exports.size() - 1; }();

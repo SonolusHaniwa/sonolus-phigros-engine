@@ -43,6 +43,7 @@ FuncNode Arctan(FuncNode value) {
     return FuncNode(RuntimeFunction.Arctan, {value});
 }
 
+//
 FuncNode Arctan2(FuncNode y, FuncNode x) {
     return FuncNode(RuntimeFunction.Arctan2, {y, x});
 }
@@ -188,6 +189,10 @@ FuncNode Execute(vector<FuncNode> value) {
 
 FuncNode Execute0(vector<FuncNode> value) {
     return FuncNode(RuntimeFunction.Execute0, value);
+}
+
+void ExportValue(FuncNode index, FuncNode value) {
+    R(FuncNode(RuntimeFunction.ExportValue, {index, value}));
 }
 
 FuncNode Floor(FuncNode value) {

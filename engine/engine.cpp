@@ -5,7 +5,11 @@
 using namespace playData;
 #endif
 
+string Scope = "phigros";
+#include"configuration/options.cpp"
+#include"configuration/ui.cpp"
 #include"constants.cpp"
+#include"easing.cpp"
 
 #if play
 #include"play/Judgeline.cpp"

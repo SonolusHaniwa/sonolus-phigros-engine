@@ -16,18 +16,21 @@ string readFile(string path) {
 }
 
 struct Event {
-    int start;
-    int end;
-    int from;
-    int to;
+    double start;
+    double end;
+   	double from;
+    double to;
     int easing = 0;
 };
-double EPS = 1e-10;
+double EPS = 1e-8;
+double EPS2 = 1e-3;
 const double PI = acos(-1);
 const double c1 = 1.70158;
 const double c3 = c1 + 1;
 const double c4 = (2 * PI) / 3;
 double minimalSimilarity = 0.99;
+int checkSize = 2;
+int loopSize = 100;
 function<double(double)> EasingFunction[] = {
     [](double x){ return x; },
     [](double x){ return x * x; },
@@ -69,6 +72,9 @@ function<double(double)> EasingFunction[] = {
     [](double x){ return (x < 0.5 ? 0 : 1); }
 };
 
+double getEaseValue(int id, double start, double end, double from, double to, double t) {
+	return EasingFunction[id]((t - start) / (end - start)) * (to - from) + from;
+}
 double calcR2(vector<Event> &eventList, int l, int r, int easing, bool debug = false) {
     double startTime = eventList[l].start, endTime = eventList[r].end;
     double start = eventList[l].from, end = eventList[r].to;
@@ -76,14 +82,11 @@ double calcR2(vector<Event> &eventList, int l, int r, int easing, bool debug = f
     for (int i = l; i <= r; i++) sumD += eventList[i].to + eventList[i].from;
     ave = sumD / (r - l + 1) / 2; sumD = 0;
     for (int i = l; i <= r; i++) {
-        double x, y;
-        x = (eventList[i].start - startTime) / (endTime - startTime);
-        y = EasingFunction[easing](x) * (end - start) + start;
+        double y = getEaseValue(easing, startTime, endTime, start, end, eventList[i].start);
         sumE += (y - eventList[i].from) * (y - eventList[i].from);
         sumD += (eventList[i].from - ave) * (eventList[i].from - ave);
 
-        x = (eventList[i].end - startTime) / (endTime - startTime);
-        y = EasingFunction[easing](x) * (end - start) + start;
+		y = getEaseValue(easing, startTime, endTime, start, end, eventList[i].end);
         sumE += (y - eventList[i].to) * (y - eventList[i].to);
         sumD += (eventList[i].to - ave) * (eventList[i].to - ave);
     }
@@ -107,31 +110,95 @@ int eventOptimizer(Json::Value events, Json::Value &resEvents, string eventsName
     sort(eventList.begin(), eventList.end(), [](Event a, Event b) {
         return a.start < b.start;
     });
-    vector<Event> resEventList; int L = 0;
-    while (L < eventList.size()) {
-        int l = L, r = eventList.size() - 1, resR = L, resEasing = 0;
-        while (l <= r) {
-            int R = (l + r) / 2;
-            double maxSimilarity = 0, maxEasing = -1;
-            for (int i = 0; i < easingSize; i++) {
-                double similarity = calcR2(eventList, L, R, i);
-                if (similarity > maxSimilarity) maxSimilarity = similarity, maxEasing = i;
-            }
-            if (maxSimilarity > minimalSimilarity) {
-                resR = R, resEasing = maxEasing;
-                l = R + 1;
-            } else r = R - 1;
-        }
-        resEventList.push_back({
-            start: eventList[L].start,
-            end: eventList[resR].end,
-            from: eventList[L].from,
-            to: eventList[resR].to,
-            easing: resEasing
-        });
-        L = resR + 1;
+    vector<Event> tmpEventList;
+    for (int i = 0; i < eventList.size(); i++) {
+    	if (i == 0) tmpEventList.push_back(eventList[i]);
+    	else if (
+    		tmpEventList.back().from == tmpEventList.back().to &&
+    		eventList[i].from == eventList[i].to &&
+    		tmpEventList.back().to == eventList[i].from
+    	) tmpEventList.back().end = eventList[i].end;
+    	else tmpEventList.push_back(eventList[i]);
     }
-    cout << "Optimized " << eventsName << ": " << eventList.size() << " --> " << resEventList.size() << "(" << 100.0 - 100.0 * resEventList.size() / eventList.size() << "%)" << endl;
+    eventList = tmpEventList;
+    // cout << eventList.size() << endl;
+    vector<Event> resEventList;
+    for (int L = 0; L < eventList.size(); L++) {
+    	for (int R = min(L + loopSize, (int)eventList.size() - 1); R >= L + checkSize; R--) {
+    	// for (int R = L + checkSize; R <= min(L + loopSize, (int)eventList.size() - 1); R++) {
+    		double startTime = eventList[L].start, endTime = eventList[R].end;
+    		double from = eventList[L].from, to = eventList[R].to;
+    		for (int i = 0; i < easingSize; i++) {
+    			bool ok = true; int* ids = new int[checkSize];
+    			// srand(time(NULL) + clock()); 
+    			// for (int j = L; j < L + checkSize; j++) ids[j - L] = rand() % (R - L + 1) + L;
+    			for (int j = L; j < L + checkSize; j++) ids[j - L] = j;
+    			for (int j = L; j < L + checkSize; j++) {
+    				ok &= abs(eventList[ids[j - L]].from - getEaseValue(i, startTime, endTime, from, to, eventList[ids[j - L]].start)) <= EPS2
+    				   && abs(eventList[ids[j - L]].to - getEaseValue(i, startTime, endTime, from, to, eventList[ids[j - L]].end)) <= EPS2;
+    			} if (!ok) continue;
+    			if (calcR2(eventList, L, R, i) < minimalSimilarity) {
+    				// for (int j = L; j < L + checkSize; j++) cout << eventList[ids[j - L]].end << " " << eventList[ids[j - L]].to << endl;
+    				// cout << i << " " << calcR2(eventList, L, R, i) << " " << calcR2(eventList, L, L + checkSize - 1, i) << endl;
+    				// cout << "You don't have mother" << endl;
+    				continue;
+    			} delete[] ids;
+    			resEventList.push_back({
+		            start: eventList[L].start,
+		            end: eventList[R].end,
+		            from: eventList[L].from,
+		            to: eventList[R].to,
+		            easing: i
+            	});
+            	// cout << R - L + 1 << " " << i << endl;
+            	L = R;
+            	goto end;
+    		}
+    	} // if (L == 1) exit(1);
+		for (int R = min(L + checkSize - 1, (int)eventList.size() - 1); R >= L; R--) {
+		    for (int i = 0; i < easingSize; i++) {
+		    	if (calcR2(eventList, L, R, i) >= minimalSimilarity) {
+				    resEventList.push_back({
+						start: eventList[L].start,
+						end: eventList[R].end,
+						from: eventList[L].from,
+						to: eventList[R].to,
+						easing: i
+				    }); L = R; goto end;
+		    	}
+		    }
+		}
+    	end: continue;
+    }
+    // int L = 0;
+    // while (L < eventList.size()) {
+    //     int l = L, r = eventList.size() - 1, resR = L, resEasing = 0;
+    //     while (l <= r) {
+    //         int R = (l + r) / 2;
+    //         double maxSimilarity = 0, maxEasing = -1;
+    //         for (int i = easingSize - 1; i >= 0; i--) {
+    //             double similarity = calcR2(eventList, L, R, i);
+    //             if (similarity >= maxSimilarity) {
+    //             	// if (i == 37 || i == 1) cout << i << " " << similarity << endl;
+    //             	maxSimilarity = similarity, maxEasing = i;
+    //             }
+    //         }
+    //         if (maxSimilarity > minimalSimilarity) {
+    //             resR = R, resEasing = maxEasing;
+    //             l = R + 1;
+    //         } else r = R - 1;
+    //     }
+    //     resEventList.push_back({
+    //         start: eventList[L].start,
+    //         end: eventList[resR].end,
+    //         from: eventList[L].from,
+    //         to: eventList[resR].to,
+    //         easing: resEasing
+    //     });
+    //     // if (resR - L + 1 > 10) cout << resR - L + 1 << " " << resEasing << endl;
+    //     L = resR + 1;
+    // }
+    cout << "Optimized " << eventsName << ": " << events.size() << " --> " << resEventList.size() << "(" << 100.0 - 100.0 * resEventList.size() / eventList.size() << "%)" << endl;
     resEvents.resize(0);
     for (int i = 0; i < resEventList.size(); i++) {
         auto item = resEventList[i];
@@ -148,7 +215,8 @@ int eventOptimizer(Json::Value events, Json::Value &resEvents, string eventsName
 
 int main(int argc, char** argv) {
     if (argc < 3) {
-        cout << "Usage: " << argv[0] << " <*.json> <*.json> [options]" << endl;
+    	cout << "Optimize Phigros's Chart using Easing Function." << endl << endl;
+        cout << "Usage: " << argv[0] << " <input> <ouput> [options]" << endl;
         cout << "Compiled at " << __TIME__ << " " << __DATE__ << endl;
         cout << "Options:" << endl;
         cout << "  -h, --help: Show this help message" << endl;
@@ -186,6 +254,7 @@ int main(int argc, char** argv) {
     string json = readFile(argv[1]);
     Json::Value obj, resobj; json_decode(json, obj);
     resobj = obj;
+    cout << "Loading finished." << endl;
     int total = 0, after = 0; 
 	for (int i = 0; i < obj["judgeLineList"].size(); i++) { 
 		auto item = obj["judgeLineList"][i];
@@ -223,7 +292,7 @@ int main(int argc, char** argv) {
         after2 += eventOptimizer(
             item["judgeLineRotateEvents"], 
             resobj["judgeLineList"][i]["judgeLineRotateEvents"], 
-            "#" + to_string(i) + " judgeLineRotateXEvents");
+            "#" + to_string(i) + " judgeLineRotateEvents");
         after2 += eventOptimizer(
             item["judgeLineDisappearEvents"], 
             resobj["judgeLineList"][i]["judgeLineDisappearEvents"], 

@@ -2,10 +2,11 @@ class Judgeline: public Archetype {
 	public:
 
 	static constexpr const char* name = "Phigros Judgeline";
-	defineEntityData(speedEvent);
-	defineEntityData(moveEvent);
-	defineEntityData(rotateEvent);
-	defineEntityData(disappearEvent);
+	defineImports(speedEvent);
+	defineImports(moveXEvent);
+	defineImports(moveYEvent);
+	defineImports(rotateEvent);
+	defineImports(disappearEvent);
 	Variable<EntitySharedMemoryId> speed;
 	Variable<EntitySharedMemoryId> x;
 	Variable<EntitySharedMemoryId> y;
@@ -13,7 +14,8 @@ class Judgeline: public Archetype {
 	Variable<EntitySharedMemoryId> disappear;
 	Variable<EntitySharedMemoryId> floorPosition;
 	Variable<EntityMemoryId> speedEventId;
-	Variable<EntityMemoryId> moveEventId;
+	Variable<EntityMemoryId> moveXEventId;
+	Variable<EntityMemoryId> moveYEventId;
 	Variable<EntityMemoryId> rotateEventId;
 	Variable<EntityMemoryId> disappearEventId;
 	Variable<EntityMemoryId> baseFloorPosition;
@@ -24,7 +26,8 @@ class Judgeline: public Archetype {
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		speedEventId = speedEvent.get();
-		moveEventId = moveEvent.get();
+		moveXEventId = moveXEvent.get();
+		moveYEventId = moveYEvent.get();
 		rotateEventId = rotateEvent.get();
 		disappearEventId = disappearEvent.get();
 		speed = 1;
@@ -49,29 +52,33 @@ class Judgeline: public Archetype {
 	SonolusApi updateSequential() {
 		FUNCBEGIN
 		jump(speedEventId, 3, true);
-		jump(moveEventId, 6);
-		jump(rotateEventId, 4);
-		jump(disappearEventId, 4);
+		jump(moveXEventId, 5);
+		jump(moveYEventId, 5);
+		jump(rotateEventId, 5);
+		jump(disappearEventId, 5);
 		IF (speedEventId != 0) {
 			speed = EntityDataArray[speedEventId].get(2); 
 			floorPosition = baseFloorPosition + (times.now - EntityDataArray[speedEventId].get(0)) * speed;
 		} FI
-		IF (moveEventId != 0) {
-			auto obj = EntityDataArray[moveEventId];
-			x = Lerp(obj.get(2), obj.get(3), (times.now - obj.get(0)) / (obj.get(1) - obj.get(0)));
+		IF (moveXEventId != 0) {
+			auto obj = EntityDataArray[moveXEventId];
+			x = getEaseValue(obj.get(4), obj.get(0), obj.get(1), obj.get(2), obj.get(3), times.now);
 			x = x * stage.w + stage.l;
-			y = Lerp(obj.get(4), obj.get(5), (times.now - obj.get(0)) / (obj.get(1) - obj.get(0)));
+		} FI
+		IF (moveYEventId != 0) {
+			auto obj = EntityDataArray[moveYEventId];
+			y = getEaseValue(obj.get(4), obj.get(0), obj.get(1), obj.get(2), obj.get(3), times.now);
 			y = y * stage.h + stage.b;
 		} FI
 		IF (rotateEventId != 0) {
 			auto obj = EntityDataArray[rotateEventId];
-			rotate = Lerp(obj.get(2), obj.get(3), (times.now - obj.get(0)) / (obj.get(1) - obj.get(0))) % 360;
+			rotate = getEaseValue(obj.get(4), obj.get(0), obj.get(1), obj.get(2), obj.get(3), times.now) % 360;
 			IF (rotate < 0) rotate = rotate + 360; FI
 			rotate = rotate / 180 * PI;
 		} FI
 		IF (disappearEventId != 0) {
 			auto obj = EntityDataArray[disappearEventId];
-			disappear = Lerp(obj.get(2), obj.get(3), (times.now - obj.get(0)) / (obj.get(1) - obj.get(0)));
+			disappear = getEaseValue(obj.get(4), obj.get(0), obj.get(1), obj.get(2), obj.get(3), times.now);
 		} FI
 		return VOID;
 	}

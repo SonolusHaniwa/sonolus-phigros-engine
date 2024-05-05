@@ -37,10 +37,10 @@ class EngineWatchDataArchetype {
     EngineWatchDataArchetypeCallback updateParallel;
     EngineWatchDataArchetypeCallback terminate;
     EngineWatchDataArchetypeCallback updateSpawn;    
-    vector<pair<string, int> > data;
+    vector<pair<string, int> > imports;
 
     EngineWatchDataArchetype(){}
-    EngineWatchDataArchetype(string name, vector<pair<string, int> > data, bool hasInput,
+    EngineWatchDataArchetype(string name, vector<pair<string, int> > imports, bool hasInput,
         EngineWatchDataArchetypeCallback preprocess = EngineWatchDataArchetypeCallback(),
         EngineWatchDataArchetypeCallback spawnTime = EngineWatchDataArchetypeCallback(),
         EngineWatchDataArchetypeCallback despawnTime = EngineWatchDataArchetypeCallback(),
@@ -49,7 +49,7 @@ class EngineWatchDataArchetype {
         EngineWatchDataArchetypeCallback updateParallel = EngineWatchDataArchetypeCallback(),
         EngineWatchDataArchetypeCallback terminate = EngineWatchDataArchetypeCallback(),
         EngineWatchDataArchetypeCallback updateSpawn = EngineWatchDataArchetypeCallback()):
-        name(name), data(data), hasInput(hasInput), preprocess(preprocess), spawnTime(spawnTime), despawnTime(despawnTime),
+        name(name), imports(imports), hasInput(hasInput), preprocess(preprocess), spawnTime(spawnTime), despawnTime(despawnTime),
         initialize(initialize), updateSequential(updateSequential), updateParallel(updateParallel),
         terminate(terminate), updateSpawn(updateSpawn){};
     EngineWatchDataArchetype(Json::Value arr) {
@@ -62,7 +62,7 @@ class EngineWatchDataArchetype {
         updateParallel = EngineWatchDataArchetypeCallback(arr["updateParallel"]);
         terminate = EngineWatchDataArchetypeCallback(arr["terminate"]);
         updateSpawn = EngineWatchDataArchetypeCallback(arr["updateSpawn"]);
-        for (int i = 0; i < arr["data"].size(); i++) data.push_back(make_pair(arr["data"][i]["name"].asString(), arr["data"][i]["index"].asInt()));
+        for (int i = 0; i < arr["imports"].size(); i++) imports.push_back(make_pair(arr["imports"][i]["name"].asString(), arr["imports"][i]["index"].asInt()));
     }
 
     Json::Value toJsonObject() {
@@ -77,11 +77,12 @@ class EngineWatchDataArchetype {
         res["updateParallel"] = updateParallel.toJsonObject();
         res["terminate"] = terminate.toJsonObject();
         res["updateSpawn"] = updateSpawn.toJsonObject();
-        res["data"].resize(0);
-        for (int i = 0; i < data.size(); i++) {
-            res["data"][i]["name"] = data[i].first;
-            res["data"][i]["index"] = data[i].second;
+        res["imports"].resize(0);
+        for (int i = 0; i < imports.size(); i++) {
+            res["imports"][i]["name"] = imports[i].first;
+            res["imports"][i]["index"] = imports[i].second;
         }
+        res["data"] = res["imports"];
         return res;
     }
 };
@@ -92,6 +93,7 @@ class EngineWatchData {
     vector<pair<string, int> > skin_sprites = {};
     vector<pair<string, int> > effect_clips = {};
     vector<pair<string, int> > particle_effects = {};
+    vector<EngineDataBucket> buckets = {};
     vector<EngineWatchDataArchetype> archetypes = {};
     int updateSpawn = 0;
     vector<EngineDataNode> nodes = {};
@@ -101,7 +103,7 @@ class EngineWatchData {
         res["skin"]["sprites"].resize(0);
         res["effect"]["clips"].resize(0);
         res["particle"]["effects"].resize(0);
-        res["archetypes"].resize(0); res["nodes"].resize(0);
+        res["archetypes"].resize(0); res["nodes"].resize(0); res["buckets"].resize(0);
         for (int i = 0; i < skin_sprites.size(); i++) {
             res["skin"]["sprites"][i]["name"] = skin_sprites[i].first;
             res["skin"]["sprites"][i]["id"] = skin_sprites[i].second;
@@ -113,7 +115,8 @@ class EngineWatchData {
         for (int i = 0; i < particle_effects.size(); i++) {
             res["particle"]["effects"][i]["name"] = particle_effects[i].first;
             res["particle"]["effects"][i]["id"] = particle_effects[i].second;
-         }
+        }
+        for (int i = 0; i < buckets.size(); i++) res["buckets"].append(buckets[i].toJsonObject());
         for (int i = 0; i < archetypes.size(); i++) res["archetypes"].append(archetypes[i].toJsonObject());
         res["updateSpawn"] = updateSpawn;
         for (int i = 0; i < nodes.size(); i++) res["nodes"].append(nodes[i].toJsonObject());

@@ -79,10 +79,11 @@ class EngineDataArchetype {
     EngineDataArchetypeCallback touch;
     EngineDataArchetypeCallback updateParallel;
     EngineDataArchetypeCallback terminate;
-    vector<pair<string, int> > data;
+    vector<pair<string, int> > imports;
+    vector<string> exports;
 
     EngineDataArchetype(){}
-    EngineDataArchetype(string name, bool hasInput, vector<pair<string, int> > data,
+    EngineDataArchetype(string name, bool hasInput, vector<pair<string, int> > imports, vector<string> exports,
         EngineDataArchetypeCallback preprocess = EngineDataArchetypeCallback(),
         EngineDataArchetypeCallback spawnOrder = EngineDataArchetypeCallback(),
         EngineDataArchetypeCallback shouldSpawn = EngineDataArchetypeCallback(),
@@ -91,7 +92,7 @@ class EngineDataArchetype {
         EngineDataArchetypeCallback touch = EngineDataArchetypeCallback(),
         EngineDataArchetypeCallback updateParallel = EngineDataArchetypeCallback(),
         EngineDataArchetypeCallback terminate = EngineDataArchetypeCallback()): 
-        name(name), hasInput(hasInput), data(data), preprocess(preprocess), spawnOrder(spawnOrder), shouldSpawn(shouldSpawn), initialize(initialize), updateSequential(updateSequential), touch(touch), updateParallel(updateParallel), terminate(terminate){};
+        name(name), hasInput(hasInput), imports(imports), exports(exports), preprocess(preprocess), spawnOrder(spawnOrder), shouldSpawn(shouldSpawn), initialize(initialize), updateSequential(updateSequential), touch(touch), updateParallel(updateParallel), terminate(terminate){};
     EngineDataArchetype(Json::Value arr) {
         name = arr["name"].asString();
         hasInput = arr["hasInput"].asBool();
@@ -103,7 +104,8 @@ class EngineDataArchetype {
         touch = EngineDataArchetypeCallback(arr["touch"]);
         updateParallel = EngineDataArchetypeCallback(arr["updateParallel"]);
         terminate = EngineDataArchetypeCallback(arr["terminate"]);
-        for (int i = 0; i < arr["data"].size(); i++) data.push_back(make_pair(arr["data"][i]["name"].asString(), arr["data"][i]["index"].asInt()));
+        for (int i = 0; i < arr["imports"].size(); i++) imports.push_back(make_pair(arr["imports"][i]["name"].asString(), arr["imports"][i]["index"].asInt()));
+        for (int i = 0; i < arr["exports"].size(); i++) exports.push_back(arr["exports"][i].asString());
     }
 
     Json::Value toJsonObject() {
@@ -118,11 +120,14 @@ class EngineDataArchetype {
         res["touch"] = touch.toJsonObject();
         res["updateParallel"] = updateParallel.toJsonObject();
         res["terminate"] = terminate.toJsonObject();
-        res["data"].resize(0);
-        for (int i = 0; i < data.size(); i++) {
-            res["data"][i]["name"] = data[i].first;
-            res["data"][i]["index"] = data[i].second;
+        res["imports"].resize(0);
+        for (int i = 0; i < imports.size(); i++) {
+            res["imports"][i]["name"] = imports[i].first;
+            res["imports"][i]["index"] = imports[i].second;
         }
+    	res["data"] = res["imports"];
+        res["exports"].resize(0);
+        for (int i = 0; i < exports.size(); i++) res["exports"].append(exports[i]);
         return res;
     }
 };

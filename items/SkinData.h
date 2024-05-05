@@ -62,9 +62,6 @@ void packSkin(string textureDir, string dataDir) {
 	cout << "Writing Skin Texture..." << endl;
 	image outimg = image(width, height);
 	outimg.width = width, outimg.height = height;
-	for (int i = 0; i < width; i++) {
-		for (int j = 0; j < height * 4; j++) outimg.data[i][j] = 0;
-	}
 	data.width = width; data.height = height;
 	for (int i = 0; i < result_rects.size(); i++) {
 		int id = result_ids[i], x = result_rects[i].x, y = result_rects[i].y;
@@ -75,7 +72,6 @@ void packSkin(string textureDir, string dataDir) {
 				outimg.data[j][k * 4] = imgs[id].data[j - y][(k - x) * imgs[id].channel];
 				outimg.data[j][k * 4 + 1] = imgs[id].data[j - y][(k - x) * imgs[id].channel + 1];
 				outimg.data[j][k * 4 + 2] = imgs[id].data[j - y][(k - x) * imgs[id].channel + 2];
-				// cout << int(outimg.data[j][k * 4]) << " " << int(outimg.data[j][k * 4 + 1]) << " " << int(outimg.data[j][k * 4 + 2]) << endl;
 				outimg.data[j][k * 4 + 3] = imgs[id].channel < 4 ? 255 : imgs[id].data[j - y][(k - x) * imgs[id].channel + 3];
 			}
 		}

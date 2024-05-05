@@ -116,9 +116,9 @@ class NameText {
 class UnitText {
     public:
 
-    string Percentage = "#PERCENTAGE";
-    string Second = "#SECOND";
-    string Millisecond = "#MILLISECOND";
+    string Percentage = "#PERCENTAGE_UNIT";
+    string Second = "#SECOND_UNIT";
+    string Millisecond = "#MILLISECOND_UNIT";
 }UnitText;
 
 class InstructionText {
@@ -168,40 +168,40 @@ class Metric {
 class AnimationEase {
     public:
 
-    string Linear = "Linear";
-    string InSine = "InSine";
-    string InQuad = "InQuad";
-    string InCubic = "InCubic";
-    string InQuart = "InQuart";
-    string InExpo = "InExpo";
-    string InCirc = "InCirc";
-    string InBack = "InBack";
-    string InElastic = "InElastic";
-    string OutSine = "OutSine";
-    string OutQuad = "OutQuad";
-    string OutCubic = "OutCubic";
-    string OutQuart = "OutQuart";
-    string OutExpo = "OutExpo";
-    string OutCirc = "OutCirc";
-    string OutBack = "OutBack";
-    string OutElastic = "OutElastic";
-    string InOutSine = "InOutSine";
-    string InOutQuad = "InOutQuad";
-    string InOutCubic = "InOutCubic";
-    string InOutQuart = "InOutQuart";
-    string InOutExpo = "InOutExpo";
-    string InOutCirc = "InOutCirc";
-    string InOutBack = "InOutBack";
-    string InOutElastic = "InOutElastic";
-    string OutInSine = "OutInSine";
-    string OutInQuad = "OutInQuad";
-    string OutInCubic = "OutInCubic";
-    string OutInQuart = "OutInQuart";
-    string OutInExpo = "OutInExpo";
-    string OutInCirc = "OutInCirc";
-    string OutInBack = "OutInBack";
-    string OutInElastic = "OutInElastic";
-    string None = "None";
+    string Linear = "linear";
+    string InSine = "inSine";
+    string InQuad = "inQuad";
+    string InCubic = "inCubic";
+    string InQuart = "inQuart";
+    string InExpo = "inExpo";
+    string InCirc = "inCirc";
+    string InBack = "inBack";
+    string InElastic = "inElastic";
+    string OutSine = "outSine";
+    string OutQuad = "outQuad";
+    string OutCubic = "outCubic";
+    string OutQuart = "outQuart";
+    string OutExpo = "outExpo";
+    string OutCirc = "outCirc";
+    string OutBack = "outBack";
+    string OutElastic = "outElastic";
+    string InOutSine = "inOutSine";
+    string InOutQuad = "inOutQuad";
+    string InOutCubic = "inOutCubic";
+    string InOutQuart = "inOutQuart";
+    string InOutExpo = "inOutExpo";
+    string InOutCirc = "inOutCirc";
+    string InOutBack = "inOutBack";
+    string InOutElastic = "inOutElastic";
+    string OutInSine = "outInSine";
+    string OutInQuad = "outInQuad";
+    string OutInCubic = "outInCubic";
+    string OutInQuart = "outInQuart";
+    string OutInExpo = "outInExpo";
+    string OutInCirc = "outInCirc";
+    string OutInBack = "outInBack";
+    string OutInElastic = "outInElastic";
+    string None = "none";
 }AnimationEase;
 
 class ErrorStyle {
@@ -418,6 +418,7 @@ class RuntimeFunction {
     string TimeToStartingTime = "TimeToStartingTime";
     string TimeToTimeScale = "TimeToTimeScale";
     string Print = "Print";
+    string ExportValue = "ExportValue";
 }RuntimeFunction;
 
 class SkinSpriteName {

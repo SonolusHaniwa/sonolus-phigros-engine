@@ -19,8 +19,9 @@ namespace watchData {
 	const int LevelMemoryId = 2000;
 	const int LevelDataId = 2001;
 	const int LevelOptionId = 2002;
-	const int LevelScoreId = 2003;
-	const int LevelLifeId = 2004;
+    const int LevelBucketId = 2003;
+	const int LevelScoreId = 2004;
+	const int LevelLifeId = 2005;
 	const int EngineRomId = 3000;
 	const int EntityMemoryId = 4000;
 	const int EntityDataId = 4001;
@@ -43,6 +44,7 @@ namespace watchData {
 	BlockPointer<LevelMemoryId> LevelMemory;
 	BlockPointer<LevelDataId> LevelData;
 	BlockPointer<LevelOptionId> LevelOption;
+	BlockPointer<LevelBucketId> LevelBucket;
 	BlockPointer<LevelScoreId> LevelScore;
 	BlockPointer<LevelLifeId> LevelLife;
 	BlockPointer<EngineRomId> EngineRom;
@@ -221,6 +223,38 @@ namespace watchData {
         FuncNode state = EntityInfo.get(2);
     }entityInfo;
 
+    class bucket {
+        public:
+
+        FuncNode offset = 0;
+        FuncNode minPerfect = LevelBucket.get(0), maxPerfect = LevelBucket.get(1);
+        FuncNode minGreat = LevelBucket.get(2), maxGreat = LevelBucket.get(3);
+        FuncNode minGood = LevelBucket.get(4), maxGood = LevelBucket.get(5);
+
+        bucket(){}
+        bucket(FuncNode offset):offset(offset){
+            minPerfect = LevelBucket.get(Add({Multiply({offset, 6}), 0}));
+            maxPerfect = LevelBucket.get(Add({Multiply({offset, 6}), 1}));
+            minGreat = LevelBucket.get(Add({Multiply({offset, 6}), 2}));
+            maxGreat = LevelBucket.get(Add({Multiply({offset, 6}), 3}));
+            minGood = LevelBucket.get(Add({Multiply({offset, 6}), 4}));
+            maxGood = LevelBucket.get(Add({Multiply({offset, 6}), 5}));
+        }
+        bucket operator [] (FuncNode offset) {
+            return bucket(offset);
+        }
+
+        SonolusApi set(var minPerfect, var maxPerfect, var minGreat, var maxGreat, var minGood, var maxGood) {
+        	FUNCBEGIN
+            LevelBucket.set(Add({Multiply({offset, 6}), 0}), minPerfect);
+            LevelBucket.set(Add({Multiply({offset, 6}), 1}), maxPerfect);
+            LevelBucket.set(Add({Multiply({offset, 6}), 2}), minGreat);
+            LevelBucket.set(Add({Multiply({offset, 6}), 3}), maxGreat);
+            LevelBucket.set(Add({Multiply({offset, 6}), 4}), minGood);
+            LevelBucket.set(Add({Multiply({offset, 6}), 5}), maxGood);
+            return VOID;
+        }
+    }buckets;
 //     int allocatorSize[10001] = {0};
 //     
 //     template<int identifierId>
@@ -349,4 +383,6 @@ namespace watchData {
         FuncNode scaled = RuntimeUpdate.get(2);
         FuncNode skip = RuntimeUpdate.get(3);
     }times;
+
+    FuncNode isReplay = RuntimeEnvironment.get(4);
 };
