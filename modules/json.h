@@ -1,7 +1,7 @@
 #ifndef JSON_H
 #define JSON_H
 
-#include"../lib/jsoncpp/jsoncpp.h"
+#include<jsoncpp/json/json.h>
 
 using namespace std;
 

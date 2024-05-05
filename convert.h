@@ -9,7 +9,7 @@ string getRef(int len) {
 }
 string fromPGS(string json, double bgmOffset = 0) {
 	srand(time(0));
-	auto obj = json_decode(json);
+	Json::Value obj; json_decode(json, obj);
 	int fmt = obj["formatVersion"].asInt();
 	// cout << obj << endl;
 	bgmOffset += obj["offset"].asDouble();

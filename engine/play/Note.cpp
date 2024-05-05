@@ -3,13 +3,13 @@ class Note: public Archetype {
 
 	static constexpr const char* name = "Phigros Note";
 	bool hasInput = true;
-	defineEntityData(type);
-	defineEntityData(time);
-	defineEntityData(positionX);
-	defineEntityData(holdTime);
-	defineEntityData(speed);
-	defineEntityData(floorPosition);
-	defineEntityData(judgeline);
+	defineImports(type);
+	defineImports(time);
+	defineImports(positionX);
+	defineImports(holdTime);
+	defineImports(speed);
+	defineImports(floorPosition);
+	defineImports(judgeline);
 	Variable<EntityMemoryId> positionY;
 	Variable<EntityMemoryId> played;
 

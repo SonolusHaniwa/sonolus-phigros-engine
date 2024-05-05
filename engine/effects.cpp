@@ -13,5 +13,5 @@ auto effects = defineEffects<class Clips>({
     {EffectClipName.Perfect, Clips.Note},
     {EffectClipName.PerfectAlternative, Clips.Flick},
     {EffectClipName.Hold, Clips.Hold},
-    {"Sekai Tick", Clips.Drag},
+//    {"Sekai Tick", Clips.Drag},
 });

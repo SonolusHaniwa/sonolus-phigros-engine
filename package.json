@@ -31,10 +31,10 @@
         "title": "Phigros",
         "subtitle": "World Dai Star: Dream's Stellarium",
         "author": "LittleYang0531",
-        "skin": "sirius",
+        "skin": "phigros",
         "background": "sirius-default",
-        "effect": "sirius",
-        "particle": "pjsekai",
+        "effect": "phigros",
+        "particle": "sirius",
         "description": "A recreation of World Dai Star: Dream's Stellarium engine in Sonolus.\nSirius Version: 1.1.0.20240105_beta\nSonolus.h Version: 2.0.0_20240105_beta\n\nGithub Repository\nhttps://github.com/SonolusHaniwa/sonolus-sirius-engine"
       }
     ]

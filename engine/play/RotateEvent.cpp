@@ -2,11 +2,12 @@ class RotateEvent: public Archetype {
 	public:
 
 	static constexpr const char* name = "Phigros Judgeline Rotate Event";
-	defineEntityData(startTime);
-	defineEntityData(endTime);
-	defineEntityData(start);
-	defineEntityData(end);
-	defineEntityData(next);
+	defineImports(startTime);
+	defineImports(endTime);
+	defineImports(start);
+	defineImports(end);
+	defineImports(easing);
+	defineImports(next);
 
 	SonolusApi spawnOrder() { return 0; }
 	SonolusApi shouldSpawn() { return true; }

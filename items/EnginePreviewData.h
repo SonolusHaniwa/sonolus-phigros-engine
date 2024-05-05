@@ -30,18 +30,18 @@ class EnginePreviewDataArchetype {
     string name;
     EnginePreviewDataArchetypeCallback preprocess;
     EnginePreviewDataArchetypeCallback render;
-    vector<pair<string, int> > data;
+    vector<pair<string, int> > imports;
 
     EnginePreviewDataArchetype(){}
-    EnginePreviewDataArchetype(string name, vector<pair<string, int> > data,
+    EnginePreviewDataArchetype(string name, vector<pair<string, int> > imports,
         EnginePreviewDataArchetypeCallback preprocess = EnginePreviewDataArchetypeCallback(),
         EnginePreviewDataArchetypeCallback render = EnginePreviewDataArchetypeCallback()): 
-        name(name), data(data), preprocess(preprocess), render(render){};
+        name(name), imports(imports), preprocess(preprocess), render(render){};
     EnginePreviewDataArchetype(Json::Value arr) {
         name = arr["name"].asString();
         preprocess = EnginePreviewDataArchetypeCallback(arr["preprocess"]);
         render = EnginePreviewDataArchetypeCallback(arr["render"]);
-        for (int i = 0; i < arr["data"].size(); i++) data.push_back(make_pair(arr["data"][i]["name"].asString(), arr["data"][i]["index"].asInt()));
+        for (int i = 0; i < arr["imports"].size(); i++) imports.push_back(make_pair(arr["imports"][i]["name"].asString(), arr["imports"][i]["index"].asInt()));
     }
 
     Json::Value toJsonObject() {
@@ -49,11 +49,12 @@ class EnginePreviewDataArchetype {
         res["name"] = name;
         res["preprocess"] = preprocess.toJsonObject();
         res["render"] = render.toJsonObject();
-        res["data"].resize(0);
-        for (int i = 0; i < data.size(); i++) {
-            res["data"][i]["name"] = data[i].first;
-            res["data"][i]["index"] = data[i].second;
+        res["imports"].resize(0);
+        for (int i = 0; i < imports.size(); i++) {
+            res["imports"][i]["name"] = imports[i].first;
+            res["imports"][i]["index"] = imports[i].second;
         }
+        res["data"] = res["imports"];
         return res;
     }
 };

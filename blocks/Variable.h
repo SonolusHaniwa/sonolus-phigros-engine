@@ -57,7 +57,7 @@ class Variable {
     }
 
 	// template<int T>
-	// Variable<identifierId> operator = (Variable<T> val) { set(val); return Variable<identifierId>(offset, true); }
+	// Variable<identifierId> operator = (Variable<T> val) { set(val); return *this; }
 	Variable<identifierId> operator = (double val) { set(val); return Variable<identifierId>(offset, true); }
 	Variable<identifierId> operator = (FuncNode val) { set(val); return Variable<identifierId>(offset, true); }
 	// template<typename T>

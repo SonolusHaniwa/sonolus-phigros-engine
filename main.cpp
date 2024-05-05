@@ -64,14 +64,15 @@ int main(int argc, char** argv) {
         }
     }
     
-    // engineConfiguration.ui = configurationUI;
+    engineConfiguration.ui = configurationUI;
 #ifdef play
     buffer data, configuration;
     build<
         // Replace with your archetypes here
         Judgeline,
         SpeedEvent,
-        MoveEvent,
+        MoveXEvent,
+        MoveYEvent,
         RotateEvent,
         DisappearEvent,
         Note

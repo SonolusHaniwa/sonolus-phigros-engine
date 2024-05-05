@@ -46,6 +46,8 @@ template<typename T>
 T defineBuckets(vector<EngineDataBucket> buckets) {
     for (int i = 0; i < buckets.size(); i++)
         engineData.buckets.push_back(buckets[i]);
+    for (int i = 0; i < buckets.size(); i++)
+        engineWatchData.buckets.push_back(buckets[i]);
     return T();
 }
 
