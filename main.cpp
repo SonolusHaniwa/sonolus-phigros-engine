@@ -44,6 +44,7 @@ void helpText(int argc, char** argv) {
     cout << "    EngineConfig & EngineWatchData: " << argv[0] << endl;
     #endif
     cout << "Chart Convertor: " << endl;
+    cout << "    Official -> LevelData:  " << argv[0] << " json2data <chart.json> <LevelData>" << endl;
     exit(1);
 }
     

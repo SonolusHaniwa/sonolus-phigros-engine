@@ -18,7 +18,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 		auto item = obj["judgeLineList"][i];
 		total++;
 		total += item["speedEvents"].size();
-		if (fmt == 3) total += item["judgeLineMoveEvents"].size();
+		if (fmt == 3) total += item["judgeLineMoveEvents"].size() * 2;
 		else if (fmt == 13) total += item["judgeLineMoveXEvents"].size() + item["judgeLineMoveYEvents"].size();
 		else cout << "Unknown format version: " << fmt << endl, exit(1);
 		total += item["judgeLineRotateEvents"].size();

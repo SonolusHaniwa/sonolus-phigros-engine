@@ -23,14 +23,15 @@ struct Event {
     int easing = 0;
 };
 double EPS = 1e-8;
-double EPS2 = 1e-3;
+double EPS2 = 1e-1;
 const double PI = acos(-1);
 const double c1 = 1.70158;
 const double c3 = c1 + 1;
 const double c4 = (2 * PI) / 3;
 double minimalSimilarity = 0.99;
 int checkSize = 2;
-int loopSize = 100;
+int randomSize = 100;
+int maxAcceptNumber = 30;
 function<double(double)> EasingFunction[] = {
     [](double x){ return x; },
     [](double x){ return x * x; },
@@ -110,94 +111,43 @@ int eventOptimizer(Json::Value events, Json::Value &resEvents, string eventsName
     sort(eventList.begin(), eventList.end(), [](Event a, Event b) {
         return a.start < b.start;
     });
-    vector<Event> tmpEventList;
-    for (int i = 0; i < eventList.size(); i++) {
-    	if (i == 0) tmpEventList.push_back(eventList[i]);
-    	else if (
-    		tmpEventList.back().from == tmpEventList.back().to &&
-    		eventList[i].from == eventList[i].to &&
-    		tmpEventList.back().to == eventList[i].from
-    	) tmpEventList.back().end = eventList[i].end;
-    	else tmpEventList.push_back(eventList[i]);
-    }
-    eventList = tmpEventList;
-    // cout << eventList.size() << endl;
     vector<Event> resEventList;
+    int* Rs = new int[eventList.size()];
+    srand(time(NULL) + clock());
     for (int L = 0; L < eventList.size(); L++) {
-    	for (int R = min(L + loopSize, (int)eventList.size() - 1); R >= L + checkSize; R--) {
-    	// for (int R = L + checkSize; R <= min(L + loopSize, (int)eventList.size() - 1); R++) {
+        for (int R = L; R < eventList.size(); R++) Rs[R] = R;
+        random_shuffle(Rs + L + 1, Rs + min(L + randomSize + 1, (int)eventList.size()));
+        int maxR = L, maxREasing = 0, acceptNumber = 0;
+        for (int k = L; k < min(L + randomSize + 1, (int)eventList.size()); k++) {
+            int R = Rs[k];
     		double startTime = eventList[L].start, endTime = eventList[R].end;
     		double from = eventList[L].from, to = eventList[R].to;
     		for (int i = 0; i < easingSize; i++) {
-    			bool ok = true; int* ids = new int[checkSize];
-    			// srand(time(NULL) + clock()); 
-    			// for (int j = L; j < L + checkSize; j++) ids[j - L] = rand() % (R - L + 1) + L;
-    			for (int j = L; j < L + checkSize; j++) ids[j - L] = j;
+                bool ok = true;
     			for (int j = L; j < L + checkSize; j++) {
-    				ok &= abs(eventList[ids[j - L]].from - getEaseValue(i, startTime, endTime, from, to, eventList[ids[j - L]].start)) <= EPS2
-    				   && abs(eventList[ids[j - L]].to - getEaseValue(i, startTime, endTime, from, to, eventList[ids[j - L]].end)) <= EPS2;
+    				ok &= abs(eventList[j].from - getEaseValue(i, startTime, endTime, from, to, eventList[j].start)) <= EPS2
+    				   && abs(eventList[j].to - getEaseValue(i, startTime, endTime, from, to, eventList[j].end)) <= EPS2;
     			} if (!ok) continue;
-    			if (calcR2(eventList, L, R, i) < minimalSimilarity) {
-    				// for (int j = L; j < L + checkSize; j++) cout << eventList[ids[j - L]].end << " " << eventList[ids[j - L]].to << endl;
-    				// cout << i << " " << calcR2(eventList, L, R, i) << " " << calcR2(eventList, L, L + checkSize - 1, i) << endl;
-    				// cout << "You don't have mother" << endl;
-    				continue;
-    			} delete[] ids;
-    			resEventList.push_back({
-		            start: eventList[L].start,
-		            end: eventList[R].end,
-		            from: eventList[L].from,
-		            to: eventList[R].to,
-		            easing: i
-            	});
-            	// cout << R - L + 1 << " " << i << endl;
-            	L = R;
-            	goto end;
+    			if (calcR2(eventList, L, R, i) < minimalSimilarity) continue;
+                if (R > maxR) maxR = R, maxREasing = i;
+                acceptNumber++;
+                if (acceptNumber >= maxAcceptNumber) goto end;
+                else break;
     		}
-    	} // if (L == 1) exit(1);
-		for (int R = min(L + checkSize - 1, (int)eventList.size() - 1); R >= L; R--) {
-		    for (int i = 0; i < easingSize; i++) {
-		    	if (calcR2(eventList, L, R, i) >= minimalSimilarity) {
-				    resEventList.push_back({
-						start: eventList[L].start,
-						end: eventList[R].end,
-						from: eventList[L].from,
-						to: eventList[R].to,
-						easing: i
-				    }); L = R; goto end;
-		    	}
-		    }
-		}
-    	end: continue;
+        }
+        end:
+        resEventList.push_back({
+            start: eventList[L].start,
+            end: eventList[maxR].end,
+            from: eventList[L].from,
+            to: eventList[maxR].to,
+            easing: maxREasing
+        }); L = maxR;
     }
-    // int L = 0;
-    // while (L < eventList.size()) {
-    //     int l = L, r = eventList.size() - 1, resR = L, resEasing = 0;
-    //     while (l <= r) {
-    //         int R = (l + r) / 2;
-    //         double maxSimilarity = 0, maxEasing = -1;
-    //         for (int i = easingSize - 1; i >= 0; i--) {
-    //             double similarity = calcR2(eventList, L, R, i);
-    //             if (similarity >= maxSimilarity) {
-    //             	// if (i == 37 || i == 1) cout << i << " " << similarity << endl;
-    //             	maxSimilarity = similarity, maxEasing = i;
-    //             }
-    //         }
-    //         if (maxSimilarity > minimalSimilarity) {
-    //             resR = R, resEasing = maxEasing;
-    //             l = R + 1;
-    //         } else r = R - 1;
-    //     }
-    //     resEventList.push_back({
-    //         start: eventList[L].start,
-    //         end: eventList[resR].end,
-    //         from: eventList[L].from,
-    //         to: eventList[resR].to,
-    //         easing: resEasing
-    //     });
-    //     // if (resR - L + 1 > 10) cout << resR - L + 1 << " " << resEasing << endl;
-    //     L = resR + 1;
-    // }
+    delete[] Rs;
+
+
+
     cout << "Optimized " << eventsName << ": " << events.size() << " --> " << resEventList.size() << "(" << 100.0 - 100.0 * resEventList.size() / eventList.size() << "%)" << endl;
     resEvents.resize(0);
     for (int i = 0; i < resEventList.size(); i++) {
@@ -223,7 +173,11 @@ int main(int argc, char** argv) {
         cout << "  -q: Quiet mode" << endl;
         cout << "  -Q: Super quiet mode" << endl;
         cout << "  -l=<limit>: Set minimal similarity limit, default: " << minimalSimilarity << endl;
-        cout << "  -e=<num>: Set EPS value(1e-num), default: " << (int)-(log(EPS) / log(10)) << endl;
+        cout << "  -e=<num>: Set R2 EPS value(1e-num), default: " << (int)-(log(EPS) / log(10)) << endl;
+        cout << "  -E=<num>: Set pre-check EPS value(1e-num), default: " << (int)-(log(EPS) / log(10)) << endl;
+        cout << "  -s=<num>: Set pre-check size, default: " << checkSize << endl;
+        cout << "  -r=<num>: Set max random size, default: " << randomSize << endl;
+        cout << "  -m=<num>: Set max accept number, default: " << maxAcceptNumber << endl;
         return 1;
     }
 
@@ -238,6 +192,10 @@ int main(int argc, char** argv) {
             cout << "  -Q: Super quiet mode" << endl;
             cout << "  -l=<limit>: Set minimal similarity limit, default: " << minimalSimilarity << endl;
             cout << "  -e=<num>: Set EPS value(1e-num), default: " << (int)-(log(EPS) / log(10)) << endl;
+            cout << "  -E=<num>: Set pre-check EPS value(1e-num), default: " << (int)-(log(EPS) / log(10)) << endl;
+            cout << "  -s=<num>: Set pre-check size, default: " << checkSize << endl;
+            cout << "  -r=<num>: Set max random size, default: " << randomSize << endl;
+            cout << "  -m=<num>: Set max accept number, default: " << maxAcceptNumber << endl;
             return 0;
         } else if (arg == "-q") {
             freopen("/dev/null", "w", stdout);
@@ -248,6 +206,14 @@ int main(int argc, char** argv) {
             minimalSimilarity = stod(arg.substr(3));
         } else if (arg.substr(0, 3) == "-e=") {
             EPS = pow(10, -stod(arg.substr(3)));
+        } else if (arg.substr(0, 3) == "-E=") {
+            EPS2 = pow(10, -stod(arg.substr(3)));
+        } else if (arg.substr(0, 3) == "-s=") {
+            checkSize = stoi(arg.substr(3));
+        } else if (arg.substr(0, 3) == "-r=") {
+            randomSize = stoi(arg.substr(3));
+        } else if (arg.substr(0, 3) == "-m=") {
+            maxAcceptNumber = stoi(arg.substr(3));
         }
     }
 
