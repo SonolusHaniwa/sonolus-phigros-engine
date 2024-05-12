@@ -12,6 +12,14 @@ class Note: public Archetype {
 	defineImports(judgeline);
 	Variable<EntityMemoryId> positionY;
 	Variable<EntityMemoryId> played;
+	Variable<EntityMemoryId> effectX1;
+	Variable<EntityMemoryId> effectY1;
+	Variable<EntityMemoryId> effectX2;
+	Variable<EntityMemoryId> effectY2;
+	Variable<EntityMemoryId> effectX3;
+	Variable<EntityMemoryId> effectY3;
+	Variable<EntityMemoryId> effectX4;
+	Variable<EntityMemoryId> effectY4;
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
@@ -27,6 +35,10 @@ class Note: public Archetype {
 	SonolusApi complete(let time) {
 		FUNCBEGIN
 		Play(type, minSFXDistance);
+		SpawnParticleEffect(Effects.perfect, 
+			effectX1, effectY1, effectX2, effectY2,
+			effectX3, effectY3, effectX4, effectY4,
+			effectDurationTime, 0);
 		return VOID;
 	}
 	SonolusApi updateSequential() {
@@ -64,6 +76,7 @@ class Note: public Archetype {
 		var hx1 = hx - vec1X, hy1 = hy - vec1Y, hx2 = hx + vec1X, hy2 = hy + vec1Y;
 		var vec2Length = If(type == 4, flickNoteHeight, noteHeight);
 		var vec2X = vec2Length * Cos(rotate + PI / 2), vec2Y = vec2Length * Sin(rotate + PI / 2);
+		var vec3Length = noteWidth, vec3X = vec3Length * Cos(rotate + PI / 2), vec3Y = vec3Length * Sin(rotate + PI / 2);
 		var x3 = x1 - vec2X, y3 = y1 - vec2Y;
 		var x4 = x1 + vec2X, y4 = y1 + vec2Y;
 		var x5 = x2 + vec2X, y5 = y2 + vec2Y;
@@ -72,6 +85,10 @@ class Note: public Archetype {
 		var hx4 = hx1, hy4 = hy1;
 		var hx5 = hx2, hy5 = hy2;
 		var hx6 = x2, hy6 = y2;
+		effectX1 = x1 - vec3X, effectY1 = y1 - vec3Y;
+		effectX2 = x1 + vec3X, effectY2 = y1 + vec3Y;
+		effectX3 = x2 + vec3X, effectY3 = y2 + vec3Y;
+		effectX4 = x2 - vec3X, effectY4 = y2 - vec3Y;
 		
 		IF (type == 3) Draw(Sprites.NormalHold, hx3, hy3, hx4, hy4, hx5, hy5, hx6, hy6, 10000, 1);
 		ELSE Draw(Switch(type, {

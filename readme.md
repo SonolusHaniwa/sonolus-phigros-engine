@@ -1,6 +1,6 @@
 # Sonolus Phigros Engine
 
-A recreation of Phigros engine in [Sonolus](https://sonolus.com). For Sonolus 0.7.4+.
+A recreation of Phigros engine in [Sonolus](https://sonolus.com). For Sonolus 0.8.0+.
 
 Use [sonolus.h](https://github.com/SonolusHaniwa/sonolus.h) and [sonolus-server-cpp](https://github.com/SonolusHaniwa/sonolus-server-cpp) to develop.
 
@@ -30,11 +30,11 @@ You need to install [sonolus-server-cpp](https://github.com/SonolusHaniwa/sonolu
 
 ### Chart Optimizier
 
-Because Pigeon Games fitting of all event curves using straight lines, there are too many events in the official chart.
+Because Pigeon Games uses straight lines to fit of all event curves, there are too many events in the official chart.
 
-In order to reduce the number of events, I have implemented such a optimizer to fitting all straight lines back to curves.
+In order to reduce the number of events, I have implemented such a optimizer to fit all straight lines back to curves.
 
-Tips: Using random algorithms for fitting, therefore this program may not have much technical content.
+Tips: I use random algorithms for fitting, therefore this program may not have much technical content.
 
 Use commands below to compile the `optimizer` program:
 
