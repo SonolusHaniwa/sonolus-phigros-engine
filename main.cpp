@@ -81,6 +81,7 @@ int main(int argc, char** argv) {
     buffer data, configuration;
     build<
         // Replace with your archetypes here
+        Initialization,
         Judgeline,
         SpeedEvent,
         MoveXEvent,

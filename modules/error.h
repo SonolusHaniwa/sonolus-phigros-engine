@@ -10,8 +10,8 @@ void DumpTraceback() {
 }
 
 void throwWarning(string text) {
-	cerr << "[Warning] " << text << endl;
-	cerr << "    Thrown in callback \"" << currentCallback << "\" of archetype \"" << currentArchetype << "\"" << endl;
+	cerr << "\e[33m[Warning]\e[0m " << text << endl;
+	cerr << "    Thrown in callback \"\e[32m" << currentCallback << "\e[0m\" of archetype \"\e[32m" << currentArchetype << "\e[0m\"" << endl;
 }
 
 void throwError(string text) {

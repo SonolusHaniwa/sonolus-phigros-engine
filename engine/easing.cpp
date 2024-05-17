@@ -43,6 +43,7 @@ function<let(let)> EasingFunction[] = {
 };
 
 let getEaseValue(let id, let start, let end, let from, let to, let t) {
+    id = Round(id);
 	vector<pair<let, let> > branches;
 	for (int i = 0; i < sizeof(EasingFunction) / sizeof(EasingFunction[0]); i++) 
 		branches.push_back({i, EasingFunction[i]((t - start) / (end - start)) * (to - from) + from});

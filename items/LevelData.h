@@ -81,7 +81,6 @@ class LevelEntity {
 	}
 
 	void fromJsonObject(Json::Value res) { // Deserialize
-		archetype = res["archetype"].asString();
 		name = res["name"].asString();
 		for (int i = 0; i < data.size(); i++) {
 			string varName = (*data[i]).name;
@@ -108,6 +107,8 @@ class LevelRawData {
 	template<typename T>
 	T get(int id) {
 		T res = *(new T);
+		if (res.archetype != entities[id]["archetype"].asString()) 
+			throwWarning("Archetype mismatch: \"" + res.archetype + "\" != \"" + entities[id]["archetype"].asString() + "\"");
 		res.fromJsonObject(entities[id]);
 		return res;
 	}

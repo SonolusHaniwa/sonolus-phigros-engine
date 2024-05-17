@@ -13,6 +13,7 @@ string Scope = "phigros";
 #include"easing.cpp"
 
 #if play
+#include"play/Initialization.cpp"
 #include"play/Judgeline.cpp"
 #include"play/SpeedEvent.cpp"
 #include"play/MoveEvent.cpp"

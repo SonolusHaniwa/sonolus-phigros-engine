@@ -14,6 +14,7 @@ class MoveXEvent: public Archetype {
 
 	SonolusApi preprocess() {
 		FUNCBEGIN
+		Debuglog(next);
 		EntityDespawn.set(0, 1);
 		return VOID;
 	}
