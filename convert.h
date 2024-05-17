@@ -1,12 +1,78 @@
 #pragma once
-#define INFO if (entities.size() * 100 / total != last) \
-	last = entities.size() * 100 / total, cout << "[INFO] Processed: " << entities.size() << "/" << total << "(" << last << "%)" << endl;
+#define INFO if (levelData.size() * 100 / total != last) \
+	last = levelData.size() * 100 / total, cout << "[INFO] Processed: " << levelData.size() << "/" << total << "(" << last << "%)" << endl;
 
-string getRef(int len) {
-	string res = "", key = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-	for (int i = 0; i < len; i++) res += key[rand() % key.size()];
-	return res;
-}
+class JudgelineEntity: public LevelEntity {
+	public:
+
+	defineArchetypeName("Phigros Judgeline");
+	defineLevelDataRef(speedEvent);
+	defineLevelDataRef(moveXEvent);
+	defineLevelDataRef(moveYEvent);
+	defineLevelDataRef(rotateEvent);
+	defineLevelDataRef(disappearEvent);
+};
+
+class SpeedEventEntity: public LevelEntity {
+	public:
+
+	defineArchetypeName("Phigros Judgeline Speed Event");
+	defineLevelDataValue(startTime);
+	defineLevelDataValue(endTime);
+	defineLevelDataValue(value);
+	defineLevelDataRef(next);
+};
+
+class CommonEventEntity: public LevelEntity {
+	public:
+
+	defineLevelDataValue(startTime);
+	defineLevelDataValue(endTime);
+	defineLevelDataValue(start);
+	defineLevelDataValue(end);
+	defineLevelDataValue(easing);
+	defineLevelDataRef(next);
+};
+
+class MoveXEventEntity: public CommonEventEntity {
+	public:
+
+	defineArchetypeName("Phigros Judgeline Move X Event");
+};
+
+class MoveYEventEntity: public CommonEventEntity {
+	public:
+
+	defineArchetypeName("Phigros Judgeline Move Y Event");
+};
+
+class RotateEventEntity: public CommonEventEntity {
+	public:
+
+	defineArchetypeName("Phigros Judgeline Rotate Event");
+};
+
+class DisappearEventEntity: public CommonEventEntity {
+	public:
+
+	defineArchetypeName("Phigros Judgeline Disappear Event");
+};
+
+class NoteEntity: public LevelEntity {
+	public:
+
+	defineArchetypeName("Phigros Note");
+	defineLevelDataValue(type);
+	defineLevelDataValue(time);
+	defineLevelDataValue(positionX);
+	defineLevelDataValue(holdTime);
+	defineLevelDataValue(speed);
+	defineLevelDataValue(floorPosition);
+	defineLevelDataValue(isAbove);
+	defineLevelDataValue(isMulti);
+	defineLevelDataRef(judgeline);
+};
+
 string fromPGS(string json, double bgmOffset = 0) {
 	srand(time(0));
 	Json::Value obj; json_decode(json, obj);
@@ -27,136 +93,215 @@ string fromPGS(string json, double bgmOffset = 0) {
 		total += item["notesBelow"].size();
 	}
 	cout << "[INFO] Total Entities: " << total << endl;
+	LevelRawData levelData;
 	for (int i = 0; i < obj["judgeLineList"].size(); i++) { 
 		auto item = obj["judgeLineList"][i];
 		double bpm = item["bpm"].asDouble();
-		string judgelineRef = getRef(32);
-		string speedRef = getRef(32), moveXRef = getRef(32), moveYRef = getRef(32), rotateRef = getRef(32), disappearRef = getRef(32);
-		Json::Value single;
-		single["archetype"] = "Phigros Judgeline";
-		single["name"] = judgelineRef;
-		single["data"][0]["name"] = "speedEvent"; single["data"][0]["ref"] = speedRef;
-		single["data"][1]["name"] = "moveXEvent"; single["data"][1]["ref"] = moveXRef;
-		single["data"][2]["name"] = "moveYEvent"; single["data"][2]["ref"] = moveYRef;
-		single["data"][3]["name"] = "rotateEvent"; single["data"][3]["ref"] = rotateRef;
-		single["data"][4]["name"] = "disappearEvent"; single["data"][4]["ref"] = disappearRef;
-		entities.append(single); INFO;
-		for (int j = 0; j < item["speedEvents"].size(); j++) {
+		JudgelineEntity judgeline;
+
+		// 添加 Speed Event
+		for (int j = item["speedEvents"].size() - 1; j >= 0; j--) {
 			auto v = item["speedEvents"][j];
-			Json::Value single;
-			single["archetype"] = "Phigros Judgeline Speed Event";
-			single["name"] = speedRef; speedRef = getRef(32);
-			single["data"][0]["name"] = "startTime"; single["data"][0]["value"] = v["startTime"].asDouble() / bpm * 1.875;
-			single["data"][1]["name"] = "endTime"; single["data"][1]["value"] = v["endTime"].asDouble() / bpm * 1.875;
-			single["data"][2]["name"] = "value"; single["data"][2]["value"] = v["value"].asDouble();
-			single["data"][3]["name"] = "next"; single["data"][3]["ref"] = speedRef;
-			entities.append(single); INFO;
+			SpeedEventEntity speed;
+			speed.startTime = v["startTime"].asDouble();
+			speed.endTime = v["endTime"].asDouble();
+			speed.value = v["value"].asDouble();
+			speed.next = j != item["speedEvents"].size() - 1 
+				? levelData.back<SpeedEventEntity>() 
+				: SpeedEventEntity();
+			levelData.append(speed); INFO;
 		}
+		judgeline.speedEvent = item["speedEvents"].size()
+				? levelData.back<SpeedEventEntity>() 
+				: SpeedEventEntity();
+
+		// 添加 Move Event
 		if (fmt == 3) {
-			for (int j = 0; j < item["judgeLineMoveEvents"].size(); j++) {
+			for (int j = item["judgeLineMoveEvents"].size() - 1; j >= 0; j--) {
 				auto v = item["judgeLineMoveEvents"][j];
-				Json::Value single;
-				single["archetype"] = "Phigros Judgeline Move X Event";
-				single["name"] = moveXRef; moveXRef = getRef(32);
-				single["data"][0]["name"] = "startTime"; single["data"][0]["value"] = v["startTime"].asDouble() / bpm * 1.875;
-				single["data"][1]["name"] = "endTime"; single["data"][1]["value"] = v["endTime"].asDouble() / bpm * 1.875;
-				single["data"][2]["name"] = "start"; single["data"][2]["value"] = v["start"].asDouble();
-				single["data"][3]["name"] = "end"; single["data"][3]["value"] = v["end"].asDouble();
-				single["data"][4]["name"] = "easing"; single["data"][4]["value"] = 0;
-				single["data"][5]["name"] = "next"; single["data"][5]["ref"] = moveXRef;
-				entities.append(single); INFO;
-				single["archetype"] = "Phigros Judgeline Move Y Event";
-				single["name"] = moveYRef; moveYRef = getRef(32);
-				single["data"][2]["name"] = "start"; single["data"][2]["value"] = v["start2"].asDouble();
-				single["data"][3]["name"] = "end"; single["data"][3]["value"] = v["end2"].asDouble();
-				single["data"][5]["name"] = "next"; single["data"][5]["ref"] = moveYRef;
-				entities.append(single); INFO;
+				
+				MoveXEventEntity moveX;
+				moveX.startTime = v["startTime"].asDouble();
+				moveX.endTime = v["endTime"].asDouble();
+				moveX.start = v["start"].asDouble();
+				moveX.end = v["end"].asDouble();
+				moveX.easing = v["easing"].asInt();
+				moveX.next = j != item["judgeLineMoveEvents"].size() - 1
+					? levelData.get<MoveXEventEntity>(levelData.size() - 2)
+					: MoveXEventEntity();
+				levelData.append(moveX); INFO;
+				
+				MoveYEventEntity moveY;
+				moveY.startTime = v["startTime"].asDouble();
+				moveY.endTime = v["endTime"].asDouble();
+				moveY.start = v["start2"].asDouble();
+				moveY.end = v["end2"].asDouble();
+				moveY.easing = v["easing"].asInt();
+				moveY.next = j != item["judgeLineMoveEvents"].size() - 1
+					? levelData.get<MoveYEventEntity>(levelData.size() - 2)
+					: MoveYEventEntity();
+				levelData.append(moveY); INFO;
 			} 
+			judgeline.moveXEvent = item["judgeLineMoveEvents"].size()
+					? levelData.get<MoveXEventEntity>(levelData.size() - 2) 
+					: MoveXEventEntity();
+			judgeline.moveYEvent = item["judgeLineMoveEvents"].size()
+					? levelData.get<MoveYEventEntity>(levelData.size() - 1)
+					: MoveYEventEntity();
 		} else if (fmt == 13) {
-			for (int j = 0; j < item["judgeLineMoveXEvents"].size(); j++) {
+			for (int j = item["judgeLineMoveXEvents"].size() - 1; j >= 0; j--) {
 				auto v = item["judgeLineMoveXEvents"][j];
-				Json::Value single;
-				single["archetype"] = "Phigros Judgeline Move X Event";
-				single["name"] = moveXRef; moveXRef = getRef(32);
-				single["data"][0]["name"] = "startTime"; single["data"][0]["value"] = v["startTime"].asDouble() / bpm * 1.875;
-				single["data"][1]["name"] = "endTime"; single["data"][1]["value"] = v["endTime"].asDouble() / bpm * 1.875;
-				single["data"][2]["name"] = "start"; single["data"][2]["value"] = v["start"].asDouble();
-				single["data"][3]["name"] = "end"; single["data"][3]["value"] = v["end"].asDouble();
-				single["data"][4]["name"] = "easing"; single["data"][4]["value"] = v["easing"].asInt();
-				single["data"][5]["name"] = "next"; single["data"][5]["ref"] = moveXRef;
-				entities.append(single); INFO;
+				MoveXEventEntity moveX;
+				moveX.startTime = v["startTime"].asDouble();
+				moveX.endTime = v["endTime"].asDouble();
+				moveX.start = v["start"].asDouble();
+				moveX.end = v["end"].asDouble();
+				moveX.easing = v["easing"].asInt();
+				moveX.next = j != item["judgeLineMoveXEvents"].size() - 1
+					? levelData.get<MoveXEventEntity>(levelData.size() - 1)
+					: MoveXEventEntity();
+				levelData.append(moveX); INFO;
 			} 
-			for (int j = 0; j < item["judgeLineMoveYEvents"].size(); j++) {
+			judgeline.moveXEvent = item["judgeLineMoveXEvents"].size()
+					? levelData.back<MoveXEventEntity>() 
+					: MoveXEventEntity();
+			
+			for (int j = item["judgeLineMoveYEvents"].size() - 1; j >= 0; j--) {
 				auto v = item["judgeLineMoveYEvents"][j];
-				Json::Value single;
-				single["archetype"] = "Phigros Judgeline Move Y Event";
-				single["name"] = moveYRef; moveYRef = getRef(32);
-				single["data"][0]["name"] = "startTime"; single["data"][0]["value"] = v["startTime"].asDouble() / bpm * 1.875;
-				single["data"][1]["name"] = "endTime"; single["data"][1]["value"] = v["endTime"].asDouble() / bpm * 1.875;
-				single["data"][2]["name"] = "start"; single["data"][2]["value"] = v["start"].asDouble();
-				single["data"][3]["name"] = "end"; single["data"][3]["value"] = v["end"].asDouble();
-				single["data"][4]["name"] = "easing"; single["data"][4]["value"] = v["easing"].asInt();
-				single["data"][5]["name"] = "next"; single["data"][5]["ref"] = moveYRef;
-				entities.append(single); INFO;
+				MoveYEventEntity moveY;
+				moveY.startTime = v["startTime"].asDouble();
+				moveY.endTime = v["endTime"].asDouble();
+				moveY.start = v["start"].asDouble();
+				moveY.end = v["end"].asDouble();
+				moveY.easing = v["easing"].asInt();
+				moveY.next = j != item["judgeLineMoveYEvents"].size() - 1
+					? levelData.get<MoveYEventEntity>(levelData.size() - 1)
+					: MoveYEventEntity();
+				levelData.append(moveY); INFO;
 			} 
+			judgeline.moveYEvent = item["judgeLineMoveYEvents"].size()
+					? levelData.back<MoveYEventEntity>() 
+					: MoveYEventEntity();
 		}
-		for (int j = 0; j < item["judgeLineRotateEvents"].size(); j++) {
+
+		// 添加 Rotate Event
+		for (int j = item["judgeLineRotateEvents"].size() - 1; j >= 0; j--) {
 			auto v = item["judgeLineRotateEvents"][j];
-			Json::Value single;
-			single["archetype"] = "Phigros Judgeline Rotate Event";
-			single["name"] = rotateRef; rotateRef = getRef(32);
-			single["data"][0]["name"] = "startTime"; single["data"][0]["value"] = v["startTime"].asDouble() / bpm * 1.875;
-			single["data"][1]["name"] = "endTime"; single["data"][1]["value"] = v["endTime"].asDouble() / bpm * 1.875;
-			single["data"][2]["name"] = "start"; single["data"][2]["value"] = v["start"].asDouble();
-			single["data"][3]["name"] = "end"; single["data"][3]["value"] = v["end"].asDouble();
-			single["data"][4]["name"] = "easing"; single["data"][4]["value"] = v["easing"].asInt();
-			single["data"][5]["name"] = "next"; single["data"][5]["ref"] = rotateRef;
-			entities.append(single); INFO;
+			RotateEventEntity rotate;
+			rotate.startTime = v["startTime"].asDouble();
+			rotate.endTime = v["endTime"].asDouble();
+			rotate.start = v["start"].asDouble();
+			rotate.end = v["end"].asDouble();
+			rotate.easing = v["easing"].asInt();
+			rotate.next = j != item["judgeLineRotateEvents"].size() - 1
+				? levelData.get<RotateEventEntity>(levelData.size() - 1)
+				: RotateEventEntity();
+			levelData.append(rotate); INFO;
 		}
+		judgeline.rotateEvent = item["judgeLineRotateEvents"].size()
+			? levelData.back<RotateEventEntity>() 
+			: RotateEventEntity();
+
+		// 添加 Disappear Event
 		for (int j = 0; j < item["judgeLineDisappearEvents"].size(); j++) {
 			auto v = item["judgeLineDisappearEvents"][j];
-			Json::Value single;
-			single["archetype"] = "Phigros Judgeline Disappear Event";
-			single["name"] = disappearRef; disappearRef = getRef(32);
-			single["data"][0]["name"] = "startTime"; single["data"][0]["value"] = v["startTime"].asDouble() / bpm * 1.875;
-			single["data"][1]["name"] = "endTime"; single["data"][1]["value"] = v["endTime"].asDouble() / bpm * 1.875;
-			single["data"][2]["name"] = "start"; single["data"][2]["value"] = v["start"].asDouble();
-			single["data"][3]["name"] = "end"; single["data"][3]["value"] = v["end"].asDouble();
-			single["data"][4]["name"] = "easing"; single["data"][4]["value"] = v["easing"].asInt();
-			single["data"][5]["name"] = "next"; single["data"][5]["ref"] = disappearRef;
-			entities.append(single); INFO;
+			DisappearEventEntity disappear;
+			disappear.startTime = v["startTime"].asDouble();
+			disappear.endTime = v["endTime"].asDouble();
+			disappear.start = v["start"].asDouble();
+			disappear.end = v["end"].asDouble();
+			disappear.easing = v["easing"].asInt();
+			disappear.next = j != item["judgeLineDisappearEvents"].size() - 1
+				? levelData.get<DisappearEventEntity>(levelData.size() - 1)
+				: DisappearEventEntity();
+			levelData.append(disappear); INFO;
 		}
+		judgeline.disappearEvent = item["judgeLineDisappearEvents"].size()
+			? levelData.back<DisappearEventEntity>() 
+			: DisappearEventEntity();
+		
+		levelData.append(judgeline); INFO;
+
+		// 添加按键
 		for (int j = 0; j < item["notesAbove"].size(); j++) {
 			auto v = item["notesAbove"][j];
-			Json::Value single;
-			single["archetype"] = "Phigros Note";
-			single["data"][0]["name"] = "type"; single["data"][0]["value"] = v["type"].asInt();
-			single["data"][1]["name"] = "time"; single["data"][1]["value"] = v["time"].asDouble() / bpm * 1.875;
-			single["data"][2]["name"] = "positionX"; single["data"][2]["value"] = v["positionX"].asDouble();
-			single["data"][3]["name"] = "holdTime"; single["data"][3]["value"] = v["holdTime"].asDouble() / bpm * 1.875;
-			single["data"][4]["name"] = "speed"; single["data"][4]["value"] = v["speed"].asDouble();
-			single["data"][5]["name"] = "floorPosition"; single["data"][5]["value"] = v["floorPosition"].asDouble();
-			single["data"][6]["name"] = "judgeline"; single["data"][6]["ref"] = judgelineRef;
-			entities.append(single); INFO;
+			NoteEntity note;
+			note.type = v["type"].asInt();
+			note.time = v["time"].asDouble() / bpm * 1.875;
+			note.positionX = v["positionX"].asDouble();
+			note.holdTime = v["holdTime"].asDouble() / bpm * 1.875;
+			note.speed = v["speed"].asDouble();
+			note.floorPosition = v["floorPosition"].asDouble();
+			note.isAbove = 1;
+			note.isMulti = 0;
+			// note.isFake = 0;
+			note.judgeline = judgeline;
+			levelData.append(note); INFO;
 		}
 		for (int j = 0; j < item["notesBelow"].size(); j++) {
 			auto v = item["notesBelow"][j];
-			Json::Value single;
-			single["archetype"] = "Phigros Note";
-			single["data"][0]["name"] = "type"; single["data"][0]["value"] = v["type"].asInt();
-			single["data"][1]["name"] = "time"; single["data"][1]["value"] = v["time"].asDouble() / bpm * 1.875;
-			single["data"][2]["name"] = "positionX"; single["data"][2]["value"] = v["positionX"].asDouble();
-			single["data"][3]["name"] = "holdTime"; single["data"][3]["value"] = v["holdTime"].asDouble() / bpm * 1.875;
-			single["data"][4]["name"] = "speed"; single["data"][4]["value"] = v["speed"].asDouble();
-			single["data"][5]["name"] = "floorPosition"; single["data"][5]["value"] = -1 * v["floorPosition"].asDouble();
-			single["data"][6]["name"] = "judgeline"; single["data"][6]["ref"] = judgelineRef;
-			entities.append(single); INFO;
+			NoteEntity note;
+			note.type = v["type"].asInt();
+			note.time = v["time"].asDouble() / bpm * 1.875;
+			note.positionX = v["positionX"].asDouble();
+			note.holdTime = v["holdTime"].asDouble() / bpm * 1.875;
+			note.speed = v["speed"].asDouble();
+			note.floorPosition = v["floorPosition"].asDouble();
+			note.isAbove = 0;
+			note.isMulti = 0;
+			// note.isFake = 0;
+			note.judgeline = judgeline;
+			levelData.append(note); INFO;
 		}
 	}
+
+	// cout << levelData.toJsonObject() << endl;
 	
-	Json::Value data;
-	data["formatVersion"] = 1;
-	data["bgmOffset"] = bgmOffset;
-	data["entities"] = entities;
+	Json::Value data = levelData.toJsonObject();
+	data["formatVersion"] = 2;
 	return json_encode(data);
+}
+
+int PECEasingMap[] = {
+	37, 37, 0,
+	17, 18, 19,
+	1, 2, 3,
+	5, 6, 7,
+	9, 10, 11,
+	13, 14, 15,
+	21, 22, 23, 
+	25, 26, 27,
+	33, 34, 35,
+	29, 30, 31,
+	0, 0, 0 // Bounce is not supported
+};
+string trim(string s) {
+	while (s.front() == ' ' && s.size()) s = s.substr(1);
+	while (s.front() == '\t' && s.size()) s = s.substr(1);
+	while (s.back() == ' ' && s.size()) s.pop_back();
+	while (s.back() == '\t' && s.size()) s.pop_back();
+	return s;
+}
+string fromPEC(string txt, double bgmOffset = 0) {
+	srand(time(0));
+	int EasingNum = sizeof(PECEasingMap) / sizeof(int);
+	auto lines = explode("\n", txt.c_str());
+	for (int i = 0; i < lines.size(); i++) lines[i] = trim(lines[i]);
+	int total = 0, current = 0; int last = 0, pt = 0;
+	for (int i = 0; i < lines.size(); i++) if (lines[i] != "") lines[pt++] = lines[i];
+	lines.resize(pt);
+	for (int i = 0; i < lines.size(); i++) if (lines[i][0] == 'c' || lines[i][0] == 'n') total++;
+	cout << "[INFO] Total Entities: " << total << endl;
+	Json::Value chart;
+	chart["formatVersion"] = 1000;
+	chart["offset"] = stod(lines[0]);
+	chart["judgeLineList"].resize(0);
+	for (int i = 1; i < lines.size(); i++) {
+		auto args = explode(" ", lines[i].c_str()); int pt = 0;
+		for (int j = 0; j < args.size(); j++) args[j] = trim(args[j]);
+		for (int j = 0; j < args.size(); j++) if (args[j] != "") args[pt++] = args[j];
+		args.resize(pt);
+		
+	}
+	return fromPGS(json_encode(chart), bgmOffset);
 }

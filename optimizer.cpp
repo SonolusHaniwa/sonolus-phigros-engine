@@ -31,7 +31,8 @@ const double c4 = (2 * PI) / 3;
 double minimalSimilarity = 0.99;
 int checkSize = 2;
 int randomSize = 100;
-int maxAcceptNumber = 30;
+int maxTime = 16;
+int maxAcceptNumber = 40;
 function<double(double)> EasingFunction[] = {
     [](double x){ return x; },
     [](double x){ return x * x; },
@@ -112,8 +113,11 @@ int eventOptimizer(Json::Value events, Json::Value &resEvents, string eventsName
         return a.start < b.start;
     });
     vector<Event> resEventList;
+
+
+    
+    /* srand(time(NULL) + clock());
     int* Rs = new int[eventList.size()];
-    srand(time(NULL) + clock());
     for (int L = 0; L < eventList.size(); L++) {
         for (int R = L; R < eventList.size(); R++) Rs[R] = R;
         random_shuffle(Rs + L + 1, Rs + min(L + randomSize + 1, (int)eventList.size()));
@@ -143,6 +147,52 @@ int eventOptimizer(Json::Value events, Json::Value &resEvents, string eventsName
             to: eventList[maxR].to,
             easing: maxREasing
         }); L = maxR;
+    }
+    delete[] Rs; */
+
+
+
+    
+    srand(time(NULL) + clock());
+    int* Rs = new int[eventList.size()];
+    for (int L = 0; L < eventList.size(); L++) {
+    	int R = L;
+    	if (eventList[L].end - eventList[L].start <= maxTime)
+   			while (eventList[R + 1].end - eventList[R + 1].start <= maxTime) R++;
+   		double startTime = eventList[L].start, endTime = eventList[R].end;
+   		double from = eventList[L].from, to = eventList[R].to; bool ok = false;
+   		int maxRange = min(R + 1, (int)eventList.size());
+   		for (int k = L; k < maxRange; k++) Rs[k] = maxRange - 1 - (k - L);
+        random_shuffle(Rs + L + 1, Rs + maxRange);
+        // cout << L << " " << maxRange << endl;
+        int maxR = L, maxREasing = 0, acceptNumber = 0;
+        for (int k = L; k < maxRange; k++) {
+        	if (k != L && Rs[k] - L >= randomSize) continue;
+            int R = Rs[k];
+    		double startTime = eventList[L].start, endTime = eventList[R].end;
+    		double from = eventList[L].from, to = eventList[R].to;
+    		for (int i = 0; i < easingSize; i++) {
+                bool ok = true;
+    			for (int j = L; j < L + checkSize; j++) {
+    				ok &= abs(eventList[j].from - getEaseValue(i, startTime, endTime, from, to, eventList[j].start)) <= EPS2
+    				   && abs(eventList[j].to - getEaseValue(i, startTime, endTime, from, to, eventList[j].end)) <= EPS2;
+    			} if (!ok) continue;
+    			if (calcR2(eventList, L, R, i) < minimalSimilarity) continue;
+                if (R > maxR) maxR = R, maxREasing = i;
+                acceptNumber++;
+                if (acceptNumber >= maxAcceptNumber) goto end;
+                else break;
+    		}
+        }
+        end:
+        resEventList.push_back({
+            start: eventList[L].start,
+            end: eventList[maxR].end,
+            from: eventList[L].from,
+            to: eventList[maxR].to,
+            easing: maxREasing
+        }); L = maxR;
+   		// if (!ok) cout << "nmsl" << endl;
     }
     delete[] Rs;
 

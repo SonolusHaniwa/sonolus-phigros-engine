@@ -314,6 +314,7 @@ void build(buffer& configurationBuffer, buffer& dataBuffer) {
 // #include"items/TutorialData.h"
 #include"items/PreviewData.h"
 #include"items/WatchData.h"
+#include"items/LevelData.h"
 #include"items/SkinData.h"
 #include"items/EffectData.h"
 

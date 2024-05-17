@@ -46,5 +46,8 @@ let getEaseValue(let id, let start, let end, let from, let to, let t) {
 	vector<pair<let, let> > branches;
 	for (int i = 0; i < sizeof(EasingFunction) / sizeof(EasingFunction[0]); i++) 
 		branches.push_back({i, EasingFunction[i]((t - start) / (end - start)) * (to - from) + from});
-	return SwitchWithDefault(id, branches, branches[0].second);
+	return If(t < start || t > end,
+		If(t < start, from, to),
+		SwitchWithDefault(id, branches, branches[0].second)
+	);
 }

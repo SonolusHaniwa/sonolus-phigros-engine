@@ -9,6 +9,9 @@ class Note: public Archetype {
 	defineImports(holdTime);
 	defineImports(speed);
 	defineImports(floorPosition);
+	defineImports(isAbove);
+	defineImports(isMulti);
+	defineImports(isFake);
 	defineImports(judgeline);
 	Variable<EntityMemoryId> positionY;
 	Variable<EntityMemoryId> played;
@@ -23,7 +26,7 @@ class Note: public Archetype {
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
-	SonolusApi spawnOrder() { return 0; }
+	SonolusApi spawnOrder() { return 1; }
 	SonolusApi shouldSpawn() { return true; }
 
 	SonolusApi preprocess() {
@@ -46,7 +49,7 @@ class Note: public Archetype {
 		IF (times.now < 0) Return(0); FI
 		IF (times.now > time && type == 3 && played == false) played = true; Play(Clips.Note, minSFXDistance); FI
 		IF (times.now > time + If(type == 3, holdTime, 0)) complete(times.now); EntityDespawn.set(0, 1); FI
-		IF (floorPosition > 0) positionY = floorPosition - line.get(5);
+		IF (isAbove) positionY = floorPosition - line.get(5);
 		ELSE positionY = floorPosition + line.get(5); FI
 		return VOID;
 	}
@@ -56,9 +59,9 @@ class Note: public Archetype {
 		IF (times.now < 0) Return(0); FI
 		var dx = positionX * stage.w * 0.05625;
 		var dy = positionY * If(type == 3, 1, speed) * stage.h * 0.6;
-		var dy2 = dy + speed * holdTime * If(floorPosition > 0, 1, -1) * stage.h * 0.6;
-		dy = If(floorPosition > 0, Max(0, dy), Min(0, dy));
-		dy2 = If(floorPosition > 0, Max(0, dy2), Min(0, dy2));
+		var dy2 = dy + speed * holdTime * If(isAbove, 1, -1) * stage.h * 0.6;
+		dy = If(isAbove, Max(0, dy), Min(0, dy));
+		dy2 = If(isAbove, Max(0, dy2), Min(0, dy2));
 		// dy2 = If(floorPosition > 0, Min(stage.w, dy2), Max(stage.w, dy2));
 		
 		var rotate = line.get(3);
@@ -76,7 +79,6 @@ class Note: public Archetype {
 		var hx1 = hx - vec1X, hy1 = hy - vec1Y, hx2 = hx + vec1X, hy2 = hy + vec1Y;
 		var vec2Length = If(type == 4, flickNoteHeight, noteHeight);
 		var vec2X = vec2Length * Cos(rotate + PI / 2), vec2Y = vec2Length * Sin(rotate + PI / 2);
-		var vec3Length = noteWidth, vec3X = vec3Length * Cos(rotate + PI / 2), vec3Y = vec3Length * Sin(rotate + PI / 2);
 		var x3 = x1 - vec2X, y3 = y1 - vec2Y;
 		var x4 = x1 + vec2X, y4 = y1 + vec2Y;
 		var x5 = x2 + vec2X, y5 = y2 + vec2Y;
@@ -85,10 +87,11 @@ class Note: public Archetype {
 		var hx4 = hx1, hy4 = hy1;
 		var hx5 = hx2, hy5 = hy2;
 		var hx6 = x2, hy6 = y2;
-		effectX1 = x1 - vec3X, effectY1 = y1 - vec3Y;
-		effectX2 = x1 + vec3X, effectY2 = y1 + vec3Y;
-		effectX3 = x2 + vec3X, effectY3 = y2 + vec3Y;
-		effectX4 = x2 - vec3X, effectY4 = y2 - vec3Y;
+		// 粒子效果不用转
+		effectX1 = x - noteWidth, effectY1 = y - noteWidth;
+		effectX2 = x - noteWidth, effectY2 = y + noteWidth;
+		effectX3 = x + noteWidth, effectY3 = y + noteWidth;
+		effectX4 = x + noteWidth, effectY4 = y - noteWidth;
 		
 		IF (type == 3) Draw(Sprites.NormalHold, hx3, hy3, hx4, hy4, hx5, hy5, hx6, hy6, 10000, 1);
 		ELSE Draw(Switch(type, {
@@ -96,6 +99,9 @@ class Note: public Archetype {
 			{2, Sprites.NormalDrag},
 			{4, Sprites.NormalFlick}
 		}), x3, y3, x4, y4, x5, y5, x6, y6, 10000, 1); FI
+
+		// IF (x < 0 && y < 0 && x > screen.l && y > screen.b) Debuglog(EntityInfo.get(0)); FI
+		// IF (EntityInfo.get(0) == 9786) Debuglog(line.get(3)); FI
 		return VOID;
 	}
 };

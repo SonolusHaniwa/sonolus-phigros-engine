@@ -7,7 +7,7 @@ double noteHeight = 0.02;
 double flickNoteHeight = 0.04;
 double noteWidth = 0.2;
 double minSFXDistance = 0.02;
-double effectDurationTime = 0.25;
+double effectDurationTime = 0.4;
 
 #if play || watch
 class stage {
