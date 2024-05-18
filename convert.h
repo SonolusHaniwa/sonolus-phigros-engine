@@ -297,7 +297,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 
 
 int PECEasingMap[] = {
-	37, 37, 0,
+	38, 39, 0,
 	17, 18, 19,
 	1, 2, 3,
 	5, 6, 7,
@@ -331,7 +331,7 @@ string fromPEC(string txt, double bgmOffset = 0) {
 
 	struct BPM {
 		double basicBpm = 120;
-		double startBeat, endBeat, bpm;
+		double startBeat, bpm;
 		double basicTime;
 	};
 	struct Note {
@@ -365,7 +365,7 @@ string fromPEC(string txt, double bgmOffset = 0) {
 	vector<vector<string> > cmds;
 	auto pec2pgr = [&](double beat){
 		double time = 0;
-		int i = lower_bound(bpmList.begin(), bpmList.end(), beat, [&](BPM a, double b){ return a.startBeat < b; }) - bpmList.begin();
+		int i = lower_bound(bpmList.begin(), bpmList.end(), beat, [&](BPM a, double b){ return a.startBeat < b; }) - bpmList.begin() - 1;
 		return round(((beat - bpmList[i].startBeat) / bpmList[i].bpm + bpmList[i].basicTime) * bpmList[i].basicBpm * 32);
 	};
 
@@ -379,8 +379,12 @@ string fromPEC(string txt, double bgmOffset = 0) {
 	}
 	for (int i = 0; i < cmds.size(); i++) {
 		auto args = cmds[i];
-		if (args[0] == "bp") bpmList.push_back({ 120, stod(args[1]), 0, stod(args[2]) });
-		else if (args[0] == "n1" || args[0] == "n2" || args[0] == "n3" || args[0] == "n4") {
+		if (args[0] == "bp") {
+			bpmList.push_back({
+				.startBeat = stod(args[1]), 
+				.bpm = stod(args[2]),
+			});
+		} else if (args[0] == "n1" || args[0] == "n2" || args[0] == "n3" || args[0] == "n4") {
 			Note note; int pt = 1;
 			note.type = args[0][1] - '0';
 			note.lineId = stod(args[pt++]);
@@ -389,8 +393,8 @@ string fromPEC(string txt, double bgmOffset = 0) {
 			note.offsetX = stod(args[pt++]);
 			note.isAbove = stoi(args[pt++]);
 			note.isFake = stoi(args[pt++]);
-			note.speed = i + 1 < cmd.size() && cmd[i + 1][0] == '#' && cmd[i + 1].size() >= 2 ? stod(cmd[i++][1]) : 1;
-			note.size = i + 1 < cmd.size() && cmd[i + 1][0] == '&' && cmd[i + 1].size() >= 2 ? stod(cmd[i++][1]) : 1;
+			note.speed = i + 1 < cmds.size() && cmds[i + 1][0] == "#" && cmds[i + 1].size() >= 2 ? i++, stod(cmds[i][1]) : 1;
+			note.size = i + 1 < cmds.size() && cmds[i + 1][0] == "&" && cmds[i + 1].size() >= 2 ? i++, stod(cmds[i][1]) : 1;
 			// note.cmd = "";
 			notes.push_back(note);
 		} else if (args[0] == "cv" || args[0] == "cp" || args[0] == "cd" || args[0] == "ca" || args[0] == "cm" || args[0] == "cr" || args[0] == "cf") {
@@ -399,15 +403,201 @@ string fromPEC(string txt, double bgmOffset = 0) {
 			judgeline.lineId = stod(args[pt++]);
 			judgeline.startTime = stod(args[pt++]);
 			judgeline.speed = args[0] == "cv" ? stod(args[pt++]) : 1;
-			judgeline.endTime = args[0] == "cm" || args[0] == "cr" || args[0] == "cf" ? stod(args[pt++]) : startTime;
+			judgeline.endTime = args[0] == "cm" || args[0] == "cr" || args[0] == "cf" ? stod(args[pt++]) : judgeline.startTime;
 			judgeline.offsetX = args[0] == "cp" || args[0] == "cm" ? stod(args[pt++]) : 0;
 			judgeline.offsetY = args[0] == "cp" || args[0] == "cm" ? stod(args[pt++]) : 0;
 			judgeline.rotate = args[0] == "cd" || args[0] == "cr" ? stod(args[pt++]) : 0;
-			judgeline.alpha = args[0] == "ca" || args[0] == "cf" ? stod(args[pt++]) : 0;
+			judgeline.alpha = args[0] == "ca" || args[0] == "cf" ? max(0.0, stod(args[pt++])) : 0;
 			judgeline.easingType = args[0] == "cm" || args[0] == "cr" ? stoi(args[pt++]) : 0;
 			// judgeline.cmd = "";
 			judgelines.push_back(judgeline);
 		}
 	}
-	return fromPGS(json_encode(chart), bgmOffset);
+
+	// 处理 BPM 切换事件
+	sort(bpmList.begin(), bpmList.end(), [&](BPM a, BPM b){ return a.startBeat < b.startBeat; });
+	for (int i = 0; i < bpmList.size(); i++)
+		bpmList[i].basicTime = i ? bpmList[i - 1].basicTime + (bpmList[i].startBeat - bpmList[i - 1].startBeat) / bpmList[i - 1].bpm : 0;
+
+	map<int, Json::Value> judgeLineList;
+	auto createNewJudgeline = [&](int id){
+		if (judgeLineList.find(id) != judgeLineList.end()) return;
+		judgeLineList[id] = json_decode(
+			R"delimeter(
+				{
+					"bpm": 120.0,
+					"notesAbove": [],
+					"notesBelow": [],
+					"speedEvents": [],
+					"judgeLineMoveXEvents": [],
+					"judgeLineMoveYEvents": [],
+					"judgeLineRotateEvents": [],
+					"judgeLineDisappearEvents": []
+				}
+			)delimeter"
+		); return;
+	};
+
+	// 处理 Note
+	sort(notes.begin(), notes.end(), [](Note a, Note b){ return a.time < b.time; });
+	for (int i = 0; i < notes.size(); i++) {
+		createNewJudgeline(notes[i].lineId);
+		auto n = notes[i];
+		n.time = pec2pgr(n.time);
+		n.endTime = pec2pgr(n.endTime);
+		judgeLineList[notes[i].lineId][n.isAbove ? "notesAbove" : "notesBelow"].append(
+			json_decode( "{"
+				"\"type\":" + to_string(n.type) + ","
+				"\"time\":" + to_string(n.time) + ","
+				"\"positionX\":" + to_string(n.offsetX / 1024.0) + ","
+				"\"holdTime\":" + to_string(n.endTime - n.time) + ","
+				"\"speed\":" + to_string(n.speed) + ","
+				"\"floorPosition\":" + to_string(0) + ","
+				"\"isAbove\":" + to_string(n.isAbove) + ","
+				"\"isFake\":" + to_string(n.isFake) + ","
+				"\"size\":" + to_string(n.size) + ""
+			"}" )
+		);
+	}
+
+	// 处理 Judgeline
+	sort(judgelines.begin(), judgelines.end(), [](Judgeline a, Judgeline b){ return a.startTime < b.startTime; });
+	for (int i = 0; i < judgelines.size(); i++) {
+		auto e = judgelines[i];
+		double st = pec2pgr(e.startTime);
+		double et = pec2pgr(e.endTime);
+		if (st > et) continue;
+		createNewJudgeline(e.lineId);
+		if (e.type == 'v') {
+			judgeLineList[e.lineId]["speedEvents"].append(
+				json_decode( "{"
+					"\"startTime\":" + to_string(st) + ","
+					"\"endTime\":" + to_string(0) + ","
+					"\"value\":" + to_string(e.speed / 5.85) + ","
+					"\"floorPosition\":0"
+				"}" )
+			);
+		}
+		else if (e.type == 'a' || e.type == 'f') {
+			judgeLineList[e.lineId]["judgeLineDisappearEvents"].append(
+				json_decode( "{"
+					"\"startTime\":" + to_string(st) + ","
+					"\"endTime\":" + to_string(et) + ","
+					"\"start\":" + to_string(0) + ","
+					"\"end\":" + to_string(e.alpha / 255.0) + ","
+					"\"easing\":" + to_string(PECEasingMap[e.easingType]) + ""
+				"}" )
+			);
+		}
+		else if (e.type == 'p' || e.type == 'm') {
+			judgeLineList[e.lineId]["judgeLineMoveXEvents"].append(
+				json_decode( "{"
+					"\"startTime\":" + to_string(st) + ","
+					"\"endTime\":" + to_string(et) + ","
+					"\"start\":" + to_string(0) + ","
+					"\"end\":" + to_string(e.offsetX / 2048.0) + ","
+					"\"easing\":" + to_string(PECEasingMap[e.easingType]) + ""
+				"}" )
+			);
+			judgeLineList[e.lineId]["judgeLineMoveYEvents"].append(
+				json_decode( "{"
+					"\"startTime\":" + to_string(st) + ","
+					"\"endTime\":" + to_string(et) + ","
+					"\"start\":" + to_string(0) + ","
+					"\"end\":" + to_string(e.offsetY / 1400.0) + ","
+					"\"easing\":" + to_string(PECEasingMap[e.easingType]) + ""
+				"}" )
+			);
+		}
+		else if (e.type == 'd' || e.type == 'r') {
+			judgeLineList[e.lineId]["judgeLineRotateEvents"].append(
+				json_decode( "{"
+					"\"startTime\":" + to_string(st) + ","
+					"\"endTime\":" + to_string(et) + ","
+					"\"start\":" + to_string(0) + ","
+					"\"end\":" + to_string(-e.rotate) + ","
+					"\"easing\":" + to_string(PECEasingMap[e.easingType]) + ""
+				"}" )
+			);
+		}
+	}
+
+	// 格式化 json
+	for (auto &v : judgeLineList) {
+		auto &json = v.second;
+		double bpm = json["bpm"].asDouble();
+
+		// 格式化 Speed Event
+		double fp = 0;
+		for (int i = 0; i < json["speedEvents"].size(); i++) {
+			auto &v = json["speedEvents"][i];
+			if (i + 1 < json["speedEvents"].size()) v["endTime"] = json["speedEvents"][i + 1]["startTime"];
+			else v["endTime"] = 999999;
+			v["floorPosition"] = fp;
+			fp += (v["endTime"].asDouble() - v["startTime"].asDouble()) * v["value"].asDouble() / bpm * 1.875;
+			fp = round(fp);
+		}
+
+		// 格式化 Note
+		for (int i = 0; i < json["notesAbove"].size(); i++) {
+			auto &v = json["notesAbove"][i];
+			int Ls = 0, Rs = json["speedEvents"].size() - 1, ans = -1;
+			while (Ls <= Rs) {
+				int mid = (Ls + Rs) / 2;
+				if (json["speedEvents"][mid]["startTime"].asDouble() <= v["time"].asDouble()) ans = mid, Ls = mid + 1;
+				else Rs = mid - 1;
+			}
+			double v1 = json["speedEvents"][ans]["floorPosition"].asDouble();
+			double v2 = json["speedEvents"][ans]["value"].asDouble();
+			double v3 = v["time"].asDouble() - json["speedEvents"][ans]["startTime"].asDouble();
+			assert(ans != -1);
+			if (v["type"].asInt() == 3) v["speed"] = v2;
+			if (v["isFake"].asInt() == 1) v["time"] = v["time"].asDouble() + 999999;
+			v["floorPosition"] = round(v1 + v2 * v3 / bpm * 1.875);
+		}
+		for (int i = 0; i < json["notesBelow"].size(); i++) {
+			auto &v = json["notesBelow"][i];
+			int Ls = 0, Rs = json["speedEvents"].size() - 1, ans = -1;
+			while (Ls <= Rs) {
+				int mid = (Ls + Rs) / 2;
+				if (json["speedEvents"][mid]["startTime"].asDouble() <= v["time"].asDouble()) ans = mid, Ls = mid + 1;
+				else Rs = mid - 1;
+			}
+			double v1 = json["speedEvents"][ans]["floorPosition"].asDouble();
+			double v2 = json["speedEvents"][ans]["value"].asDouble();
+			double v3 = v["time"].asDouble() - json["speedEvents"][ans]["startTime"].asDouble();
+			assert(ans != -1);
+			if (v["type"].asInt() == 3) v["speed"] = v2;
+			if (v["isFake"].asInt() == 1) v["time"] = v["time"].asDouble() + 999999;
+			v["floorPosition"] = round(v1 + v2 * v3 / bpm * 1.875);
+		}
+	
+		// 格式化 MoveX Event
+		for (int i = 0; i < json["judgeLineMoveXEvents"].size(); i++) {
+			auto &v = json["judgeLineMoveXEvents"][i];
+			if (i) v["start"] = json["judgeLineMoveXEvents"][i - 1]["end"];
+		}
+
+		// 格式化 MoveY Event
+		for (int i = 0; i < json["judgeLineMoveYEvents"].size(); i++) {
+			auto &v = json["judgeLineMoveYEvents"][i];
+			if (i) v["start"] = json["judgeLineMoveYEvents"][i - 1]["end"];
+		}
+
+		// 格式化 Rotate Event
+		for (int i = 0; i < json["judgeLineRotateEvents"].size(); i++) {
+			auto &v = json["judgeLineRotateEvents"][i];
+			if (i) v["start"] = json["judgeLineRotateEvents"][i - 1]["end"];
+		}
+
+		// 格式化 Disappear Event
+		for (int i = 0; i < json["judgeLineDisappearEvents"].size(); i++) {
+			auto &v = json["judgeLineDisappearEvents"][i];
+			if (i) v["start"] = json["judgeLineDisappearEvents"][i - 1]["end"];
+		}
+	}
+
+	// 输出
+	for (auto v : judgeLineList) chart["judgeLineList"].append(v.second);
+	return json_pretty_encode(chart);
 }

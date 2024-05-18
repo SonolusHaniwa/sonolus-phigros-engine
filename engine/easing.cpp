@@ -39,7 +39,7 @@ function<let(let)> EasingFunction[] = {
     [](let x){ return If(x == 0, 0, If(x == 1, 1, Power({2, -10 * x}) * Sin((x * 10 - 0.75) * c4) + 1)); },
     [](let x){ return If(x < 0.5, EasingFunction[33](x * 2) / 2, EasingFunction[34](x * 2 - 1) / 2 + 0.5); },
     [](let x){ return If(x < 0.5, EasingFunction[34](x * 2) / 2, EasingFunction[33](x * 2 - 1) / 2 + 0.5); },
-    [](let x){ return If(x < 0.5, 0, 1); }
+    [](let x){ return If(x < 0.5, 0, 1); },
 };
 
 let getEaseValue(let id, let start, let end, let from, let to, let t) {
