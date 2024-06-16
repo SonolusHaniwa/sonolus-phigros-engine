@@ -19,5 +19,8 @@ string Scope = "phigros";
 #include"play/MoveEvent.cpp"
 #include"play/RotateEvent.cpp"
 #include"play/DisappearEvent.cpp"
-#include"play/Note.cpp"
+#include"play/notes/NormalNote.cpp"
+#include"play/notes/DragNote.cpp"
+#include"play/notes/HoldNote.cpp"
+#include"play/notes/FlickNote.cpp"
 #endif

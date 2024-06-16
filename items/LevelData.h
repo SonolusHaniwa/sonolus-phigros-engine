@@ -133,3 +133,10 @@ class LevelRawData {
 		return res;
 	}
 };
+
+template<typename T1, typename T2>
+T1 transform(T2 val) {
+	T1 res;
+	res.fromJsonObject(val.toJsonObject());
+	return res;
+}

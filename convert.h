@@ -71,11 +71,9 @@ class DisappearEventEntity: public CommonEventEntity {
 	defineArchetypeName("Phigros Judgeline Disappear Event");
 };
 
-class NoteEntity: public LevelEntity {
+class CommonNoteEntity: public LevelEntity {
 	public:
 
-	defineArchetypeName("Phigros Note");
-	defineLevelDataValue(type);
 	defineLevelDataValue(time);
 	defineLevelDataValue(positionX);
 	defineLevelDataValue(holdTime);
@@ -84,6 +82,32 @@ class NoteEntity: public LevelEntity {
 	defineLevelDataValue(isAbove);
 	defineLevelDataValue(isMulti);
 	defineLevelDataRef(judgeline);
+};
+
+class NormalNoteEntity: public CommonNoteEntity {
+	public:
+
+	defineArchetypeName("Phigros Normal Note");
+};
+
+class DragNoteEntity: public CommonNoteEntity {
+	public:
+
+	defineArchetypeName("Phigros Drag Note");
+	defineLevelDataValue(endTime);
+};
+
+class HoldNoteEntity: public CommonNoteEntity {
+	public:
+
+	defineArchetypeName("Phigros Hold Note");
+	defineLevelDataValue(endTime);
+};
+
+class FlickNoteEntity: public CommonNoteEntity {
+	public:
+
+	defineArchetypeName("Phigros Flick Note");
 };
 
 
@@ -249,8 +273,8 @@ string fromPGS(string json, double bgmOffset = 0) {
 		// 添加按键
 		for (int j = 0; j < item["notesAbove"].size(); j++) {
 			auto v = item["notesAbove"][j];
-			NoteEntity note;
-			note.type = v["type"].asInt();
+			CommonNoteEntity note;
+			// note.type = v["type"].asInt();
 			note.time = v["time"].asDouble() / bpm * 1.875;
 			note.positionX = v["positionX"].asDouble();
 			note.holdTime = v["holdTime"].asDouble() / bpm * 1.875;
@@ -260,12 +284,17 @@ string fromPGS(string json, double bgmOffset = 0) {
 			note.isMulti = 0;
 			// note.isFake = fmt == pec_conventor_version ? v["isFake"].asInt() : 0;
 			note.judgeline = judgeline;
-			levelData.append(note); INFO;
+			switch(v["type"].asInt()) {
+				case 1: levelData.append(transform<NormalNoteEntity>(note)); break;
+				case 2: levelData.append(transform<DragNoteEntity>(note)); break;
+				case 3: levelData.append(transform<HoldNoteEntity>(note)); break;
+				case 4: levelData.append(transform<FlickNoteEntity>(note)); break;
+			} INFO;
 		}
 		for (int j = 0; j < item["notesBelow"].size(); j++) {
 			auto v = item["notesBelow"][j];
-			NoteEntity note;
-			note.type = v["type"].asInt();
+			CommonNoteEntity note;
+			// note.type = v["type"].asInt();
 			note.time = v["time"].asDouble() / bpm * 1.875;
 			note.positionX = v["positionX"].asDouble();
 			note.holdTime = v["holdTime"].asDouble() / bpm * 1.875;
@@ -275,14 +304,17 @@ string fromPGS(string json, double bgmOffset = 0) {
 			note.isMulti = 0;
 			// note.isFake = fmt == pec_conventor_version ? v["isFake"].asInt() : 0;
 			note.judgeline = judgeline;
-			levelData.append(note); INFO;
+			switch(v["type"].asInt()) {
+				case 1: levelData.append(transform<NormalNoteEntity>(note)); break;
+				case 2: levelData.append(transform<DragNoteEntity>(note)); break;
+				case 3: levelData.append(transform<HoldNoteEntity>(note)); break;
+				case 4: levelData.append(transform<FlickNoteEntity>(note)); break;
+			} INFO;
 		}
 	}
-
-	// cout << levelData.toJsonObject() << endl;
 	
 	Json::Value data = levelData.toJsonObject();
-	data["formatVersion"] = 2;
+	data["formatVersion"] = 3;
 	return json_encode(data);
 }
 

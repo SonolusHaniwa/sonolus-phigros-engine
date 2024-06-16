@@ -3,3 +3,7 @@ dist/*
 !dist/banner.jpg
 main
 optimizer
+chart*
+Chart_*
+LevelData*
+make
