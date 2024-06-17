@@ -142,6 +142,22 @@ string fromPGS(string json, double bgmOffset = 0) {
 	cout << "[INFO] Total Entities: " << total << endl;
 	LevelRawData levelData;
 	levelData.append(InitializationEntity());
+	// 计算 MultiNote
+	map<double, int> noteNumber;
+	for (int i = 0; i < obj["judgeLineList"].size(); i++) {
+		auto item = obj["judgeLineList"][i];
+		double bpm = item["bpm"].asDouble();
+		for (int j = 0; j < item["notesAbove"].size(); j++) {
+			auto v = item["notesAbove"][j];
+			double time = v["time"].asDouble() / bpm * 1.875;
+			noteNumber[time]++;
+		}
+		for (int j = 0; j < item["notesBelow"].size(); j++) {
+			auto v = item["notesBelow"][j];
+			double time = v["time"].asDouble() / bpm * 1.875;
+			noteNumber[time]++;
+		}
+	}
 	for (int i = 0; i < obj["judgeLineList"].size(); i++) { 
 		auto item = obj["judgeLineList"][i];
 		double bpm = item["bpm"].asDouble();
@@ -281,7 +297,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 			note.speed = v["speed"].asDouble();
 			note.floorPosition = v["floorPosition"].asDouble();
 			note.isAbove = 1;
-			note.isMulti = 0;
+			note.isMulti = noteNumber[note.time.value] > 1;
 			// note.isFake = fmt == pec_conventor_version ? v["isFake"].asInt() : 0;
 			note.judgeline = judgeline;
 			switch(v["type"].asInt()) {
@@ -301,7 +317,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 			note.speed = v["speed"].asDouble();
 			note.floorPosition = v["floorPosition"].asDouble();
 			note.isAbove = 0;
-			note.isMulti = 0;
+			note.isMulti = noteNumber[note.time.value] > 1;
 			// note.isFake = fmt == pec_conventor_version ? v["isFake"].asInt() : 0;
 			note.judgeline = judgeline;
 			switch(v["type"].asInt()) {

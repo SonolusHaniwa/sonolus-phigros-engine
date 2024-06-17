@@ -3,11 +3,15 @@ double lockAspectRatio = 1;
 double extraWidth = 1;
 double targetAspectRatio = 1920.0 / 1080.0;
 double judgelineHeight = 0.01;
-double noteHeight = 0.02;
-double flickNoteHeight = 0.04;
 double noteWidth = 0.2;
 double minSFXDistance = 0.02;
 double effectDurationTime = 0.4;
+double noteRatio = 989.0 / 100.0;
+double dragRatio = 989.0 / 60.0;
+double flickRatio = 989.0 / 200.0;
+double hlNoteRatio = 1089.0 / 200.0;
+double hlDragRatio = 1089.0 / 160.0;
+double hlFlickRatio = 1089.0 / 300.0;
 
 #if play || watch
 class stage {

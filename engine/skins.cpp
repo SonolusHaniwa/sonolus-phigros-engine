@@ -20,4 +20,8 @@ auto skins = defineSkins<class Sprites>({
 	{"Normal Drag", Sprites.NormalDrag},
 	{"Normal Hold", Sprites.NormalHold},
 	{"Normal Flick", Sprites.NormalFlick},
+	{"Critical Note", Sprites.HLNote},
+	{"Critical Drag", Sprites.HLDrag},
+	{"Critical Hold", Sprites.HLHold},
+	{"Critical Flick", Sprites.HLFlick}
 });
