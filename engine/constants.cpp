@@ -12,6 +12,12 @@ double flickRatio = 989.0 / 200.0;
 double hlNoteRatio = 1089.0 / 200.0;
 double hlDragRatio = 1089.0 / 160.0;
 double hlFlickRatio = 1089.0 / 300.0;
+double holdHeadRatio = 989.0 / 50.0;
+double holdBodyRatio = 989.0 / 1950.0;
+double hlHoldHeadRatio = 1062.0 / 97.0;
+double hlHoldBodyRatio = 1062.0 / 1951.0;
+double hlHoldOffset = 1062.0 / 49.0;
+double judgeDistanceLimit = 0.2 * 1.5;
 
 #if play || watch
 class stage {
@@ -40,11 +46,9 @@ let b = t - stage.h;
 class judgment {
 	public:
 
-    let perfectPlus = 0.025;
-    let perfect = 0.04;
-    let great = 0.07;
-    let good = 0.1;
-    let bad = 0.125;
+    let perfect = 0.08;
+    let great = 0.16;
+    let good = 0.18;
 }judgment;
 
 class score {

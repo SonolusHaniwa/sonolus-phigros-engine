@@ -15,6 +15,18 @@ class InitializationEntity: public LevelEntity {
 	defineArchetypeName("Phigros Initialization");
 };
 
+class InputManagerEntity: public LevelEntity {
+	public:
+
+	defineArchetypeName("Phigros Input Manager");
+};
+
+class FlickInputManagerEntity: public LevelEntity {
+	public:
+	
+	defineArchetypeName("Phigros Flick Input Manager");
+};
+
 class JudgelineEntity: public LevelEntity {
 	public:
 
@@ -142,6 +154,8 @@ string fromPGS(string json, double bgmOffset = 0) {
 	cout << "[INFO] Total Entities: " << total << endl;
 	LevelRawData levelData;
 	levelData.append(InitializationEntity());
+	levelData.append(InputManagerEntity());
+	levelData.append(FlickInputManagerEntity());
 	// 计算 MultiNote
 	map<double, int> noteNumber;
 	for (int i = 0; i < obj["judgeLineList"].size(); i++) {
@@ -315,7 +329,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 			note.positionX = v["positionX"].asDouble();
 			note.holdTime = v["holdTime"].asDouble() / bpm * 1.875;
 			note.speed = v["speed"].asDouble();
-			note.floorPosition = v["floorPosition"].asDouble();
+			note.floorPosition = -1 * v["floorPosition"].asDouble();
 			note.isAbove = 0;
 			note.isMulti = noteNumber[note.time.value] > 1;
 			// note.isFake = fmt == pec_conventor_version ? v["isFake"].asInt() : 0;
@@ -330,7 +344,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 	}
 	
 	Json::Value data = levelData.toJsonObject();
-	data["formatVersion"] = 3;
+	data["formatVersion"] = 4;
 	return json_encode(data);
 }
 

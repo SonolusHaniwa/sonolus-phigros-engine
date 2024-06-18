@@ -1,7 +1,16 @@
-Map<LevelMemoryId, let, let> disallowEmptiesNow(16);
-Map<LevelMemoryId, let, let> disallowEmptiesOld(16);
+Map<LevelMemoryId, let, let> flickDisallowEmptiesNow(16);
+Map<LevelMemoryId, let, let> flickDisallowEmptiesOld(16);
 
-class ClaimManager {
+SonolusApi getFlickDirection(Touch touch) {
+    FUNCBEGIN
+    var rotate = Arctan2(touch.dy, touch.dx);
+    rotate = If(rotate > (2 * PI - PI / 4), rotate - 2 * PI, rotate); // 判定范围: -1 / 4 * PI ~ 7 / 4 * PI
+    Return(Floor((rotate + PI / 4) / (PI / 2)));
+    return VAR;
+}
+double minFlickVR = 0.1;
+
+class FlickClaimManager {
 	public:
 
 	Map<LevelMemoryId, let, let> claimed = Map<LevelMemoryId, let, let>(16);
@@ -50,7 +59,9 @@ class ClaimManager {
 		ClaimInfo origin = getInfo(index);
 		var res = -1, minDis = 1e9;
 		FOR (i, 0, touches.size, 1) {
-			IF (touches[i].started == 0) CONTINUE; FI
+			IF (touches[i].vr < minFlickVR) CONTINUE; FI
+            var id = flickDisallowEmptiesNow.indexOf(touches[i].id);
+            IF (id != -1 && flickDisallowEmptiesNow.getValById(id) == getFlickDirection(touches[i])) CONTINUE; FI
 			IF (origin.contain(touches[i].x, touches[i].y) == 0) CONTINUE; FI
 
 			let dis = origin.getDis(touches[i].x, touches[i].y);
@@ -83,7 +94,8 @@ class ClaimManager {
 		WHILE (true) {
 			var touchIndex = findBestTouchIndex(currentId);
 			IF (touchIndex == -1) BREAK; FI
-			disallowEmptiesNow.set(touchIndex, 1);
+			flickDisallowEmptiesNow.set(touchIndex, getFlickDirection(touches[touchIndex]));
+			Debuglog(touchIndex); Debuglog(flickDisallowEmptiesNow.indexOf(touchIndex));
 			
 			let claimIndex = claimed.indexOf(touchIndex);
 			IF (claimIndex == -1) {
@@ -116,41 +128,44 @@ class ClaimManager {
 	}
 };
 
-ClaimManager claimStartManager = ClaimManager();
-SonolusApi claimStart(let index) {
+FlickClaimManager flickClaimStartManager = FlickClaimManager();
+SonolusApi flickClaimStart(let index) {
 	FUNCBEGIN
-	claimStartManager.claim(index);
+	flickClaimStartManager.claim(index);
 	return VOID;
 }
-SonolusApi getClaimedStart(let index) {
+SonolusApi flickGetClaimedStart(let index) {
 	FUNCBEGIN
-	Return(claimStartManager.getClaimedTouchIndex(index));
+	Return(flickClaimStartManager.getClaimedTouchIndex(index));
 	return VAR;
 }
 
-class InputManager: public Archetype {
+class FlickInputManager: public Archetype {
 	public:
 
-	static constexpr const char* name = "Phigros Input Manager";
+	static constexpr const char* name = "Phigros Flick Input Manager";
 
 	SonolusApi spawnOrder() { return 1; }
 	SonolusApi shouldSpawn() { return 1; }
 	
 	SonolusApi updateSequential() {
 		FUNCBEGIN
-		claimStartManager.clear();
-		disallowEmptiesOld.clear();
-		FOR (i, 0, disallowEmptiesNow.size, 1) {
-			disallowEmptiesOld.set(
-				disallowEmptiesNow.getKeyById(i), 
-				disallowEmptiesNow.getValById(i)
+		flickClaimStartManager.clear();
+		flickDisallowEmptiesOld.clear();
+		FOR (i, 0, flickDisallowEmptiesNow.size, 1) {
+			flickDisallowEmptiesOld.set(
+				flickDisallowEmptiesNow.getKeyById(i), 
+				flickDisallowEmptiesNow.getValById(i)
 			);
 		} DONE
-		disallowEmptiesNow.clear();
+		flickDisallowEmptiesNow.clear();
 		FOR (i, 0, touches.size, 1) {
-			IF (disallowEmptiesOld.indexOf(touches[i].id) != -1)
-				disallowEmptiesNow.add(touches[i].id, 1); 
-			FI
+			var id = flickDisallowEmptiesOld.indexOf(touches[i].id);
+            IF (id == -1) CONTINUE; FI
+            var d = flickDisallowEmptiesOld.getValById(id);
+			Debuglog(touches[i].id); Debuglog(d); Debuglog(getFlickDirection(touches[i]));
+            IF (getFlickDirection(touches[i]) != d && touches[i].vr >= minFlickVR) CONTINUE; FI
+			flickDisallowEmptiesNow.add(touches[i].id, d); 
 		} DONE
 		return VOID;
 	}

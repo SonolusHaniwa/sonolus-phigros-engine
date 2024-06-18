@@ -8,20 +8,24 @@ class Sprites {
 	int HLNote = 2;
 	int NormalDrag = 3;
 	int HLDrag = 4;
-	int NormalHold = 5;
-	int HLHold = 6;
+	int NormalHoldHead = 5;
+	int HLHoldHead = 6;
 	int NormalFlick = 7;
 	int HLFlick = 8;
+	int NormalHoldBody = 9;
+	int HLHoldBody = 10;
 }Sprites;
 
 auto skins = defineSkins<class Sprites>({
 	{"Judgeline", Sprites.Judgeline},
 	{"Normal Note", Sprites.NormalNote},
 	{"Normal Drag", Sprites.NormalDrag},
-	{"Normal Hold", Sprites.NormalHold},
+	{"Normal Hold Head", Sprites.NormalHoldHead},
 	{"Normal Flick", Sprites.NormalFlick},
 	{"Critical Note", Sprites.HLNote},
 	{"Critical Drag", Sprites.HLDrag},
-	{"Critical Hold", Sprites.HLHold},
-	{"Critical Flick", Sprites.HLFlick}
+	{"Critical Hold Head", Sprites.HLHoldHead},
+	{"Critical Flick", Sprites.HLFlick},
+	{"Normal Hold", Sprites.NormalHoldBody},
+	{"Critical Hold", Sprites.HLHoldBody}
 });

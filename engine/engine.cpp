@@ -14,11 +14,13 @@ string Scope = "phigros";
 
 #if play
 #include"play/Initialization.cpp"
+#include"play/InputManager.cpp"
+#include"play/FlickInputManager.cpp"
 #include"play/Judgeline.cpp"
-#include"play/SpeedEvent.cpp"
-#include"play/MoveEvent.cpp"
-#include"play/RotateEvent.cpp"
-#include"play/DisappearEvent.cpp"
+#include"play/events/SpeedEvent.cpp"
+#include"play/events/MoveEvent.cpp"
+#include"play/events/RotateEvent.cpp"
+#include"play/events/DisappearEvent.cpp"
 #include"play/notes/NormalNote.cpp"
 #include"play/notes/DragNote.cpp"
 #include"play/notes/HoldNote.cpp"

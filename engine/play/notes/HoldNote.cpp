@@ -76,23 +76,27 @@ class HoldNote: public Archetype {
 		var vec1Length = noteWidth, vec1X = vec1Length * Cos(rotate), vec1Y = vec1Length * Sin(rotate);
 		var x1 = x - vec1X, y1 = y - vec1Y, x2 = x + vec1X, y2 = y + vec1Y;
 		var hx1 = hx - vec1X, hy1 = hy - vec1Y, hx2 = hx + vec1X, hy2 = hy + vec1Y;
-		var vec2Length = 0.02;
+		var vec2Length = noteWidth / If(isMulti, hlHoldHeadRatio, holdHeadRatio);
 		var vec2X = vec2Length * Cos(rotate + PI / 2), vec2Y = vec2Length * Sin(rotate + PI / 2);
-		var x3 = x1 - vec2X, y3 = y1 - vec2Y;
-		var x4 = x1 + vec2X, y4 = y1 + vec2Y;
-		var x5 = x2 + vec2X, y5 = y2 + vec2Y;
-		var x6 = x2 - vec2X, y6 = y2 - vec2Y;
-		var hx3 = x1, hy3 = y1;
-		var hx4 = hx1, hy4 = hy1;
-		var hx5 = hx2, hy5 = hy2;
-		var hx6 = x2, hy6 = y2;
+		var vec3X = noteWidth / hlHoldOffset * Cos(rotate - PI / 2), vec3Y = noteWidth / hlHoldOffset * Sin(rotate - PI / 2);
+		var x3 = x1 - vec3X, y3 = y1;
+		var x4 = x1 + 2 * vec2X, y4 = y1 + 2 * vec2Y;
+		var x5 = x2 + 2 * vec2X, y5 = y2 + 2 * vec2Y;
+		var x6 = x2, y6 = y2;
+		IF (isMulti) {
+			x3 = x3 + vec3X; y3 = y3 + vec3Y;
+			x4 = x4 + vec3X; y4 = y4 + vec3Y;
+			x5 = x5 + vec3X; y5 = y5 + vec3Y;
+			x6 = x6 + vec3X; y6 = y6 + vec3Y;
+		} FI
 		// 粒子效果不用转
 		effectX1 = x - noteWidth, effectY1 = y - noteWidth;
 		effectX2 = x - noteWidth, effectY2 = y + noteWidth;
 		effectX3 = x + noteWidth, effectY3 = y + noteWidth;
 		effectX4 = x + noteWidth, effectY4 = y - noteWidth;
 		
-		Draw(If(isMulti, Sprites.HLHold, Sprites.NormalHold), hx3, hy3, hx4, hy4, hx5, hy5, hx6, hy6, 10000, 1);
+		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 10000, 1);
+		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 10000, 1);
 		return VOID;
 	}
 };

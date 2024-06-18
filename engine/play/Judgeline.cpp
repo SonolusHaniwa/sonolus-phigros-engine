@@ -42,7 +42,6 @@ class Judgeline: public Archetype {
 	SonolusApi jump(Variable<EntityMemoryId> &id, int nextId, bool isSpeed = false) {
 		FUNCBEGIN
 		WHILE (id != 0) {
-			Debuglog(id); Debuglog(EntityDataArray[id].get(1));
 			IF (EntityDataArray[id].get(1) > times.now) BREAK; FI
 			IF (isSpeed) baseFloorPosition = baseFloorPosition + 
 				(EntityDataArray[id].get(1) - EntityDataArray[id].get(0)) * EntityDataArray[id].get(2); FI

@@ -79,6 +79,8 @@ int main(int argc, char** argv) {
     build<
         // Replace with your archetypes here
         Initialization,
+        InputManager,
+        FlickInputManager,
         Judgeline,
         SpeedEvent,
         MoveXEvent,
