@@ -22,6 +22,8 @@ class DragNote: public Archetype {
 	Variable<EntityMemoryId> effectY3;
 	Variable<EntityMemoryId> effectX4;
 	Variable<EntityMemoryId> effectY4;
+	Variable<EntityMemoryId> inputTimeMax;
+	Variable<EntityMemoryId> inputTimeMin;
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
@@ -32,24 +34,48 @@ class DragNote: public Archetype {
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		played = false;
+		inputTimeMax = time + judgment.good;
+		inputTimeMin = time - judgment.good;
 		return VOID;
 	}
 
-	SonolusApi complete(let time) {
+	SonolusApi complete(let hitTime) {
 		FUNCBEGIN
-		Play(Clips.Drag, minSFXDistance);
-		SpawnParticleEffect(Effects.perfect, 
-			effectX1, effectY1, effectX2, effectY2,
-			effectX3, effectY3, effectX4, effectY4,
-			effectDurationTime, 0);
+		IF (Abs(hitTime - time) <= judgment.good) Play(Clips.Drag, minSFXDistance); FI
+		IF (Abs(hitTime - time) <= judgment.good) {
+			SpawnParticleEffect(Effects.perfect, 
+				effectX1, effectY1, effectX2, effectY2,
+				effectX3, effectY3, effectX4, effectY4,
+				effectDurationTime, 0);
+			EntityInput.set(0, 1); 
+		} FI
+		IF (Abs(hitTime - time) > judgment.good) EntityInput.set(0, 0); FI
+		EntityInput.set(1, hitTime - time);
+		EntityDespawn.set(0, 1);
 		return VOID;
 	}
 	SonolusApi updateSequential() {
 		FUNCBEGIN
 		IF (times.now < 0) Return(0); FI
-		IF (times.now > time) complete(times.now); EntityDespawn.set(0, 1); FI
 		IF (isAbove) positionY = floorPosition - line.get(5);
 		ELSE positionY = floorPosition + line.get(5); FI
+
+		// Claim
+		IF (times.now < inputTimeMin) Return(0); FI
+		IF (times.now > inputTimeMax) complete(-1); FI
+		IF (played) {
+			IF (times.now < time) Return(0); FI
+			complete(times.now);
+			Return(0);
+		} FI
+		return VOID;
+	}
+
+	SonolusApi touch() {
+		FUNCBEGIN
+		IF (played) Return(0); FI
+		IF (times.now < inputTimeMin) Return(0); FI
+		IF (hasTouch(EntityInfo.get(0))) played = 1; FI
 		return VOID;
 	}
 
@@ -58,13 +84,13 @@ class DragNote: public Archetype {
 		IF (times.now < 0) Return(0); FI
 		var dx = positionX * stage.w * 0.05625;
 		var dy = positionY * speed * stage.h * 0.6;
-		dy = If(isAbove, Max(0, dy), Min(0, dy));
 		
 		var rotate = line.get(3);
 		var r = Power({dx * dx + dy * dy, 0.5});
 		var angle = Arctan2(dy, dx);
 		var newAngle = angle + rotate;
 		var x = r * Cos(newAngle) + line.get(1), y = r * Sin(newAngle) + line.get(2);
+		var x0 = dx * Cos(rotate) + line.get(1), y0 = dx * Sin(rotate) + line.get(2);
 		
 		var vec1Length = noteWidth, vec1X = vec1Length * Cos(rotate), vec1Y = vec1Length * Sin(rotate);
 		var x1 = x - vec1X, y1 = y - vec1Y, x2 = x + vec1X, y2 = y + vec1Y;
@@ -75,12 +101,12 @@ class DragNote: public Archetype {
 		var x5 = x2 + vec2X, y5 = y2 + vec2Y;
 		var x6 = x2 - vec2X, y6 = y2 - vec2Y;
 		// 粒子效果不用转
-		effectX1 = x - noteWidth, effectY1 = y - noteWidth;
-		effectX2 = x - noteWidth, effectY2 = y + noteWidth;
-		effectX3 = x + noteWidth, effectY3 = y + noteWidth;
-		effectX4 = x + noteWidth, effectY4 = y - noteWidth;
+		effectX1 = x0 - noteWidth, effectY1 = y0 - noteWidth;
+		effectX2 = x0 - noteWidth, effectY2 = y0 + noteWidth;
+		effectX3 = x0 + noteWidth, effectY3 = y0 + noteWidth;
+		effectX4 = x0 + noteWidth, effectY4 = y0 - noteWidth;
 		
-		Draw(If(isMulti, Sprites.HLDrag, Sprites.NormalDrag), x3, y3, x4, y4, x5, y5, x6, y6, 10000, 1);
+		Draw(If(isMulti, Sprites.HLDrag, Sprites.NormalDrag), x3, y3, x4, y4, x5, y5, x6, y6, 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1));
 		return VOID;
 	}
 };

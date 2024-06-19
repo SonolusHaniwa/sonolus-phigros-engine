@@ -48,7 +48,7 @@ class judgment {
 
     let perfect = 0.08;
     let great = 0.16;
-    let good = 0.18;
+    let good = 0.22;
 }judgment;
 
 class score {

@@ -128,6 +128,18 @@ SonolusApi getClaimedStart(let index) {
 	return VAR;
 }
 
+SonolusApi hasTouch(let index) {
+	FUNCBEGIN
+	ClaimManager::ClaimInfo info = claimStartManager.getInfo(index);
+	FOR (i, 0, touches.size, 1) {
+		IF (info.contain(touches[i].x, touches[i].y)) {
+			Return(1);
+		} FI
+	} DONE
+	Return(0);
+	return VAR;
+}
+
 class InputManager: public Archetype {
 	public:
 

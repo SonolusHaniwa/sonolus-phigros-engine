@@ -1,14 +1,20 @@
 Map<LevelMemoryId, let, let> flickDisallowEmptiesNow(16);
 Map<LevelMemoryId, let, let> flickDisallowEmptiesOld(16);
+Map<LevelMemoryId, let, let> lastdx(16);
+Map<LevelMemoryId, let, let> lastdy(16);
+Map<LevelMemoryId, let, let> touchDistance(16);
+Variable<LevelMemoryId> lastUpdateTime;
+Variable<LevelMemoryId> allowClaim;
 
-SonolusApi getFlickDirection(Touch touch) {
-    FUNCBEGIN
-    var rotate = Arctan2(touch.dy, touch.dx);
-    rotate = If(rotate > (2 * PI - PI / 4), rotate - 2 * PI, rotate); // 判定范围: -1 / 4 * PI ~ 7 / 4 * PI
-    Return(Floor((rotate + PI / 4) / (PI / 2)));
-    return VAR;
-}
-double minFlickVR = 0.1;
+double minFlickV = 3;
+double updateTimeLimit = 1.0 / 60.0; // 目标 fps: 60
+SonolusApi calcFlickV(let dx, let dy, let deltaTime) {
+	FUNCBEGIN
+	var d = Power({dx * dx + dy * dy, 0.5});
+	var t = deltaTime;
+	Return(d / t);
+	return VAR;
+};
 
 class FlickClaimManager {
 	public:
@@ -59,9 +65,9 @@ class FlickClaimManager {
 		ClaimInfo origin = getInfo(index);
 		var res = -1, minDis = 1e9;
 		FOR (i, 0, touches.size, 1) {
-			IF (touches[i].vr < minFlickVR) CONTINUE; FI
-            var id = flickDisallowEmptiesNow.indexOf(touches[i].id);
-            IF (id != -1 && flickDisallowEmptiesNow.getValById(id) == getFlickDirection(touches[i])) CONTINUE; FI
+			IF (calcFlickV(touches[i].dx, touches[i].dy, times.delta) < minFlickV) CONTINUE; FI
+			var id = flickDisallowEmptiesNow.indexOf(touches[i].id);
+			IF (id != -1) CONTINUE; FI
 			IF (origin.contain(touches[i].x, touches[i].y) == 0) CONTINUE; FI
 
 			let dis = origin.getDis(touches[i].x, touches[i].y);
@@ -94,9 +100,7 @@ class FlickClaimManager {
 		WHILE (true) {
 			var touchIndex = findBestTouchIndex(currentId);
 			IF (touchIndex == -1) BREAK; FI
-			flickDisallowEmptiesNow.set(touchIndex, getFlickDirection(touches[touchIndex]));
-			Debuglog(touchIndex); Debuglog(flickDisallowEmptiesNow.indexOf(touchIndex));
-			
+			flickDisallowEmptiesNow.set(touchIndex, 1);
 			let claimIndex = claimed.indexOf(touchIndex);
 			IF (claimIndex == -1) {
 				claimed.set(touchIndex, currentId); 
@@ -131,6 +135,7 @@ class FlickClaimManager {
 FlickClaimManager flickClaimStartManager = FlickClaimManager();
 SonolusApi flickClaimStart(let index) {
 	FUNCBEGIN
+	IF (allowClaim) Return(0); FI
 	flickClaimStartManager.claim(index);
 	return VOID;
 }
@@ -150,6 +155,14 @@ class FlickInputManager: public Archetype {
 	
 	SonolusApi updateSequential() {
 		FUNCBEGIN
+		IF (times.now - lastUpdateTime < updateTimeLimit) {
+			FOR (i, 0, touches.size, 1) {
+				lastdx.set(touches[i].id, touches[i].dx);
+				lastdy.set(touches[i].id, touches[i].dy);
+			} DONE
+			allowClaim = 0;
+			Return(0);
+		} FI
 		flickClaimStartManager.clear();
 		flickDisallowEmptiesOld.clear();
 		FOR (i, 0, flickDisallowEmptiesNow.size, 1) {
@@ -160,13 +173,22 @@ class FlickInputManager: public Archetype {
 		} DONE
 		flickDisallowEmptiesNow.clear();
 		FOR (i, 0, touches.size, 1) {
+			var lastdxIndex = lastdx.indexOf(touches[i].id);
+			var lastdyIndex = lastdy.indexOf(touches[i].id);
+			var lastdxValue = If(lastdxIndex == -1, 0, lastdx.getValById(lastdxIndex));
+			var lastdyValue = If(lastdyIndex == -1, 0, lastdy.getValById(lastdyIndex));
+			var dx = lastdxValue + touches[i].dx;
+			var dy = lastdyValue + touches[i].dy;
+			var timeDis = times.now - lastUpdateTime;
+            IF (calcFlickV(dx, dy, timeDis) < minFlickV) CONTINUE; FI
 			var id = flickDisallowEmptiesOld.indexOf(touches[i].id);
             IF (id == -1) CONTINUE; FI
-            var d = flickDisallowEmptiesOld.getValById(id);
-			Debuglog(touches[i].id); Debuglog(d); Debuglog(getFlickDirection(touches[i]));
-            IF (getFlickDirection(touches[i]) != d && touches[i].vr >= minFlickVR) CONTINUE; FI
-			flickDisallowEmptiesNow.add(touches[i].id, d); 
+			flickDisallowEmptiesNow.add(touches[i].id, 1); 
+			// Debuglog(flickDisallowEmptiesNow.size);
 		} DONE
+		lastUpdateTime = times.now;
+		lastdx.clear(); lastdy.clear();
+		allowClaim = 1;
 		return VOID;
 	}
 };

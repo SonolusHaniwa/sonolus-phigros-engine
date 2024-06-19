@@ -22,6 +22,8 @@ class HoldNote: public Archetype {
 	Variable<EntityMemoryId> effectY3;
 	Variable<EntityMemoryId> effectX4;
 	Variable<EntityMemoryId> effectY4;
+	Variable<EntityMemoryId> inputTimeMax;
+	Variable<EntityMemoryId> inputTimeMin;
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
@@ -32,16 +34,15 @@ class HoldNote: public Archetype {
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		played = false;
+		inputTimeMax = time + judgment.good;
+		inputTimeMin = time - judgment.good;
 		return VOID;
 	}
 
 	SonolusApi complete(let time) {
 		FUNCBEGIN
 		Play(Clips.Hold, minSFXDistance);
-		SpawnParticleEffect(Effects.perfect, 
-			effectX1, effectY1, effectX2, effectY2,
-			effectX3, effectY3, effectX4, effectY4,
-			effectDurationTime, 0);
+		
 		return VOID;
 	}
 	SonolusApi updateSequential() {
@@ -72,6 +73,7 @@ class HoldNote: public Archetype {
 		var hnewAngle = hangle + rotate;
 		var x = r * Cos(newAngle) + line.get(1), y = r * Sin(newAngle) + line.get(2);
 		var hx = hr * Cos(hnewAngle) + line.get(1), hy = hr * Sin(hnewAngle) + line.get(2);
+		var x0 = dx * Cos(rotate) + line.get(1), y0 = dx * Sin(rotate) + line.get(2);
 		
 		var vec1Length = noteWidth, vec1X = vec1Length * Cos(rotate), vec1Y = vec1Length * Sin(rotate);
 		var x1 = x - vec1X, y1 = y - vec1Y, x2 = x + vec1X, y2 = y + vec1Y;
@@ -90,10 +92,10 @@ class HoldNote: public Archetype {
 			x6 = x6 + vec3X; y6 = y6 + vec3Y;
 		} FI
 		// 粒子效果不用转
-		effectX1 = x - noteWidth, effectY1 = y - noteWidth;
-		effectX2 = x - noteWidth, effectY2 = y + noteWidth;
-		effectX3 = x + noteWidth, effectY3 = y + noteWidth;
-		effectX4 = x + noteWidth, effectY4 = y - noteWidth;
+		effectX1 = x0 - noteWidth, effectY1 = y0 - noteWidth;
+		effectX2 = x0 - noteWidth, effectY2 = y0 + noteWidth;
+		effectX3 = x0 + noteWidth, effectY3 = y0 + noteWidth;
+		effectX4 = x0 + noteWidth, effectY4 = y0 - noteWidth;
 		
 		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 10000, 1);
 		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 10000, 1);
