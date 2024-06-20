@@ -13,7 +13,6 @@ class HoldNote: public Archetype {
 	defineImports(isFake);
 	defineImports(judgeline);
 	Variable<EntityMemoryId> positionY;
-	Variable<EntityMemoryId> played;
 	Variable<EntityMemoryId> effectX1;
 	Variable<EntityMemoryId> effectY1;
 	Variable<EntityMemoryId> effectX2;
@@ -24,34 +23,85 @@ class HoldNote: public Archetype {
 	Variable<EntityMemoryId> effectY4;
 	Variable<EntityMemoryId> inputTimeMax;
 	Variable<EntityMemoryId> inputTimeMin;
+	Variable<EntityMemoryId> isActive;
+	Variable<EntityMemoryId> released;
+	Variable<EntityMemoryId> effectId;
+	Variable<EntityMemoryId> isPerfect;
+	Variable<EntityMemoryId> isGood;
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
-	SonolusApi spawnOrder() { return 1; }
-	SonolusApi shouldSpawn() { return true; }
-	
+	SonolusApi spawnOrder() { return 2; }
+	SonolusApi shouldSpawn() { return 1; }
 
 	SonolusApi preprocess() {
 		FUNCBEGIN
-		played = false;
+		isActive = false;
+		released = false;
+		isPerfect = 0;
 		inputTimeMax = time + judgment.good;
 		inputTimeMin = time - judgment.good;
+		effectId = -1;
 		return VOID;
 	}
 
-	SonolusApi complete(let time) {
-		FUNCBEGIN
-		Play(Clips.Hold, minSFXDistance);
-		
-		return VOID;
-	}
 	SonolusApi updateSequential() {
 		FUNCBEGIN
 		IF (times.now < 0) Return(0); FI
-		IF (times.now > time && played == false) played = true; Play(Clips.Note, minSFXDistance); FI
-		IF (times.now > time + holdTime) complete(times.now); EntityDespawn.set(0, 1); FI
+		IF (times.now > time + holdTime) {
+			IF (isActive && !released) {
+				IF (isPerfect) EntityInput.set(0, 1);
+				ELSE EntityInput.set(0, 2); FI
+				IF (effectId != -1) {
+					DestroyParticleEffect(effectId);
+				} FI
+			} ELSE {
+				IF (isGood) EntityInput.set(0, 3);
+				ELSE EntityInput.set(0, 0); FI
+			} FI
+			Debuglog(EntityInput.get(0));
+			EntityDespawn.set(0, 1);
+		} FI
 		IF (isAbove) positionY = floorPosition - line.get(5);
 		ELSE positionY = floorPosition + line.get(5); FI
+
+		// 检测
+		IF (isActive && !released && times.now < time + holdTime - holdTailTime) {
+			IF (!hasTouch(EntityInfo.get(0))) {
+				released = true;
+				IF (effectId != -1) {
+					DestroyParticleEffect(effectId);
+					effectId = -1;
+				} FI
+				Return(0);
+			} FI
+		} FI
+		// Claim
+		IF (isActive || released) Return(0); FI
+		IF (times.now < inputTimeMin) Return(0); FI
+		IF (times.now > inputTimeMax) {
+			isActive = true;
+			released = true;
+			EntityInput.set(1, times.now - time);
+			Return(0);
+		} FI
+		claimStart(EntityInfo.get(0));
+		return VOID;
+	}
+
+	SonolusApi touch() {
+		FUNCBEGIN
+		IF (isActive) Return(0); FI
+		IF (times.now < inputTimeMin) Return(0); FI
+		IF (times.now > inputTimeMax) Return(0); FI
+		let index = getClaimedStart(EntityInfo.get(0));
+		IF (index == -1) Return(0); FI
+
+		isActive = true;
+		IF (Abs(times.now - time) <= judgment.perfect) isPerfect = 1; FI
+		IF (Abs(times.now - time) > judgment.great) isGood = 1; released = true; FI
+		IF (Abs(times.now - time) <= judgment.great) Play(Clips.Note, minSFXDistance); FI
+		EntityInput.set(1, times.now - time);
 		return VOID;
 	}
 
@@ -96,9 +146,25 @@ class HoldNote: public Archetype {
 		effectX2 = x0 - noteWidth, effectY2 = y0 + noteWidth;
 		effectX3 = x0 + noteWidth, effectY3 = y0 + noteWidth;
 		effectX4 = x0 + noteWidth, effectY4 = y0 - noteWidth;
+		// 画粒子效果
+		IF (isActive && !released) {
+			IF (effectId == -1) {
+				effectId = SpawnLoopedParticleEffect(If(isPerfect, Effects.perfect, Effects.great), 
+					effectX1, effectY1, 
+					effectX2, effectY2, 
+					effectX3, effectY3, 
+					effectX4, effectY4, effectDurationTime / 2);
+			} ELSE {
+				MoveParticleEffect(effectId, 
+					effectX1, effectY1, 
+					effectX2, effectY2, 
+					effectX3, effectY3, 
+					effectX4, effectY4);
+			} FI
+		} FI
 		
-		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 10000, 1);
-		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 10000, 1);
+		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 10000, If(released, 0.4, 1));
+		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 10000, If(released, 0.4, 1));
 		return VOID;
 	}
 };

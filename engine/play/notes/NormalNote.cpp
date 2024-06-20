@@ -27,9 +27,8 @@ class NormalNote: public Archetype {
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
-	SonolusApi spawnOrder() { return 1; }
-	SonolusApi shouldSpawn() { return true; }
-
+	SonolusApi spawnOrder() { return 2; }
+	SonolusApi shouldSpawn() { return 1; }
 
 	SonolusApi preprocess() {
 		FUNCBEGIN
@@ -41,19 +40,19 @@ class NormalNote: public Archetype {
 
 	SonolusApi complete(let hitTime) {
 		FUNCBEGIN
-		IF (Abs(hitTime - time) <= judgment.good) Play(Clips.Note, minSFXDistance); FI
+		IF (Abs(hitTime - time) <= judgment.great) Play(Clips.Note, minSFXDistance); FI
 		IF (Abs(hitTime - time) <= judgment.perfect) {
 			SpawnParticleEffect(Effects.perfect, 
 				effectX1, effectY1, effectX2, effectY2,
 				effectX3, effectY3, effectX4, effectY4,
-				effectDurationTime, 0);
+				effectDurationTime);
 			EntityInput.set(0, 1); 
 		} FI
 		IF (Abs(hitTime - time) > judgment.perfect && Abs(hitTime - time) <= judgment.great) {
 		SpawnParticleEffect(Effects.great, 
 			effectX1, effectY1, effectX2, effectY2,
 			effectX3, effectY3, effectX4, effectY4,
-			effectDurationTime, 0);
+			effectDurationTime);
 			EntityInput.set(0, 2); 
 		} FI
 		IF (Abs(hitTime - time) > judgment.great && Abs(hitTime - time) <= judgment.good) EntityInput.set(0, 3); FI

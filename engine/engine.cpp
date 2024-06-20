@@ -14,6 +14,7 @@ string Scope = "phigros";
 
 #if play
 #include"play/Initialization.cpp"
+#include"play/StageController.cpp"
 #include"play/InputManager.cpp"
 #include"play/FlickInputManager.cpp"
 #include"play/Judgeline.cpp"

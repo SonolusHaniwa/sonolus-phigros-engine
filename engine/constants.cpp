@@ -3,7 +3,7 @@ double lockAspectRatio = 1;
 double extraWidth = 1;
 double targetAspectRatio = 1920.0 / 1080.0;
 double judgelineHeight = 0.01;
-double noteWidth = 0.2;
+double noteWidth = 0.23;
 double minSFXDistance = 0.02;
 double effectDurationTime = 0.4;
 double noteRatio = 989.0 / 100.0;
@@ -17,7 +17,8 @@ double holdBodyRatio = 989.0 / 1950.0;
 double hlHoldHeadRatio = 1062.0 / 97.0;
 double hlHoldBodyRatio = 1062.0 / 1951.0;
 double hlHoldOffset = 1062.0 / 49.0;
-double judgeDistanceLimit = 0.2 * 1.5;
+double judgeDistanceLimit = noteWidth * 1.5;
+double holdTailTime = 0.16;
 
 #if play || watch
 class stage {
@@ -55,6 +56,6 @@ class score {
 	public:
 
 	let perfect = 1;
-	let great = 0.8;
-	let good = 0.5;
+	let great = 0.65;
+	let good = 0;
 }score;

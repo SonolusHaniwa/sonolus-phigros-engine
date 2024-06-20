@@ -27,9 +27,8 @@ class DragNote: public Archetype {
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
-	SonolusApi spawnOrder() { return 1; }
-	SonolusApi shouldSpawn() { return true; }
-	
+	SonolusApi spawnOrder() { return 2; }
+	SonolusApi shouldSpawn() { return 1; }
 
 	SonolusApi preprocess() {
 		FUNCBEGIN
@@ -46,7 +45,7 @@ class DragNote: public Archetype {
 			SpawnParticleEffect(Effects.perfect, 
 				effectX1, effectY1, effectX2, effectY2,
 				effectX3, effectY3, effectX4, effectY4,
-				effectDurationTime, 0);
+				effectDurationTime);
 			EntityInput.set(0, 1); 
 		} FI
 		IF (Abs(hitTime - time) > judgment.good) EntityInput.set(0, 0); FI

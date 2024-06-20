@@ -20,8 +20,8 @@ class Judgeline: public Archetype {
 	Variable<EntityMemoryId> disappearEventId;
 	Variable<EntityMemoryId> baseFloorPosition;
 
-	SonolusApi spawnOrder() { return 0; }
-	SonolusApi shouldSpawn() { return true; }
+	SonolusApi spawnOrder() { return 1; }
+	SonolusApi shouldSpawn() { return 1; }
 
 	SonolusApi preprocess() {
 		FUNCBEGIN

@@ -6,7 +6,7 @@ Map<LevelMemoryId, let, let> touchDistance(16);
 Variable<LevelMemoryId> lastUpdateTime;
 Variable<LevelMemoryId> allowClaim;
 
-double minFlickV = 3;
+double minFlickV = 0.5;
 double updateTimeLimit = 1.0 / 60.0; // 目标 fps: 60
 SonolusApi calcFlickV(let dx, let dy, let deltaTime) {
 	FUNCBEGIN

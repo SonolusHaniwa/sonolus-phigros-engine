@@ -508,8 +508,12 @@ void Spawn(FuncNode id, vector<FuncNode> data) {
     R(FuncNode(RuntimeFunction.Spawn, data));
 }
 
-void SpawnParticleEffect(FuncNode id, FuncNode x1, FuncNode y1, FuncNode x2, FuncNode y2, FuncNode x3, FuncNode y3, FuncNode x4, FuncNode y4, FuncNode duration, FuncNode isLooped) {
-    R(FuncNode(RuntimeFunction.SpawnParticleEffect, {id, x1, y1, x2, y2, x3, y3, x4, y4, duration, isLooped}));
+void SpawnParticleEffect(FuncNode id, FuncNode x1, FuncNode y1, FuncNode x2, FuncNode y2, FuncNode x3, FuncNode y3, FuncNode x4, FuncNode y4, FuncNode duration) {
+    R(FuncNode(RuntimeFunction.SpawnParticleEffect, {id, x1, y1, x2, y2, x3, y3, x4, y4, duration, 0}));
+}
+
+FuncNode SpawnLoopedParticleEffect(FuncNode id, FuncNode x1, FuncNode y1, FuncNode x2, FuncNode y2, FuncNode x3, FuncNode y3, FuncNode x4, FuncNode y4, FuncNode duration) {
+    return FuncNode(RuntimeFunction.SpawnParticleEffect, {id, x1, y1, x2, y2, x3, y3, x4, y4, duration, 1});
 }
 
 FuncNode StackEnter(FuncNode size) {

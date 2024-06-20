@@ -15,6 +15,12 @@ class InitializationEntity: public LevelEntity {
 	defineArchetypeName("Phigros Initialization");
 };
 
+class StageControllerEntity: public LevelEntity {
+	public:
+
+	defineArchetypeName("Phigros Stage Controller");
+};
+
 class InputManagerEntity: public LevelEntity {
 	public:
 
@@ -154,6 +160,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 	cout << "[INFO] Total Entities: " << total << endl;
 	LevelRawData levelData;
 	levelData.append(InitializationEntity());
+	levelData.append(StageControllerEntity());
 	levelData.append(InputManagerEntity());
 	levelData.append(FlickInputManagerEntity());
 	// 计算 MultiNote
