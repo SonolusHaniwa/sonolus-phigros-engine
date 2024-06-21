@@ -70,6 +70,8 @@ class ClaimManager {
 			} FI
          
 			IF (dis > claim.getDis(touches[i].x, touches[i].y)) CONTINUE; FI
+			IF (index > claimed.getValById(claimIndex)) CONTINUE; FI // nmd 如果 time 和 dis 完全相等的话会导致一直 claim，然后 Sonolus 死机
+			// mlgb 老子在这里调了 6 个小时结果是 nm 这个问题
 			res = touches[i].id; minDis = dis;
 		} DONE
 		Return(res);

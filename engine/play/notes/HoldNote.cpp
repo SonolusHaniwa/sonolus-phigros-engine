@@ -82,6 +82,7 @@ class HoldNote: public Archetype {
 				Return(0);
 			} FI
 		} FI
+
 		// Claim
 		IF (isActive || released) Return(0); FI
 		IF (times.now < inputTimeMin) Return(0); FI
@@ -102,9 +103,7 @@ class HoldNote: public Archetype {
 		IF (isActive) Return(0); FI
 		IF (times.now < inputTimeMin) Return(0); FI
 		IF (times.now > inputTimeMax) Return(0); FI
-		Debuglog(114514);
 		let index = getClaimedStart(EntityInfo.get(0));
-		Debuglog(1919810);
 		IF (index == -1) Return(0); FI
 
 		isActive = true;
