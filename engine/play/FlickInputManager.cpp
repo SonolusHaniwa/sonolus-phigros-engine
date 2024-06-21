@@ -2,19 +2,15 @@ Map<LevelMemoryId, let, let> flickDisallowEmptiesNow(16);
 Map<LevelMemoryId, let, let> flickDisallowEmptiesOld(16);
 Map<LevelMemoryId, let, let> lastdx(16);
 Map<LevelMemoryId, let, let> lastdy(16);
-Map<LevelMemoryId, let, let> touchDistance(16);
-Variable<LevelMemoryId> lastUpdateTime;
-Variable<LevelMemoryId> allowClaim;
+Map<LevelMemoryId, let, let> lastdxOld(16);
+Map<LevelMemoryId, let, let> lastdyOld(16);
 
-double minFlickV = 0.5;
-double updateTimeLimit = 1.0 / 60.0; // 目标 fps: 60
-SonolusApi calcFlickV(let dx, let dy, let deltaTime) {
+double minFlickV = 0.2;
+SonolusApi calcV(Touch touch) {
 	FUNCBEGIN
-	var d = Power({dx * dx + dy * dy, 0.5});
-	var t = deltaTime;
-	Return(d / t);
+	Return(Power({touch.dx * touch.dx + touch.dy * touch.dy, 0.5}) / times.delta);
 	return VAR;
-};
+}
 
 class FlickClaimManager {
 	public:
@@ -65,7 +61,7 @@ class FlickClaimManager {
 		ClaimInfo origin = getInfo(index);
 		var res = -1, minDis = 1e9;
 		FOR (i, 0, touches.size, 1) {
-			IF (calcFlickV(touches[i].dx, touches[i].dy, times.delta) < minFlickV) CONTINUE; FI
+            IF (calcV(touches[i]) < minFlickV) CONTINUE; FI
 			var id = flickDisallowEmptiesNow.indexOf(touches[i].id);
 			IF (id != -1) CONTINUE; FI
 			IF (origin.contain(touches[i].x, touches[i].y) == 0) CONTINUE; FI
@@ -135,7 +131,6 @@ class FlickClaimManager {
 FlickClaimManager flickClaimStartManager = FlickClaimManager();
 SonolusApi flickClaimStart(let index) {
 	FUNCBEGIN
-	IF (allowClaim) Return(0); FI
 	flickClaimStartManager.claim(index);
 	return VOID;
 }
@@ -155,15 +150,8 @@ class FlickInputManager: public Archetype {
 	
 	SonolusApi updateSequential() {
 		FUNCBEGIN
-		IF (times.now - lastUpdateTime < updateTimeLimit) {
-			FOR (i, 0, touches.size, 1) {
-				lastdx.set(touches[i].id, touches[i].dx);
-				lastdy.set(touches[i].id, touches[i].dy);
-			} DONE
-			allowClaim = 0;
-			Return(0);
-		} FI
 		flickClaimStartManager.clear();
+
 		flickDisallowEmptiesOld.clear();
 		FOR (i, 0, flickDisallowEmptiesNow.size, 1) {
 			flickDisallowEmptiesOld.set(
@@ -172,23 +160,30 @@ class FlickInputManager: public Archetype {
 			);
 		} DONE
 		flickDisallowEmptiesNow.clear();
-		FOR (i, 0, touches.size, 1) {
-			var lastdxIndex = lastdx.indexOf(touches[i].id);
-			var lastdyIndex = lastdy.indexOf(touches[i].id);
-			var lastdxValue = If(lastdxIndex == -1, 0, lastdx.getValById(lastdxIndex));
-			var lastdyValue = If(lastdyIndex == -1, 0, lastdy.getValById(lastdyIndex));
-			var dx = lastdxValue + touches[i].dx;
-			var dy = lastdyValue + touches[i].dy;
-			var timeDis = times.now - lastUpdateTime;
-            IF (calcFlickV(dx, dy, timeDis) < minFlickV) CONTINUE; FI
-			var id = flickDisallowEmptiesOld.indexOf(touches[i].id);
-            IF (id == -1) CONTINUE; FI
-			flickDisallowEmptiesNow.add(touches[i].id, 1); 
-			// Debuglog(flickDisallowEmptiesNow.size);
+
+		lastdxOld.clear(); lastdyOld.clear();
+		FOR (i, 0, lastdx.size, 1) {
+			lastdxOld.set(lastdx.getKeyById(i), lastdx.getValById(i));
+			lastdyOld.set(lastdy.getKeyById(i), lastdy.getValById(i));
 		} DONE
-		lastUpdateTime = times.now;
 		lastdx.clear(); lastdy.clear();
-		allowClaim = 1;
+
+		FOR (i, 0, touches.size, 1) {
+			var id = flickDisallowEmptiesOld.indexOf(touches[i].id);
+			lastdx.set(touches[i].id, touches[i].dx); lastdy.set(touches[i].id, touches[i].dy);
+            IF (id == -1) CONTINUE; FI
+			var lastdxIndex = lastdxOld.indexOf(touches[i].id);
+			var lastdxValue = If(lastdxIndex == -1, 0, lastdxOld.getValById(lastdxIndex));
+			var lastdyValue = If(lastdxIndex == -1, 0, lastdyOld.getValById(lastdxIndex));
+            IF (calcV(touches[i]) < minFlickV) {
+				lastdx.set(touches[i].id, lastdxValue); lastdy.set(touches[i].id, lastdxValue);
+				flickDisallowEmptiesNow.add(touches[i].id, 1); 
+				CONTINUE;
+			} FI
+			var dotmul = lastdxValue * touches[i].dx + lastdyValue * touches[i].dy;
+			IF (dotmul <= 0) CONTINUE; FI
+			flickDisallowEmptiesNow.add(touches[i].id, 1); 
+		} DONE
 		return VOID;
 	}
 };

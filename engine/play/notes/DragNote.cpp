@@ -32,6 +32,7 @@ class DragNote: public Archetype {
 
 	SonolusApi preprocess() {
 		FUNCBEGIN
+		notes = notes + 1;
 		played = false;
 		inputTimeMax = time + judgment.good;
 		inputTimeMin = time - judgment.good;
@@ -40,15 +41,20 @@ class DragNote: public Archetype {
 
 	SonolusApi complete(let hitTime) {
 		FUNCBEGIN
-		IF (Abs(hitTime - time) <= judgment.good) Play(Clips.Drag, minSFXDistance); FI
 		IF (Abs(hitTime - time) <= judgment.good) {
+			Play(Clips.Drag, minSFXDistance);
+			judgeStatus = Min(judgeStatus, 2); combo = combo + 1;
+			accscore = accscore + score.perfect;
 			SpawnParticleEffect(Effects.perfect, 
 				effectX1, effectY1, effectX2, effectY2,
 				effectX3, effectY3, effectX4, effectY4,
 				effectDurationTime);
 			EntityInput.set(0, 1); 
 		} FI
-		IF (Abs(hitTime - time) > judgment.good) EntityInput.set(0, 0); FI
+		IF (Abs(hitTime - time) > judgment.good) {
+			judgeStatus = Min(judgeStatus, 0); combo = 0;
+			EntityInput.set(0, 0); 
+		}FI
 		EntityInput.set(1, hitTime - time);
 		EntityDespawn.set(0, 1);
 		return VOID;

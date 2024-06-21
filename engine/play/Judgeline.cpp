@@ -109,7 +109,11 @@ class Judgeline: public Archetype {
 		// Debuglog(x5); Debuglog(y5); 
 		// Debuglog(x6); Debuglog(y6);
 		// FI
-		Draw(Sprites.Judgeline, x3, y3, x4, y4, x5, y5, x6, y6, 10000, disappear);
+		Draw(Switch(judgeStatus, {
+			{2, Sprites.AllPerfectJudgeline},
+			{1, Sprites.FullComboJudgeline},
+			{0, Sprites.NormalJudgeline}
+		}), x3, y3, x4, y4, x5, y5, x6, y6, 10000, disappear);
 		return VOID;
 	}
 };

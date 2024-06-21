@@ -19,6 +19,17 @@ double hlHoldBodyRatio = 1062.0 / 1951.0;
 double hlHoldOffset = 1062.0 / 49.0;
 double judgeDistanceLimit = noteWidth * 1.5;
 double holdTailTime = 0.16;
+double comboTextRatio = 297.0 / 62.0;
+double combo0Ratio = 46.0 / 62.0;
+double combo1Ratio = 31.0 / 60.0;
+double combo2Ratio = 41.0 / 61.0;
+double combo3Ratio = 41.0 / 62.0;
+double combo4Ratio = 49.0 / 60.0;
+double combo5Ratio = 41.0 / 61.0;
+double combo6Ratio = 46.0 / 62.0;
+double combo7Ratio = 42.0 / 60.0;
+double combo8Ratio = 47.0 / 62.0;
+double combo9Ratio = 46.0 / 62.0;
 
 #if play || watch
 class stage {
@@ -49,7 +60,7 @@ class judgment {
 
     let perfect = 0.08;
     let great = 0.16;
-    let good = 0.22;
+    let good = 0.18;
 }judgment;
 
 class score {
@@ -59,3 +70,9 @@ class score {
 	let great = 0.65;
 	let good = 0;
 }score;
+
+Variable<LevelMemoryId> combo;
+Variable<LevelMemoryId> maxCombo;
+Variable<LevelMemoryId> judgeStatus;
+Variable<LevelMemoryId> notes;
+Variable<LevelMemoryId> accscore;

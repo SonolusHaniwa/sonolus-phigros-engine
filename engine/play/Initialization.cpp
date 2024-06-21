@@ -7,11 +7,15 @@ class Initialization: public Archetype {
     SonolusApi preprocess() {
     	FUNCBEGIN
         // 界面开关参数
-        let menuWidth = 0.15 * ui.menuConfiguration.scale;
-        let menuHeight = 0.15 * ui.menuConfiguration.scale;
-        let menuX = stage.l + 0.05;
-        let menuY = stage.t - 0.05;
-        ui.menu.set(menuX, menuY, 0, 1, menuWidth, menuHeight, 0, ui.menuConfiguration.alpha, HorizontalAlign.Center, true);
+        let menuL = stage.l + 0.005 * stage.w;
+        let menuR = stage.l + 0.05 * stage.w;
+        let menuT = stage.t + 1.0 / 1080.0 * stage.h;
+        let menuB = stage.t - 0.095 * stage.h;
+        let menuX = (menuR + menuL) / 2;
+        let menuY = (menuT + menuB) / 2;
+        let menuWidth = menuR - menuL;
+        let menuHeight = menuT - menuB;
+        ui.menu.set(menuX, menuY, 0.5, 0.5, menuWidth, menuHeight, 0, 0, HorizontalAlign.Center, true);
         
         // 首要指标参数
         // let primaryMetricBarWidth = 0.75 * ui.primaryMetricConfiguration.scale;
@@ -52,6 +56,13 @@ class Initialization: public Archetype {
         LevelScore.set(0, score.perfect);
         LevelScore.set(1, score.great);
         LevelScore.set(2, score.good);
+
+        combo = 0;
+        judgeStatus = 2;
+        maxCombo = 0;
+        notes = 0;
+        accscore = 0;
+
         EntityDespawn.set(0, 1);
         return VOID;
     }

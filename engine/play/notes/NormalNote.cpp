@@ -32,6 +32,7 @@ class NormalNote: public Archetype {
 
 	SonolusApi preprocess() {
 		FUNCBEGIN
+		notes = notes + 1;
 		played = false;
 		inputTimeMax = time + judgment.good;
 		inputTimeMin = time - judgment.good;
@@ -42,6 +43,8 @@ class NormalNote: public Archetype {
 		FUNCBEGIN
 		IF (Abs(hitTime - time) <= judgment.great) Play(Clips.Note, minSFXDistance); FI
 		IF (Abs(hitTime - time) <= judgment.perfect) {
+			accscore = accscore + score.perfect;
+			judgeStatus = Min(judgeStatus, 2); combo = combo + 1;
 			SpawnParticleEffect(Effects.perfect, 
 				effectX1, effectY1, effectX2, effectY2,
 				effectX3, effectY3, effectX4, effectY4,
@@ -49,14 +52,22 @@ class NormalNote: public Archetype {
 			EntityInput.set(0, 1); 
 		} FI
 		IF (Abs(hitTime - time) > judgment.perfect && Abs(hitTime - time) <= judgment.great) {
-		SpawnParticleEffect(Effects.great, 
-			effectX1, effectY1, effectX2, effectY2,
-			effectX3, effectY3, effectX4, effectY4,
-			effectDurationTime);
+			accscore = accscore + score.great;
+			judgeStatus = Min(judgeStatus, 1); combo = combo + 1;
+			SpawnParticleEffect(Effects.great, 
+				effectX1, effectY1, effectX2, effectY2,
+				effectX3, effectY3, effectX4, effectY4,
+				effectDurationTime);
 			EntityInput.set(0, 2); 
 		} FI
-		IF (Abs(hitTime - time) > judgment.great && Abs(hitTime - time) <= judgment.good) EntityInput.set(0, 3); FI
-		IF (Abs(hitTime - time) > judgment.good) EntityInput.set(0, 0); FI
+		IF (Abs(hitTime - time) > judgment.great && Abs(hitTime - time) <= judgment.good) {
+			judgeStatus = Min(judgeStatus, 0); combo = 0;
+			EntityInput.set(0, 3); 
+		} FI
+		IF (Abs(hitTime - time) > judgment.good) {
+			judgeStatus = Min(judgeStatus, 0); combo = 0;
+			EntityInput.set(0, 0); 
+		} FI
 		EntityInput.set(1, hitTime - time);
 		EntityDespawn.set(0, 1);
 		return VOID;
