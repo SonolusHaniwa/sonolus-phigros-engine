@@ -45,6 +45,7 @@ class HoldNote: public Archetype {
 		inputTimeMax = time + judgment.good;
 		inputTimeMin = time - judgment.good;
 		effectId = -1;
+		isMulti = isMulti && hasSimul;
 		return VOID;
 	}
 
@@ -121,7 +122,9 @@ class HoldNote: public Archetype {
 			comboChanged = true;
 			isGood = 1; released = true; 
 		} FI
-		IF (Abs(times.now - time) <= judgment.great) Play(Clips.Note, minSFXDistance); FI
+		IF (Abs(times.now - time) <= judgment.great) {
+			IF (hasSFX) Play(Clips.Note, minSFXDistance); FI 
+		} FI
 		EntityInput.set(1, times.now - time);
 		EntityInput.set(2, Buckets.hold);
 		EntityInput.set(3, times.now - time);

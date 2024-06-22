@@ -62,7 +62,7 @@ class Initialization: public Archetype {
         buckets[Buckets.flick].set(-1 * judgment.good, judgment.good, -1 * judgment.good, judgment.good, -1 * judgment.good, judgment.good);
 
         combo = 0;
-        judgeStatus = 2;
+        judgeStatus = If(hasIndicator, 2, 0);
         maxCombo = 0;
         notes = 0;
         accscore = 0;

@@ -36,13 +36,14 @@ class DragNote: public Archetype {
 		played = false;
 		inputTimeMax = time + judgment.good;
 		inputTimeMin = time - judgment.good;
+		isMulti = isMulti && hasSimul;
 		return VOID;
 	}
 
 	SonolusApi complete(let hitTime) {
 		FUNCBEGIN
 		IF (Abs(hitTime - time) <= judgment.good) {
-			Play(Clips.Drag, minSFXDistance);
+			IF (hasSFX) Play(Clips.Drag, minSFXDistance); FI
 			judgeStatus = Min(judgeStatus, 2); combo = combo + 1;
 			accscore = accscore + score.perfect;
 			SpawnParticleEffect(Effects.perfect, 

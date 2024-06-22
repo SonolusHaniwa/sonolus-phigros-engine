@@ -36,12 +36,15 @@ class NormalNote: public Archetype {
 		played = false;
 		inputTimeMax = time + judgment.good;
 		inputTimeMin = time - judgment.good;
+		isMulti = isMulti && hasSimul;
 		return VOID;
 	}
 
 	SonolusApi complete(let hitTime) {
 		FUNCBEGIN
-		IF (Abs(hitTime - time) <= judgment.great) Play(Clips.Note, minSFXDistance); FI
+		IF (Abs(hitTime - time) <= judgment.great) {
+			IF (hasSFX) Play(Clips.Note, minSFXDistance); FI
+	 	} FI
 		IF (Abs(hitTime - time) <= judgment.perfect) {
 			accscore = accscore + score.perfect;
 			judgeStatus = Min(judgeStatus, 2); combo = combo + 1;

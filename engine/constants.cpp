@@ -3,7 +3,7 @@ double lockAspectRatio = 1;
 double extraWidth = 1;
 double targetAspectRatio = 1920.0 / 1080.0;
 double judgelineHeight = 0.01;
-double noteWidth = 0.23;
+double baseNoteWidth = 0.24;
 double minSFXDistance = 0.02;
 double effectDurationTime = 0.4;
 double noteRatio = 989.0 / 100.0;
@@ -17,7 +17,7 @@ double holdBodyRatio = 989.0 / 1950.0;
 double hlHoldHeadRatio = 1062.0 / 97.0;
 double hlHoldBodyRatio = 1062.0 / 1951.0;
 double hlHoldOffset = 1062.0 / 49.0;
-double judgeDistanceLimit = noteWidth * 1.5;
+double judgeDistanceLimit = baseNoteWidth * 1.5;
 double holdTailTime = 0.16;
 double comboTextRatio = 297.0 / 62.0;
 double combo0Ratio = 46.0 / 62.0;
@@ -30,6 +30,13 @@ double combo6Ratio = 46.0 / 62.0;
 double combo7Ratio = 42.0 / 60.0;
 double combo8Ratio = 47.0 / 62.0;
 double combo9Ratio = 46.0 / 62.0;
+
+#if play || watch
+let noteWidth = baseNoteWidth * LevelOption.get(Options.NoteSize);
+let hasSFX = LevelOption.get(Options.HasSFX);
+let hasSimul = LevelOption.get(Options.HasSimul);
+let hasIndicator = LevelOption.get(Options.HasIndicator);
+#endif
 
 #if play || watch
 class stage {
