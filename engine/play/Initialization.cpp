@@ -56,6 +56,10 @@ class Initialization: public Archetype {
         LevelScore.set(0, score.perfect);
         LevelScore.set(1, score.great);
         LevelScore.set(2, score.good);
+        buckets[Buckets.note].set(-1 * judgment.perfect, judgment.perfect, -1 * judgment.great, judgment.great, -1 * judgment.good, judgment.good);
+        buckets[Buckets.drag].set(-1 * judgment.good, judgment.good, -1 * judgment.good, judgment.good, -1 * judgment.good, judgment.good);
+        buckets[Buckets.hold].set(-1 * judgment.perfect, judgment.perfect, -1 * judgment.great, judgment.great, -1 * judgment.good, judgment.good);
+        buckets[Buckets.flick].set(-1 * judgment.good, judgment.good, -1 * judgment.good, judgment.good, -1 * judgment.good, judgment.good);
 
         combo = 0;
         judgeStatus = 2;

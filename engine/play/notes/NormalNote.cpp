@@ -50,6 +50,9 @@ class NormalNote: public Archetype {
 				effectX3, effectY3, effectX4, effectY4,
 				effectDurationTime);
 			EntityInput.set(0, 1); 
+			EntityInput.set(1, hitTime - time);
+			EntityInput.set(2, Buckets.note);
+			EntityInput.set(3, hitTime - time);
 		} FI
 		IF (Abs(hitTime - time) > judgment.perfect && Abs(hitTime - time) <= judgment.great) {
 			accscore = accscore + score.great;
@@ -59,16 +62,20 @@ class NormalNote: public Archetype {
 				effectX3, effectY3, effectX4, effectY4,
 				effectDurationTime);
 			EntityInput.set(0, 2); 
+			EntityInput.set(1, hitTime - time);
+			EntityInput.set(2, Buckets.note);
+			EntityInput.set(3, hitTime - time);
 		} FI
 		IF (Abs(hitTime - time) > judgment.great && Abs(hitTime - time) <= judgment.good) {
 			judgeStatus = Min(judgeStatus, 0); combo = 0;
 			EntityInput.set(0, 3); 
+			EntityInput.set(1, hitTime - time);
+			EntityInput.set(2, Buckets.note);
+			EntityInput.set(3, hitTime - time);
 		} FI
 		IF (Abs(hitTime - time) > judgment.good) {
 			judgeStatus = Min(judgeStatus, 0); combo = 0;
-			EntityInput.set(0, 0); 
 		} FI
-		EntityInput.set(1, hitTime - time);
 		EntityDespawn.set(0, 1);
 		return VOID;
 	}

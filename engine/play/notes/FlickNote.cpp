@@ -50,12 +50,13 @@ class FlickNote: public Archetype {
 				effectX3, effectY3, effectX4, effectY4,
 				effectDurationTime);
 			EntityInput.set(0, 1); 
+			EntityInput.set(1, hitTime - time);
+			EntityInput.set(2, Buckets.flick);
+			EntityInput.set(3, hitTime - time);
 		} FI
 		IF (Abs(hitTime - time) > judgment.good) {
 			judgeStatus = Min(judgeStatus, 0); combo = 0;
-			EntityInput.set(0, 0); 
 		} FI
-		EntityInput.set(1, hitTime - time);
 		EntityDespawn.set(0, 1);
 		return VOID;
 	}

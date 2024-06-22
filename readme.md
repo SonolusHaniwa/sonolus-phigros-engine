@@ -6,9 +6,9 @@ Use [sonolus.h](https://github.com/SonolusHaniwa/sonolus.h) and [sonolus-server-
 
 Todo List:
 
-- [ ] Finish writing buckets system
+- [x] Finish writing play mode
+- [x] Finish writing buckets system
 - [ ] Finish writing tutorial mode
-- [ ] Finish writing preview mode
 - [ ] Finish writing watch mode
 - [x] Designed particle effect for phigros
 

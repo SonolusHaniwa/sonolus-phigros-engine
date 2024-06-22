@@ -1,6 +1,7 @@
 #include"skins.cpp"
 #include"effects.cpp"
 #include"particles.cpp"
+#include"buckets.cpp"
 
 #if play
 using namespace playData;

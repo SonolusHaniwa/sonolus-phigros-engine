@@ -35,7 +35,7 @@
         "background": "sirius-default",
         "effect": "phigros",
         "particle": "phigros",
-        "description": "A recreation of Phigros engine in Sonolus.\nVersion: 0.0.0\n\nGithub Repository\nhttps://github.com/SonolusHaniwa/sonolus-phigros-engine"
+        "description": "A recreation of Phigros engine in Sonolus.\nVersion: 1.0.0_20240622_beta\n\nGithub Repository\nhttps://github.com/SonolusHaniwa/sonolus-phigros-engine"
       }
     ]
   }

@@ -28,6 +28,7 @@ class HoldNote: public Archetype {
 	Variable<EntityMemoryId> effectId;
 	Variable<EntityMemoryId> isPerfect;
 	Variable<EntityMemoryId> isGood;
+	Variable<EntityMemoryId> comboChanged;
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
@@ -40,6 +41,7 @@ class HoldNote: public Archetype {
 		isActive = false;
 		released = false;
 		isPerfect = 0;
+		comboChanged = 0;
 		inputTimeMax = time + judgment.good;
 		inputTimeMin = time - judgment.good;
 		effectId = -1;
@@ -60,6 +62,10 @@ class HoldNote: public Archetype {
 					judgeStatus = Min(judgeStatus, 1); EntityInput.set(0, 2); 
 				} FI
 			} ELSE {
+				IF (!comboChanged) {
+					combo = 0;
+					judgeStatus = Min(judgeStatus, 0); 
+				} FI
 				IF (isGood) EntityInput.set(0, 3);
 				ELSE EntityInput.set(0, 0); FI
 			} FI
@@ -75,6 +81,7 @@ class HoldNote: public Archetype {
 		IF (isActive && !released && times.now < time + holdTime - holdTailTime) {
 			IF (!hasTouch(EntityInfo.get(0))) {
 				released = true;
+				judgeStatus = Min(judgeStatus, 0); combo = 0;
 				IF (effectId != -1) {
 					DestroyParticleEffect(effectId);
 					effectId = -1;
@@ -91,7 +98,7 @@ class HoldNote: public Archetype {
 			judgeStatus = Min(judgeStatus, 0); 
 			isActive = true;
 			released = true;
-			EntityInput.set(1, times.now - time);
+			comboChanged = true;
 			Return(0);
 		} FI
 		claimStart(EntityInfo.get(0));
@@ -111,10 +118,13 @@ class HoldNote: public Archetype {
 		IF (Abs(times.now - time) > judgment.great) {
 			combo = 0;
 			judgeStatus = Min(judgeStatus, 0); 
+			comboChanged = true;
 			isGood = 1; released = true; 
 		} FI
 		IF (Abs(times.now - time) <= judgment.great) Play(Clips.Note, minSFXDistance); FI
 		EntityInput.set(1, times.now - time);
+		EntityInput.set(2, Buckets.hold);
+		EntityInput.set(3, times.now - time);
 		return VOID;
 	}
 
@@ -160,7 +170,7 @@ class HoldNote: public Archetype {
 		effectX3 = x0 + noteWidth, effectY3 = y0 + noteWidth;
 		effectX4 = x0 + noteWidth, effectY4 = y0 - noteWidth;
 		// 画粒子效果
-		IF (isActive && !released) {
+		IF (isActive && !released && times.now <= time + holdTime) {
 			IF (effectId == -1) {
 				effectId = SpawnLoopedParticleEffect(If(isPerfect, Effects.perfect, Effects.great), 
 					effectX1, effectY1, 
