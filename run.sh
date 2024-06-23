@@ -21,9 +21,6 @@ sqlite3 sonolus.db ".read ./data.sql"
 # sqlite3 sonolus.db "SELECT * FROM Engine";
 
 # 数据导出
-echo -e $YELLOW"Exporting database to data.json..."$RESET
-./exportor "http://127.0.0.1:8080" data.json 1
-./exportor "http://127.0.0.1:8080" engine.json 2
 sudo pkill sonolus
 
 echo -e $YELLOW"Sync finished"$RESET

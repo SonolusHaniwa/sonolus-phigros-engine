@@ -139,7 +139,6 @@ class FlickNoteEntity: public CommonNoteEntity {
 
 
 string fromPGS(string json, double bgmOffset = 0) {
-	srand(time(0));
 	Json::Value obj; json_decode(json, obj);
 	int fmt = obj["formatVersion"].asInt();
 	bgmOffset += obj["offset"].asDouble();
@@ -384,7 +383,6 @@ string trim(string s) {
 	return s;
 }
 string fromPEC(string txt, double bgmOffset = 0) {
-	srand(time(0));
 	int EasingNum = sizeof(PECEasingMap) / sizeof(int);
 	auto lines = explode("\n", txt.c_str());
 	for (int i = 0; i < lines.size(); i++) lines[i] = trim(lines[i]);
