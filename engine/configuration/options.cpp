@@ -7,6 +7,7 @@ class Options {
     int HasSFX = 1;
     int HasSimul = 2;
     int HasIndicator = 3;
+    int Background = 4;
 }Options;
 
 auto options = defineOptions<class Options>({
@@ -37,5 +38,14 @@ auto options = defineOptions<class Options>({
         standard: 0,
         type: OptionType.Toggle,
         def: 1
+    }, {
+        name: "Background Brightness",
+        scope: Scope,
+        standard: 0,
+        type: OptionType.Slider,
+        def: 0.5,
+        min: 0.2,
+        max: 0.8,
+        step: 0.05,
     }
 });

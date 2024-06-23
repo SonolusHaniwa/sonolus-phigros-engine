@@ -125,6 +125,9 @@ class StageController: public Archetype {
             }), digitL, digitB, digitL, digitT, digitR, digitT, digitR, digitB, 20000, 1);
             scoreR = scoreR - digitW - numberDistance;
         } DONE
+
+        // 背景遮罩绘制
+        Draw(Sprites.Blocker, screen.l, screen.b, screen.l, screen.t, screen.r, screen.t, screen.r, screen.b, -1, 1 - background);
         return VOID;
     }
 };

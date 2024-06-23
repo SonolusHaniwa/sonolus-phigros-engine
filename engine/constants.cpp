@@ -36,6 +36,7 @@ let noteWidth = baseNoteWidth * LevelOption.get(Options.NoteSize);
 let hasSFX = LevelOption.get(Options.HasSFX);
 let hasSimul = LevelOption.get(Options.HasSimul);
 let hasIndicator = LevelOption.get(Options.HasIndicator);
+let background = LevelOption.get(Options.Background);
 #endif
 
 #if play || watch
