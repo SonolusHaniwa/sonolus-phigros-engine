@@ -89,6 +89,8 @@ class DragNote: public Archetype {
 	SonolusApi updateParallel() {
 		FUNCBEGIN
 		IF (times.now < 0) Return(0); FI
+		var currentFloorPosition = If(isAbove, positionY, -1 * positionY);
+		IF (times.now < time && currentFloorPosition < -0.001) Return(0); FI
 		var dx = positionX * stage.w * 0.05625;
 		var dy = positionY * speed * stage.h * 0.6;
 		
