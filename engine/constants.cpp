@@ -1,5 +1,6 @@
 double PI  = acos(-1);
 double lockAspectRatio = 1;
+double interfaceGap = 0.05;
 double extraWidth = 1;
 double targetAspectRatio = 1920.0 / 1080.0;
 double judgelineHeight = 0.01;
@@ -40,6 +41,9 @@ let hasSFX = LevelOption.get(Options.HasSFX);
 let hasSimul = LevelOption.get(Options.HasSimul);
 let hasIndicator = LevelOption.get(Options.HasIndicator);
 let background = LevelOption.get(Options.Background);
+let sonolusPause = LevelOption.get(Options.SystemPause);
+let sonolusCombo = LevelOption.get(Options.SystemCombo);
+let sonolusPrimaryMetric = LevelOption.get(Options.SystemPrimaryMetric);
 #endif
 
 #if play || watch

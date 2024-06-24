@@ -9,6 +9,9 @@ class Options {
     int HasSimul = 3;
     int HasIndicator = 4;
     int Background = 5;
+    int SystemPause = 6;
+    int SystemCombo = 7;
+    int SystemPrimaryMetric = 8;
 }Options;
 
 auto options = defineOptions<class Options>({
@@ -54,5 +57,23 @@ auto options = defineOptions<class Options>({
         min: 0.2,
         max: 0.8,
         step: 0.05,
+    }, {
+        name: "Use Sonolus Pause Button",
+        scope: Scope,
+        standard: 0,
+        type: OptionType.Toggle,
+        def: 0
+    }, {
+        name: "Use Sonolus Combo",
+        scope: Scope,
+        standard: 0,
+        type: OptionType.Toggle,
+        def: 0
+    }, {
+        name: "Use Sonolus Primary Metric",
+        scope: Scope,
+        standard: 0,
+        type: OptionType.Toggle,
+        def: 0
     }
 });
