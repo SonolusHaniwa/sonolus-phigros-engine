@@ -3,15 +3,22 @@ using namespace std;
 class Options {
     public:
 
-    int NoteSize = 0;
-    int HasSFX = 1;
-    int HasSimul = 2;
-    int HasIndicator = 3;
-    int Background = 4;
+    int StrictMode = 0;
+    int NoteSize = 1;
+    int HasSFX = 2;
+    int HasSimul = 3;
+    int HasIndicator = 4;
+    int Background = 5;
 }Options;
 
 auto options = defineOptions<class Options>({
     {
+        name: NameText.StrictJudgment,
+        scope: Scope,
+        standard: 1,
+        type: OptionType.Toggle,
+        def: 0
+    }, {
         name: NameText.NoteSize,
         scope: Scope,
         standard: 0,

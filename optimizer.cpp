@@ -153,7 +153,6 @@ int eventOptimizer(Json::Value events, Json::Value &resEvents, string eventsName
 
 
     
-    srand(time(NULL) + clock());
     int* Rs = new int[eventList.size()];
     for (int L = 0; L < eventList.size(); L++) {
     	int R = L;

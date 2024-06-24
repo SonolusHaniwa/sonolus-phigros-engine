@@ -25,10 +25,9 @@ class HoldNote: public Archetype {
 	Variable<EntityMemoryId> inputTimeMin;
 	Variable<EntityMemoryId> isActive;
 	Variable<EntityMemoryId> released;
-	Variable<EntityMemoryId> effectId;
 	Variable<EntityMemoryId> isPerfect;
-	Variable<EntityMemoryId> isGood;
 	Variable<EntityMemoryId> comboChanged;
+	Variable<EntityMemoryId> lastSpawn;
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
@@ -44,8 +43,8 @@ class HoldNote: public Archetype {
 		comboChanged = 0;
 		inputTimeMax = time + judgment.good;
 		inputTimeMin = time - judgment.good;
-		effectId = -1;
 		isMulti = isMulti && hasSimul;
+		lastSpawn = -1;
 		return VOID;
 	}
 
@@ -62,16 +61,17 @@ class HoldNote: public Archetype {
 					accscore = accscore + score.great;
 					judgeStatus = Min(judgeStatus, 1); EntityInput.set(0, 2); 
 				} FI
+				SpawnParticleEffect(If(isPerfect, Effects.perfect, Effects.great), 
+					effectX1, effectY1, 
+					effectX2, effectY2,
+					effectX3, effectY3, 
+					effectX4, effectY4, effectDurationTime);
 			} ELSE {
 				IF (!comboChanged) {
 					combo = 0;
 					judgeStatus = Min(judgeStatus, 0); 
 				} FI
-				IF (isGood) EntityInput.set(0, 3);
-				ELSE EntityInput.set(0, 0); FI
-			} FI
-			IF (effectId != -1) {
-				DestroyParticleEffect(effectId);
+				EntityInput.set(0, 0);
 			} FI
 			EntityDespawn.set(0, 1);
 		} FI
@@ -83,12 +83,18 @@ class HoldNote: public Archetype {
 			IF (!hasTouch(EntityInfo.get(0))) {
 				released = true;
 				judgeStatus = Min(judgeStatus, 0); combo = 0;
-				IF (effectId != -1) {
-					DestroyParticleEffect(effectId);
-					effectId = -1;
-				} FI
 				Return(0);
 			} FI
+		} FI
+
+		// 画粒子效果
+		IF (isActive && !released && times.now <= time + holdTime && times.now - lastSpawn >= holdEffectSpawnDistance) {
+			SpawnParticleEffect(If(isPerfect, Effects.perfect, Effects.great), 
+				effectX1, effectY1, 
+				effectX2, effectY2, 
+				effectX3, effectY3, 
+				effectX4, effectY4, effectDurationTime);
+			lastSpawn = times.now;
 		} FI
 
 		// Claim
@@ -116,15 +122,7 @@ class HoldNote: public Archetype {
 
 		isActive = true;
 		IF (Abs(times.now - time) <= judgment.perfect) isPerfect = 1; FI
-		IF (Abs(times.now - time) > judgment.great) {
-			combo = 0;
-			judgeStatus = Min(judgeStatus, 0); 
-			comboChanged = true;
-			isGood = 1; released = true; 
-		} FI
-		IF (Abs(times.now - time) <= judgment.great) {
-			IF (hasSFX) Play(Clips.Note, minSFXDistance); FI 
-		} FI
+		IF (hasSFX) Play(Clips.Note, minSFXDistance); FI 
 		EntityInput.set(1, times.now - time);
 		EntityInput.set(2, Buckets.hold);
 		EntityInput.set(3, times.now - time);
@@ -168,26 +166,10 @@ class HoldNote: public Archetype {
 			x6 = x6 + If(isAbove, 1, -1) * vec3X; y6 = y6 + If(isAbove, 1, -1) * vec3Y;
 		} FI
 		// 粒子效果不用转
-		effectX1 = x0 - noteWidth, effectY1 = y0 - noteWidth;
-		effectX2 = x0 - noteWidth, effectY2 = y0 + noteWidth;
-		effectX3 = x0 + noteWidth, effectY3 = y0 + noteWidth;
-		effectX4 = x0 + noteWidth, effectY4 = y0 - noteWidth;
-		// 画粒子效果
-		IF (isActive && !released && times.now <= time + holdTime) {
-			IF (effectId == -1) {
-				effectId = SpawnLoopedParticleEffect(If(isPerfect, Effects.perfect, Effects.great), 
-					effectX1, effectY1, 
-					effectX2, effectY2, 
-					effectX3, effectY3, 
-					effectX4, effectY4, effectDurationTime / 2);
-			} ELSE {
-				MoveParticleEffect(effectId, 
-					effectX1, effectY1, 
-					effectX2, effectY2, 
-					effectX3, effectY3, 
-					effectX4, effectY4);
-			} FI
-		} FI
+		effectX1 = x0 - effectWidth, effectY1 = y0 - effectWidth;
+		effectX2 = x0 - effectWidth, effectY2 = y0 + effectWidth;
+		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
+		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
 		
 		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 10000, If(released, 0.4, 1));
 		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 10000, If(released, 0.4, 1));

@@ -42,9 +42,9 @@ class StageController: public Archetype {
         let screenT = 10000;
         let screenB = -10000;
         Draw(Sprites.Blocker, screenL, screenB, screenL, screenT, stage.l, screenT, stage.l, screenB, 20000, 1);
-        Draw(Sprites.Blocker, screenR, screenB, screenR, screenT, stage.r, screenT, stage.r, screenB, 20000, 1);
-        Draw(Sprites.Blocker, screenL, screenB, screenL, stage.b, screenT, stage.b, screenR, screenB, 20000, 1);
-        Draw(Sprites.Blocker, screenL, screenT, screenL, stage.t, screenT, stage.t, screenR, screenT, 20000, 1);
+        Draw(Sprites.Blocker, stage.r, screenB, stage.r, screenT, screenR, screenT, screenR, screenB, 20000, 1);
+        Draw(Sprites.Blocker, screenL, screenB, screenL, stage.b, screenR, stage.b, screenR, screenB, 20000, 1);
+        Draw(Sprites.Blocker, screenL, stage.t, screenL, screenT, screenR, screenT, screenR, stage.t, 20000, 1);
 
         var numberDistance = 0.0068 * stage.h;
         IF (combo > 2) {
@@ -95,7 +95,7 @@ class StageController: public Archetype {
         } FI
 
         // 分数绘制
-        var score = accscore / notes * 900000 + maxCombo / notes * 100000;
+        var score = If(strictMode, accscore / notes * 1000000, accscore / notes * 900000 + maxCombo / notes * 100000);
         var scoreH = 0.035 * stage.h;
         var scoreW = -1 * numberDistance;
         FOR (i, 0, 7, 1) {

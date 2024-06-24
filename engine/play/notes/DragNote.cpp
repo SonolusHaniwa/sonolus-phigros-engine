@@ -108,10 +108,10 @@ class DragNote: public Archetype {
 		var x5 = x2 + vec2X, y5 = y2 + vec2Y;
 		var x6 = x2 - vec2X, y6 = y2 - vec2Y;
 		// 粒子效果不用转
-		effectX1 = x0 - noteWidth, effectY1 = y0 - noteWidth;
-		effectX2 = x0 - noteWidth, effectY2 = y0 + noteWidth;
-		effectX3 = x0 + noteWidth, effectY3 = y0 + noteWidth;
-		effectX4 = x0 + noteWidth, effectY4 = y0 - noteWidth;
+		effectX1 = x0 - effectWidth, effectY1 = y0 - effectWidth;
+		effectX2 = x0 - effectWidth, effectY2 = y0 + effectWidth;
+		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
+		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
 		
 		Draw(If(isMulti, Sprites.HLDrag, Sprites.NormalDrag), x3, y3, x4, y4, x5, y5, x6, y6, 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1));
 		return VOID;

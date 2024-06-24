@@ -5,7 +5,6 @@ double targetAspectRatio = 1920.0 / 1080.0;
 double judgelineHeight = 0.01;
 double baseNoteWidth = 0.24;
 double minSFXDistance = 0.02;
-double effectDurationTime = 0.4;
 double noteRatio = 989.0 / 100.0;
 double dragRatio = 989.0 / 60.0;
 double flickRatio = 989.0 / 200.0;
@@ -17,7 +16,10 @@ double holdBodyRatio = 989.0 / 1950.0;
 double hlHoldHeadRatio = 1062.0 / 97.0;
 double hlHoldBodyRatio = 1062.0 / 1951.0;
 double hlHoldOffset = 1062.0 / 49.0;
-double judgeDistanceLimit = baseNoteWidth * 1.5;
+double judgeDistanceLimit = baseNoteWidth * 1.75;
+double effectDurationTime = 0.4;
+double effectWidth = baseNoteWidth;
+double holdEffectSpawnDistance = 0.08;
 double holdTailTime = 0.16;
 double comboTextRatio = 297.0 / 62.0;
 double combo0Ratio = 46.0 / 62.0;
@@ -32,6 +34,7 @@ double combo8Ratio = 47.0 / 62.0;
 double combo9Ratio = 46.0 / 62.0;
 
 #if play || watch
+let strictMode = LevelOption.get(Options.StrictMode);
 let noteWidth = baseNoteWidth * LevelOption.get(Options.NoteSize);
 let hasSFX = LevelOption.get(Options.HasSFX);
 let hasSimul = LevelOption.get(Options.HasSimul);
@@ -66,9 +69,9 @@ let b = t - stage.h;
 class judgment {
 	public:
 
-    let perfect = 0.08;
-    let great = 0.16;
-    let good = 0.18;
+    let perfect = If(strictMode, 0.04, 0.08);
+    let great = If(strictMode, 0.075, 0.16);
+    let good = If(strictMode, 0.14,0.18);
 }judgment;
 
 class score {
