@@ -33,6 +33,7 @@ double combo6Ratio = 46.0 / 62.0;
 double combo7Ratio = 42.0 / 60.0;
 double combo8Ratio = 47.0 / 62.0;
 double combo9Ratio = 46.0 / 62.0;
+double floorPositionLimit = -0.01;
 
 #if play || watch
 let strictMode = LevelOption.get(Options.StrictMode);
