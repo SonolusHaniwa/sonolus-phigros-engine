@@ -19,7 +19,7 @@ double hlHoldBodyRatio = 1062.0 / 1951.0;
 double hlHoldOffset = 1062.0 / 49.0;
 double judgeDistanceLimit = baseNoteWidth * 1.75;
 double effectDurationTime = 0.4;
-double effectWidth = baseNoteWidth;
+double effectWidth = baseNoteWidth * 1.5;
 double holdEffectSpawnDistance = 0.08;
 double holdTailTime = 0.16;
 double comboTextRatio = 297.0 / 62.0;
@@ -33,7 +33,7 @@ double combo6Ratio = 46.0 / 62.0;
 double combo7Ratio = 42.0 / 60.0;
 double combo8Ratio = 47.0 / 62.0;
 double combo9Ratio = 46.0 / 62.0;
-double floorPositionLimit = -0.01;
+double floorPositionLimit = -0.005;
 
 #if play || watch
 let strictMode = LevelOption.get(Options.StrictMode);

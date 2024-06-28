@@ -117,7 +117,6 @@ class FlickNote: public Archetype {
 		effectX2 = x0 - effectWidth, effectY2 = y0 + effectWidth;
 		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
 		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
-		IF (x3 >= 0 && x3 <= stage.r && y3 >= stage.b && y3 <= 0) Debuglog(EntityInfo.get(0)); FI
 		
 		Draw(If(isMulti, Sprites.HLFlick, Sprites.NormalFlick), x3, y3, x4, y4, x5, y5, x6, y6, 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1));
 		return VOID;
