@@ -225,6 +225,7 @@ void buildArchetype() {
   		 << (globalCounter - lastGlobalCounter) << " nodes." << endl;
   	#endif
   	deleteAllocatorBackup();
+    restoreAllocatorBackup();
     if constexpr (sizeof...(Args)) buildArchetype<Args...>();
 }
 

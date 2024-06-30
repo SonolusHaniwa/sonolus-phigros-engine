@@ -37,6 +37,7 @@ class DragNote: public Archetype {
 		inputTimeMax = time + judgment.good;
 		inputTimeMin = time - judgment.good;
 		isMulti = isMulti && hasSimul;
+		maxTime = Max(maxTime, time);
 		return VOID;
 	}
 

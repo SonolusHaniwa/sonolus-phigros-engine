@@ -45,6 +45,8 @@ class HoldNote: public Archetype {
 		inputTimeMin = time - judgment.good;
 		isMulti = isMulti && hasSimul;
 		lastSpawn = -1;
+		maxTime = Max(maxTime, time);
+		maxTime = Max(maxTime, time + holdTime);
 		return VOID;
 	}
 

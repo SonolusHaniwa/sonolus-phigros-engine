@@ -132,6 +132,12 @@ class StageController: public Archetype {
 
         // 背景遮罩绘制
         Draw(Sprites.Blocker, screen.l, screen.b, screen.l, screen.t, screen.r, screen.t, screen.r, screen.b, -1, 1 - background);
+
+        // 时间条绘制
+        var percent = Min(maxTime, Max(times.now, 0)) / maxTime;
+        var timeBarT = stage.t, timeBarB = stage.t - timeBarHeight;
+        var timeBarL = stage.l, timeBarR = stage.w * percent + stage.l;
+        Draw(Sprites.NormalJudgeline, timeBarL, timeBarB, timeBarL, timeBarT, timeBarR, timeBarT, timeBarR, timeBarB, 100000, 1);
         return VOID;
     }
 };
