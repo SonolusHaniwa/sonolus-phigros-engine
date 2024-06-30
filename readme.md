@@ -1,6 +1,6 @@
 ![](https://cdn.jsdelivr.net/gh/LittleYang0531/phigros-private-data/b4b42df0b336e852d14b4d334c3d99f8992626d8)
 
-<p align="center">Sonolus Phigros Engine</p>
+<h1 align="center">Sonolus Phigros Engine</h1>
 
 <p align="center">A recreation of Phigros engine in <a href="https://sonolus.com">Sonolus</a>. For Sonolus 0.8.0+.</p>
 
