@@ -7,6 +7,7 @@ class Judgeline: public Archetype {
 	defineImports(moveYEvent);
 	defineImports(rotateEvent);
 	defineImports(disappearEvent);
+	defineImports(bpm);
 	Variable<EntitySharedMemoryId> speed;
 	Variable<EntitySharedMemoryId> x;
 	Variable<EntitySharedMemoryId> y;
@@ -42,10 +43,12 @@ class Judgeline: public Archetype {
 	SonolusApi jump(Variable<EntityMemoryId> &id, int nextId, bool isSpeed = false) {
 		FUNCBEGIN
 		WHILE (id != 0) {
-			IF (EntityDataArray[id].get(1) > times.now) BREAK; FI
-			IF (isSpeed) baseFloorPosition = baseFloorPosition + 
-				(EntityDataArray[id].get(1) - EntityDataArray[id].get(0)) * EntityDataArray[id].get(2); FI
-			id = EntityDataArray[id].get(nextId);
+			auto obj = EntityDataArray[id];
+			IF (obj.get(1) * timeMagic / bpm > times.now) BREAK; FI
+			IF (isSpeed) {
+				baseFloorPosition = baseFloorPosition + (obj.get(1) - obj.get(0)) * timeMagic / bpm * obj.get(2); 
+			} FI
+			id = obj.get(nextId);
 		} DONE
 		return VOID;
 	}
@@ -56,29 +59,30 @@ class Judgeline: public Archetype {
 		jump(moveYEventId, 5);
 		jump(rotateEventId, 5);
 		jump(disappearEventId, 5);
+		Debuglog(disappearEventId);
 		IF (speedEventId != 0) {
 			speed = EntityDataArray[speedEventId].get(2); 
-			floorPosition = baseFloorPosition + (times.now - EntityDataArray[speedEventId].get(0)) * speed;
+			floorPosition = baseFloorPosition + (times.now - EntityDataArray[speedEventId].get(0) * timeMagic / bpm) * speed;
 		} FI
 		IF (moveXEventId != 0) {
 			auto obj = EntityDataArray[moveXEventId];
-			x = getEaseValue(obj.get(4), obj.get(0), obj.get(1), obj.get(2), obj.get(3), times.now);
+			x = getEaseValue(obj.get(4), obj.get(0) * timeMagic / bpm, obj.get(1) * timeMagic / bpm, obj.get(2), obj.get(3), times.now);
 			x = x * stage.w + stage.l;
 		} FI
 		IF (moveYEventId != 0) {
 			auto obj = EntityDataArray[moveYEventId];
-			y = getEaseValue(obj.get(4), obj.get(0), obj.get(1), obj.get(2), obj.get(3), times.now);
+			y = getEaseValue(obj.get(4), obj.get(0) * timeMagic / bpm, obj.get(1) * timeMagic / bpm, obj.get(2), obj.get(3), times.now);
 			y = y * stage.h + stage.b;
 		} FI
 		IF (rotateEventId != 0) {
 			auto obj = EntityDataArray[rotateEventId];
-			rotate = getEaseValue(obj.get(4), obj.get(0), obj.get(1), obj.get(2), obj.get(3), times.now) % 360;
+			rotate = getEaseValue(obj.get(4), obj.get(0) * timeMagic / bpm, obj.get(1) * timeMagic / bpm, obj.get(2), obj.get(3), times.now) % 360;
 			IF (rotate < 0) rotate = rotate + 360; FI
 			rotate = rotate / 180 * PI;
 		} FI
 		IF (disappearEventId != 0) {
 			auto obj = EntityDataArray[disappearEventId];
-			disappear = getEaseValue(obj.get(4), obj.get(0), obj.get(1), obj.get(2), obj.get(3), times.now);
+			disappear = getEaseValue(obj.get(4), obj.get(0) * timeMagic / bpm, obj.get(1) * timeMagic / bpm, obj.get(2), obj.get(3), times.now);
 		} FI
 		return VOID;
 	}

@@ -42,6 +42,7 @@ class JudgelineEntity: public LevelEntity {
 	defineLevelDataRef(moveYEvent);
 	defineLevelDataRef(rotateEvent);
 	defineLevelDataRef(disappearEvent);
+	defineLevelDataValue(bpm);
 };
 
 class SpeedEventEntity: public LevelEntity {
@@ -100,6 +101,7 @@ class CommonNoteEntity: public LevelEntity {
 	defineLevelDataValue(isAbove);
 	defineLevelDataValue(isMulti);
 	defineLevelDataRef(judgeline);
+	defineLevelDataValue(bpm);
 };
 
 class NormalNoteEntity: public CommonNoteEntity {
@@ -112,14 +114,12 @@ class DragNoteEntity: public CommonNoteEntity {
 	public:
 
 	defineArchetypeName("Phigros Drag Note");
-	defineLevelDataValue(endTime);
 };
 
 class HoldNoteEntity: public CommonNoteEntity {
 	public:
 
 	defineArchetypeName("Phigros Hold Note");
-	defineLevelDataValue(endTime);
 };
 
 class FlickNoteEntity: public CommonNoteEntity {
@@ -187,8 +187,8 @@ string fromPGS(string json, double bgmOffset = 0) {
 		for (int j = item["speedEvents"].size() - 1; j >= 0; j--) {
 			auto v = item["speedEvents"][j];
 			SpeedEventEntity speed;
-			speed.startTime = v["startTime"].asDouble() / bpm * 1.875;
-			speed.endTime = v["endTime"].asDouble() / bpm * 1.875;
+			speed.startTime = v["startTime"].asDouble();
+			speed.endTime = v["endTime"].asDouble();
 			speed.value = v["value"].asDouble();
 			speed.next = j != item["speedEvents"].size() - 1 
 				? levelData.back<SpeedEventEntity>() 
@@ -205,8 +205,8 @@ string fromPGS(string json, double bgmOffset = 0) {
 				auto v = item["judgeLineMoveEvents"][j];
 				
 				MoveXEventEntity moveX;
-				moveX.startTime = v["startTime"].asDouble() / bpm * 1.875;
-				moveX.endTime = v["endTime"].asDouble() / bpm * 1.875;
+				moveX.startTime = v["startTime"].asDouble();
+				moveX.endTime = v["endTime"].asDouble();
 				moveX.start = v["start"].asDouble();
 				moveX.end = v["end"].asDouble();
 				moveX.easing = v["easing"].asInt();
@@ -216,8 +216,8 @@ string fromPGS(string json, double bgmOffset = 0) {
 				levelData.append(moveX); INFO;
 				
 				MoveYEventEntity moveY;
-				moveY.startTime = v["startTime"].asDouble() / bpm * 1.875;
-				moveY.endTime = v["endTime"].asDouble() / bpm * 1.875;
+				moveY.startTime = v["startTime"].asDouble();
+				moveY.endTime = v["endTime"].asDouble();
 				moveY.start = v["start2"].asDouble();
 				moveY.end = v["end2"].asDouble();
 				moveY.easing = v["easing"].asInt();
@@ -236,8 +236,8 @@ string fromPGS(string json, double bgmOffset = 0) {
 			for (int j = item["judgeLineMoveXEvents"].size() - 1; j >= 0; j--) {
 				auto v = item["judgeLineMoveXEvents"][j];
 				MoveXEventEntity moveX;
-				moveX.startTime = v["startTime"].asDouble() / bpm * 1.875;
-				moveX.endTime = v["endTime"].asDouble() / bpm * 1.875;
+				moveX.startTime = v["startTime"].asDouble();
+				moveX.endTime = v["endTime"].asDouble();
 				moveX.start = v["start"].asDouble();
 				moveX.end = v["end"].asDouble();
 				moveX.easing = v["easing"].asInt();
@@ -247,14 +247,14 @@ string fromPGS(string json, double bgmOffset = 0) {
 				levelData.append(moveX); INFO;
 			} 
 			judgeline.moveXEvent = item["judgeLineMoveXEvents"].size()
-					? levelData.back<MoveXEventEntity>() 
-					: MoveXEventEntity();
+				? levelData.back<MoveXEventEntity>() 
+				: MoveXEventEntity();
 			
 			for (int j = item["judgeLineMoveYEvents"].size() - 1; j >= 0; j--) {
 				auto v = item["judgeLineMoveYEvents"][j];
 				MoveYEventEntity moveY;
-				moveY.startTime = v["startTime"].asDouble() / bpm * 1.875;
-				moveY.endTime = v["endTime"].asDouble() / bpm * 1.875;
+				moveY.startTime = v["startTime"].asDouble();
+				moveY.endTime = v["endTime"].asDouble();
 				moveY.start = v["start"].asDouble();
 				moveY.end = v["end"].asDouble();
 				moveY.easing = v["easing"].asInt();
@@ -264,16 +264,16 @@ string fromPGS(string json, double bgmOffset = 0) {
 				levelData.append(moveY); INFO;
 			} 
 			judgeline.moveYEvent = item["judgeLineMoveYEvents"].size()
-					? levelData.back<MoveYEventEntity>() 
-					: MoveYEventEntity();
+				? levelData.back<MoveYEventEntity>() 
+				: MoveYEventEntity();
 		}
 
 		// 添加 Rotate Event
 		for (int j = item["judgeLineRotateEvents"].size() - 1; j >= 0; j--) {
 			auto v = item["judgeLineRotateEvents"][j];
 			RotateEventEntity rotate;
-			rotate.startTime = v["startTime"].asDouble() / bpm * 1.875;
-			rotate.endTime = v["endTime"].asDouble() / bpm * 1.875;
+			rotate.startTime = v["startTime"].asDouble();
+			rotate.endTime = v["endTime"].asDouble();
 			rotate.start = v["start"].asDouble();
 			rotate.end = v["end"].asDouble();
 			rotate.easing = v["easing"].asInt();
@@ -290,8 +290,8 @@ string fromPGS(string json, double bgmOffset = 0) {
 		for (int j = item["judgeLineDisappearEvents"].size() - 1; j >= 0; j--) {
 			auto v = item["judgeLineDisappearEvents"][j];
 			DisappearEventEntity disappear;
-			disappear.startTime = v["startTime"].asDouble() / bpm * 1.875;
-			disappear.endTime = v["endTime"].asDouble() / bpm * 1.875;
+			disappear.startTime = v["startTime"].asDouble();
+			disappear.endTime = v["endTime"].asDouble();
 			disappear.start = v["start"].asDouble();
 			disappear.end = v["end"].asDouble();
 			disappear.easing = v["easing"].asInt();
@@ -303,7 +303,8 @@ string fromPGS(string json, double bgmOffset = 0) {
 		judgeline.disappearEvent = item["judgeLineDisappearEvents"].size()
 			? levelData.back<DisappearEventEntity>() 
 			: DisappearEventEntity();
-		
+
+		judgeline.bpm = bpm;
 		levelData.append(judgeline); INFO;
 
 		// 添加按键
@@ -311,15 +312,16 @@ string fromPGS(string json, double bgmOffset = 0) {
 			auto v = item["notesAbove"][j];
 			CommonNoteEntity note;
 			// note.type = v["type"].asInt();
-			note.time = v["time"].asDouble() / bpm * 1.875;
+			note.time = v["time"].asDouble();
 			note.positionX = v["positionX"].asDouble();
-			note.holdTime = v["holdTime"].asDouble() / bpm * 1.875;
+			note.holdTime = v["holdTime"].asDouble();
 			note.speed = v["speed"].asDouble();
 			note.floorPosition = v["floorPosition"].asDouble();
 			note.isAbove = 1;
-			note.isMulti = noteNumber[note.time.value] > 1;
+			note.isMulti = noteNumber[v["time"].asDouble() / bpm * 1.875] > 1;
 			// note.isFake = fmt == pec_conventor_version ? v["isFake"].asInt() : 0;
 			note.judgeline = judgeline;
+			note.bpm = bpm;
 			switch(v["type"].asInt()) {
 				case 1: levelData.append(transform<NormalNoteEntity>(note)); break;
 				case 2: levelData.append(transform<DragNoteEntity>(note)); break;
@@ -331,15 +333,16 @@ string fromPGS(string json, double bgmOffset = 0) {
 			auto v = item["notesBelow"][j];
 			CommonNoteEntity note;
 			// note.type = v["type"].asInt();
-			note.time = v["time"].asDouble() / bpm * 1.875;
+			note.time = v["time"].asDouble();
 			note.positionX = v["positionX"].asDouble();
-			note.holdTime = v["holdTime"].asDouble() / bpm * 1.875;
+			note.holdTime = v["holdTime"].asDouble();
 			note.speed = v["speed"].asDouble();
 			note.floorPosition = -1 * v["floorPosition"].asDouble();
 			note.isAbove = 0;
-			note.isMulti = noteNumber[note.time.value] > 1;
+			note.isMulti = noteNumber[v["time"].asDouble() / bpm * 1.875] > 1;
 			// note.isFake = fmt == pec_conventor_version ? v["isFake"].asInt() : 0;
 			note.judgeline = judgeline;
+			note.bpm = bpm;
 			switch(v["type"].asInt()) {
 				case 1: levelData.append(transform<NormalNoteEntity>(note)); break;
 				case 2: levelData.append(transform<DragNoteEntity>(note)); break;
@@ -350,7 +353,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 	}
 	
 	Json::Value data = levelData.toJsonObject();
-	data["formatVersion"] = 4;
+	data["formatVersion"] = 5;
 	return json_encode(data);
 }
 

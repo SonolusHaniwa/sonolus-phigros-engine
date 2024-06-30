@@ -12,6 +12,7 @@ class DragNote: public Archetype {
 	defineImports(isMulti);
 	defineImports(isFake);
 	defineImports(judgeline);
+	defineImports(bpm);
 	Variable<EntityMemoryId> positionY;
 	Variable<EntityMemoryId> played;
 	Variable<EntityMemoryId> effectX1;
@@ -32,6 +33,7 @@ class DragNote: public Archetype {
 
 	SonolusApi preprocess() {
 		FUNCBEGIN
+		time = time * timeMagic / bpm;
 		notes = notes + 1;
 		played = false;
 		inputTimeMax = time + judgment.good;

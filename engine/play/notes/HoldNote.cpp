@@ -12,6 +12,7 @@ class HoldNote: public Archetype {
 	defineImports(isMulti);
 	defineImports(isFake);
 	defineImports(judgeline);
+	defineImports(bpm);
 	Variable<EntityMemoryId> positionY;
 	Variable<EntityMemoryId> effectX1;
 	Variable<EntityMemoryId> effectY1;
@@ -36,6 +37,8 @@ class HoldNote: public Archetype {
 
 	SonolusApi preprocess() {
 		FUNCBEGIN
+		time = time * timeMagic / bpm;
+		holdTime = holdTime * timeMagic / bpm;
 		notes = notes + 1;
 		isActive = false;
 		released = false;

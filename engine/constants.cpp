@@ -35,6 +35,7 @@ double combo8Ratio = 47.0 / 62.0;
 double combo9Ratio = 46.0 / 62.0;
 double floorPositionLimit = -0.001;
 double timeBarHeight = 0.01;
+double timeMagic = 1.875;
 
 #if play || watch
 let strictMode = LevelOption.get(Options.StrictMode);

@@ -268,7 +268,7 @@ int main(int argc, char** argv) {
 
     string json = readFile(argv[1]);
     Json::Value obj, resobj; json_decode(json, obj);
-    resobj = obj;
+    resobj = obj; int fmt = obj["formatVersion"].asInt();
     cout << "Loading finished." << endl;
     int total = 0, after = 0; 
 	for (int i = 0; i < obj["judgeLineList"].size(); i++) { 
@@ -279,7 +279,7 @@ int main(int argc, char** argv) {
 		total += item["judgeLineRotateEvents"].size();
 		total += item["judgeLineDisappearEvents"].size();
 	}
-	for (int i = 0; i < obj["judgeLineList"].size(); i++) { 
+	for (int i = 0; i < obj["judgeLineList"].size(); i++) {
         auto item = obj["judgeLineList"][i];
         int total2 = 0, after2 = 0;
 		total2 += item["speedEvents"].size();
@@ -289,9 +289,17 @@ int main(int argc, char** argv) {
         item["judgeLineMoveXEvents"].resize(0); item["judgeLineMoveYEvents"].resize(0);
         for (int j = 0; j < item["judgeLineMoveEvents"].size(); j++) {
             auto event = item["judgeLineMoveEvents"][j];
-            item["judgeLineMoveXEvents"].append(event);
-            event["start"] = event["start2"]; event["end"] = event["end2"];
-            item["judgeLineMoveYEvents"].append(event);
+            if (fmt == 1) {
+                int tmpstart = event["start"].asInt(), tmpend = event["end"].asInt();
+                event["start"] = 1.0 * (tmpstart / 1000) / 880.0, event["end"] = 1.0 * (tmpend / 1000) / 880.0;
+                item["judgeLineMoveXEvents"].append(event);
+                event["start"] = 1.0 * (tmpstart % 1000) / 520.0, event["end"] = 1.0 * (tmpend % 1000) / 520.0;
+                item["judgeLineMoveYEvents"].append(event);
+            } else if (fmt == 3) {
+                item["judgeLineMoveXEvents"].append(event);
+                event["start"] = event["start2"]; event["end"] = event["end2"];
+                item["judgeLineMoveYEvents"].append(event);
+            }
         }
         resobj["judgeLineList"][i]["judgeLineMoveXEvents"] = item["judgeLineMoveXEvents"];
         resobj["judgeLineList"][i]["judgeLineMoveYEvents"] = item["judgeLineMoveYEvents"];
@@ -314,6 +322,54 @@ int main(int argc, char** argv) {
             "#" + to_string(i) + " judgeLineDisappearEvents");
         resobj["judgeLineList"][i].removeMember("judgeLineMoveEvents");
         cerr << "Optimized #" << i << " judgeLine: " << total2 << " --> " << after2 << "(" << 100.0 - 100.0 * after2 / total2 << "%)" << endl;
+
+        cerr << "Checking FloorPosition of Notes Above..." << endl;
+        double bpm = item["bpm"].asDouble(), maxNumber = 0;
+        for (int j = 0; j < item["notesAbove"].size(); j++) {
+            double realFloorPosition = item["notesAbove"][j]["floorPosition"].asDouble();
+            double time = item["notesAbove"][j]["time"].asDouble() * 1.875 / bpm;
+            int pt = 0; double floorPosition = 0;
+            while(true && pt < item["speedEvents"].size()) {
+                double startTime = item["speedEvents"][pt]["startTime"].asDouble() * 1.875 / bpm;
+                double endTime = item["speedEvents"][pt]["endTime"].asDouble() * 1.875 / bpm;
+                double speed = item["speedEvents"][pt]["value"].asDouble();
+                if (time > startTime) {
+                    floorPosition = floorPosition + (time - startTime) * speed;
+                    break;
+                } else {
+                    floorPosition = floorPosition + (endTime - startTime) * speed;
+                    pt++;
+                }
+            }
+            // if (abs(floorPosition - realFloorPosition) > 0.001) {
+            //     cerr << "Error: Judgeline #" << i << ", NoteAbove #" << j << "'s FloorPosition: " << floorPosition << " --> " << realFloorPosition 
+            //          << ", delta = " << abs(floorPosition - realFloorPosition) << endl;
+            //     throw runtime_error("");
+            // } else maxNumber = max(maxNumber, abs(floorPosition - realFloorPosition));
+        }
+        cerr << "Checking FloorPosition of Notes Below..." << endl;
+        for (int j = 0; j < item["notesBelow"].size(); j++) {
+            double realFloorPosition = item["notesBelow"][j]["floorPosition"].asDouble();
+            double time = item["notesBelow"][j]["time"].asDouble() * 1.875 / bpm;
+            int pt = 0; double floorPosition = 0;
+            while(true && pt < item["speedEvents"].size()) {
+                double startTime = item["speedEvents"][pt]["startTime"].asDouble() * 1.875 / bpm;
+                double endTime = item["speedEvents"][pt]["endTime"].asDouble() * 1.875 / bpm;
+                double speed = item["speedEvents"][pt]["value"].asDouble();
+                if (time < endTime) {
+                    floorPosition = floorPosition + (time - startTime) * speed;
+                    break;
+                } else {
+                    floorPosition = floorPosition + (endTime - startTime) * speed;
+                    pt++;
+                }
+            }
+            // if (abs(floorPosition - realFloorPosition) > 0.001) {
+            //     cerr << "Error: Judgeline #" << i << ", NoteAbove #" << j << "'s FloorPosition: " << floorPosition << " --> " << realFloorPosition 
+            //          << ", delta = " << abs(floorPosition - realFloorPosition) << endl;
+            //     throw runtime_error("");
+            // } else maxNumber = max(maxNumber, abs(floorPosition - realFloorPosition));
+        }
         after += after2;
     }
     cerr << "Optimization Summary: " << total << " --> " << after << "(" << 100.0 - 100.0 * after / total << "%)" << endl;
