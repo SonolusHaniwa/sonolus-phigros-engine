@@ -1,10 +1,10 @@
 ![](https://cdn.jsdelivr.net/gh/LittleYang0531/phigros-private-data/b4b42df0b336e852d14b4d334c3d99f8992626d8)
 
-<center><h1>Sonolus Phigros Engine</h1></center>
+<p align="center">Sonolus Phigros Engine</p>
 
-<center>A recreation of Phigros engine in [Sonolus](https://sonolus.com). For Sonolus 0.8.0+.</center>
+<p align="center">A recreation of Phigros engine in <a href="https://sonolus.com">Sonolus</a>. For Sonolus 0.8.0+.</p>
 
-<center>Use [sonolus.h](https://github.com/SonolusHaniwa/sonolus.h) and [sonolus-server-cpp](https://github.com/SonolusHaniwa/sonolus-server-cpp) to develop.</center>
+<p align="center">Use <a href="https://github.com/SonolusHaniwa/sonolus.h">sonolus.h</a> and <a href="https://github.com/SonolusHaniwa/sonolus-server-cpp">sonolus-server-cpp</a> to develop.</p>
 
 Todo List:
 
