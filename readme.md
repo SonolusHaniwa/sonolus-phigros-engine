@@ -1,8 +1,10 @@
-# Sonolus Phigros Engine
+![](https://cdn.jsdelivr.net/gh/LittleYang0531/phigros-private-data/b4b42df0b336e852d14b4d334c3d99f8992626d8)
 
-A recreation of Phigros engine in [Sonolus](https://sonolus.com). For Sonolus 0.8.0+.
+<center><h1>Sonolus Phigros Engine</h1></center>
 
-Use [sonolus.h](https://github.com/SonolusHaniwa/sonolus.h) and [sonolus-server-cpp](https://github.com/SonolusHaniwa/sonolus-server-cpp) to develop.
+<center>A recreation of Phigros engine in [Sonolus](https://sonolus.com). For Sonolus 0.8.0+.</center>
+
+<center>Use [sonolus.h](https://github.com/SonolusHaniwa/sonolus.h) and [sonolus-server-cpp](https://github.com/SonolusHaniwa/sonolus-server-cpp) to develop.</center>
 
 Todo List:
 
