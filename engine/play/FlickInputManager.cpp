@@ -66,7 +66,10 @@ class FlickClaimManager {
 			IF (id != -1) CONTINUE; FI
 			IF (origin.contain(touches[i].x, touches[i].y) == 0) CONTINUE; FI
 
-			let dis = origin.getDis(touches[i].x, touches[i].y);
+			let dis = Min(
+				origin.getDis(touches[i].x, touches[i].y),
+				origin.getDis(touches[i].x - touches[i].dx, touches[i].y - touches[i].dy)
+			);
 			IF (res != -1 && minDis <= dis) CONTINUE; FI
 
 			let claimIndex = claimed.indexOf(touches[i].id);
@@ -82,7 +85,10 @@ class FlickClaimManager {
 				CONTINUE;
 			} FI
          
-			IF (dis > claim.getDis(touches[i].x, touches[i].y)) CONTINUE; FI
+			IF (dis > Min(
+				claim.getDis(touches[i].x, touches[i].y),
+				claim.getDis(touches[i].x - touches[i].dx, touches[i].y - touches[i].dy)
+			)) CONTINUE; FI
 			IF (index > claimed.getValById(claimIndex)) CONTINUE; FI // nmd 如果 time 和 dis 完全相等的话会导致一直 claim，然后 Sonolus 死机
 			// mlgb 老子在这里调了 6 个小时结果是 nm 这个问题
 			res = touches[i].id; minDis = dis;

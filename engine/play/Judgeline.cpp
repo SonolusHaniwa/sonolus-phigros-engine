@@ -59,7 +59,6 @@ class Judgeline: public Archetype {
 		jump(moveYEventId, 5);
 		jump(rotateEventId, 5);
 		jump(disappearEventId, 5);
-		Debuglog(disappearEventId);
 		IF (speedEventId != 0) {
 			speed = EntityDataArray[speedEventId].get(2); 
 			floorPosition = baseFloorPosition + (times.now - EntityDataArray[speedEventId].get(0) * timeMagic / bpm) * speed;

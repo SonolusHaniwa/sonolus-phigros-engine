@@ -1,5 +1,5 @@
 ARCH="x64"
-VERSION=v1.6.1-patch2
+VERSION=v1.6.2
 YELLOW="\e[93m"
 RED="\e[91m"
 RESET="\e[0m"
@@ -13,7 +13,11 @@ echo -e $YELLOW"Syncing data into database..."$RESET
 wget "https://raw.githubusercontent.com/SonolusHaniwa/sonolus-server-cpp/main/data.sql" -O data.sql
 sqlite3 sonolus.db ".read ./data.sql"
 ./sonolus serve >/dev/null 2>&1 &
+
+# 资源导入
 ./sonolus import ../phigros/phigros.scp
+./sonolus import ../phigros/phigros-2024-april.scp
+
 ./sonolus buildcpp play ../phigros -DDISABLE_TRACE
 # ./sonolus buildcpp tutorial ../sirius
 # ./sonolus buildcpp preview ../phigros -DDISABLE_TRACE
