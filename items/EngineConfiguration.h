@@ -8,8 +8,8 @@ class EngineConfigurationOption {
 
     string name = "";
     string scope = "";
-    int advanced = 0;
-    int standard = 0;
+    bool advanced = 0;
+    bool standard = 0;
     string type = "slider";
     double def = 0;
     double min = 0;
@@ -22,7 +22,8 @@ class EngineConfigurationOption {
         if (type == "select") {
             Json::Value res;
             res["name"] = name;
-            res["standard"] = (int)standard;
+            res["advanced"] = advanced;
+            res["standard"] = standard;
             res["scope"] = scope;
             res["type"] = type;
             res["def"] = def;
@@ -32,6 +33,7 @@ class EngineConfigurationOption {
         } else if (type == "slider") {
             Json::Value res;
             res["name"] = name;
+            res["advanced"] = advanced;
             res["standard"] = standard;
             res["scope"] = scope;
             res["type"] = type;
@@ -44,10 +46,11 @@ class EngineConfigurationOption {
         } else if (type == "toggle") {
             Json::Value res;
             res["name"] = name;
-            res["standard"] = (int)standard;
+            res["advanced"] = advanced;
+            res["standard"] = standard;
             res["scope"] = scope;
             res["type"] = type;
-            res["def"] = (int)def;
+            res["def"] = def ? 1 : 0;
             return res;
         } else throw invalid_argument("Invalid option type.");
     }
