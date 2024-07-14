@@ -12,6 +12,7 @@ class Options {
     int SystemPause = 6;
     int SystemCombo = 7;
     int SystemPrimaryMetric = 8;
+    int JudgelineId = 9;
 }Options;
 
 auto options = defineOptions<class Options>({
@@ -20,7 +21,7 @@ auto options = defineOptions<class Options>({
         scope: Scope,
         standard: 1,
         type: OptionType.Toggle,
-        def: 0
+        def: false
     }, {
         name: NameText.NoteSize,
         scope: Scope,
@@ -71,6 +72,12 @@ auto options = defineOptions<class Options>({
         def: 0
     }, {
         name: "Use Sonolus Primary Metric",
+        scope: Scope,
+        standard: 0,
+        type: OptionType.Toggle,
+        def: 0
+    }, {
+        name: "Display Judgeline Index & Direction",
         scope: Scope,
         standard: 0,
         type: OptionType.Toggle,

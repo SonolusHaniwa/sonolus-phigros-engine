@@ -4,6 +4,7 @@ class Initialization: public Archetype {
     static constexpr const char* name = "Phigros Initialization";
     bool hasInput = false;
 
+	int preprocessOrder = 2;
     SonolusApi preprocess() {
     	FUNCBEGIN
         // 界面开关参数
@@ -53,6 +54,13 @@ class Initialization: public Archetype {
             ui.comboText.set(comboTextX, comboTextY, 0.5, 0.5, comboTextWidth, comboTextHeight, 0, ui.comboConfiguration.alpha, HorizontalAlign.Center, false);         
         } FI
         
+        // 进度条参数
+        let progressWidth = stage.w - interfaceGap * 2;
+        let progressHeight = 0.15 * ui.progressConfiguration.scale;
+        let progressX = stage.l + interfaceGap;
+        let progressY = stage.b + interfaceGap;
+        ui.progress.set(progressX, progressY, 0, 0, progressWidth, progressHeight, 0, ui.progressConfiguration.alpha, HorizontalAlign.Center, true);
+        
         LevelScore.set(0, score.perfect);
         LevelScore.set(1, score.great);
         LevelScore.set(2, score.good);
@@ -66,11 +74,9 @@ class Initialization: public Archetype {
         maxCombo = 0;
         notes = 0;
         accscore = 0;
-        allocateJudgelineId = 0;
-
-        EntityDespawn.set(0, 1);
         return VOID;
     }
-    SonolusApi spawnOrder() { return 0; }
-    SonolusApi shouldSpawn() { return 1; }
+
+	SonolusApi spawnTime() { return 0; }
+	SonolusApi despawnTime() { return 0; }
 };

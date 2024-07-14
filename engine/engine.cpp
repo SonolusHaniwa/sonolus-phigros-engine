@@ -5,6 +5,8 @@
 
 #if play
 using namespace playData;
+#elif watch
+using namespace watchData;
 #endif
 
 string Scope = "phigros";
@@ -27,4 +29,13 @@ string Scope = "phigros";
 #include"play/notes/DragNote.cpp"
 #include"play/notes/HoldNote.cpp"
 #include"play/notes/FlickNote.cpp"
+#elif watch
+#include"watch/updateSpawn.cpp"
+#include"watch/Initialization.cpp"
+#include"watch/StageController.cpp"
+#include"watch/Judgeline.cpp"
+#include"watch/events/SpeedEvent.cpp"
+#include"watch/events/MoveEvent.cpp"
+#include"watch/events/RotateEvent.cpp"
+#include"watch/events/DisappearEvent.cpp"
 #endif

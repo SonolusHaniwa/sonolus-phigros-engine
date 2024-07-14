@@ -20,12 +20,15 @@ class Judgeline: public Archetype {
 	Variable<EntityMemoryId> rotateEventId;
 	Variable<EntityMemoryId> disappearEventId;
 	Variable<EntityMemoryId> baseFloorPosition;
+	Variable<EntityMemoryId> allocatedId;
 
 	SonolusApi spawnOrder() { return 1; }
 	SonolusApi shouldSpawn() { return 1; }
 
 	SonolusApi preprocess() {
 		FUNCBEGIN
+		allocatedId = allocateJudgelineId.get();
+		allocateJudgelineId = allocateJudgelineId + 1;
 		speedEventId = speedEvent.get();
 		moveXEventId = moveXEvent.get();
 		moveYEventId = moveYEvent.get();
@@ -105,18 +108,52 @@ class Judgeline: public Archetype {
 		let x4 = x1 + vectorX, y4 = y1 + vectorY;
 		let x5 = x2 + vectorX, y5 = y2 + vectorY;
 		let x6 = x2 - vectorX, y6 = y2 - vectorY;
-		// IF (EntityInfo.get(0) == 0) 
-		// Debuglog(vectorX); Debuglog(vectorY);
-		// Debuglog(x3); Debuglog(y3); 
-		// Debuglog(x4); Debuglog(y4); 
-		// Debuglog(x5); Debuglog(y5); 
-		// Debuglog(x6); Debuglog(y6);
-		// FI
 		Draw(Switch(judgeStatus, {
 			{2, Sprites.AllPerfectJudgeline},
 			{1, Sprites.FullComboJudgeline},
 			{0, Sprites.NormalJudgeline}
 		}), x3, y3, x4, y4, x5, y5, x6, y6, 10000, disappear);
+		IF (hasJudgelineId) {
+			var tmpId = allocatedId.get();
+			var width = 0;
+            var h = judgelineIdTextHeight;
+			var numberDistance = h * 0.15;
+            var w = -1 * numberDistance;
+			WHILE (tmpId) {
+                var digit = tmpId % 10;
+                w = w + h * Switch(digit, {
+                    {0, combo0Ratio}, {1, combo1Ratio}, {2, combo2Ratio},
+                    {3, combo3Ratio}, {4, combo4Ratio}, {5, combo5Ratio},
+                    {6, combo6Ratio}, {7, combo7Ratio}, {8, combo8Ratio}, {9, combo9Ratio}
+                }) + numberDistance;
+				tmpId = Floor(tmpId / 10);
+            } DONE
+			var cx = x + Cos(rotate + PI / 2) * (numberDistance * 3 + h / 2), cy = y + Sin(rotate + PI / 2) * (numberDistance * 3 + h / 2);
+			var r = w / 2;
+			tmpId = allocatedId.get();
+			WHILE (tmpId) {
+                var digit = tmpId % 10;
+				var R = r, L = R - h * Switch(digit, {
+					{0, combo0Ratio}, {1, combo1Ratio}, {2, combo2Ratio},
+					{3, combo3Ratio}, {4, combo4Ratio}, {5, combo5Ratio},
+					{6, combo6Ratio}, {7, combo7Ratio}, {8, combo8Ratio}, {9, combo9Ratio}
+				});
+				r = L - numberDistance;
+				var vector2Length = L, vector3Length = R, vector4Length = h / 2;
+				var x7 = cx + Cos(rotate) * vector2Length, y7 = cy + Sin(rotate) * vector2Length;
+				var x8 = cx + Cos(rotate) * vector3Length, y8 = cy + Sin(rotate) * vector3Length;
+				var x9 = x7 - Cos(rotate + PI / 2) * vector4Length, y9 = y7 - Sin(rotate + PI / 2) * vector4Length;
+				var x10 = x7 + Cos(rotate + PI / 2) * vector4Length, y10 = y7 + Sin(rotate + PI / 2) * vector4Length;
+				var x11 = x8 + Cos(rotate + PI / 2) * vector4Length, y11 = y8 + Sin(rotate + PI / 2) * vector4Length;
+				var x12 = x8 - Cos(rotate + PI / 2) * vector4Length, y12 = y8 - Sin(rotate + PI / 2) * vector4Length;
+				Draw(Switch(digit, {
+                    {0, Sprites.Combo0}, {1, Sprites.Combo1}, {2, Sprites.Combo2},
+                    {3, Sprites.Combo3}, {4, Sprites.Combo4}, {5, Sprites.Combo5},
+                    {6, Sprites.Combo6}, {7, Sprites.Combo7}, {8, Sprites.Combo8}, {9, Sprites.Combo9}
+                }), x9, y9, x10, y10, x11, y11, x12, y12, 20000, 1);
+				tmpId = Floor(tmpId / 10);
+			} DONE
+		} FI
 		return VOID;
 	}
 };

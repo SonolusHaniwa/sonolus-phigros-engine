@@ -119,7 +119,14 @@ int main(int argc, char** argv) {
 	buffer data, configuration;
 	build<
 		// Replace with your archetypes here
-		Archetype
+        Initialization,
+        StageController,
+        Judgeline,
+        SpeedEvent,
+        MoveXEvent,
+        MoveYEvent,
+        RotateEvent,
+        DisappearEvent
 	>(configuration, data);
     ofstream fout((dist + "/EngineConfiguration"));
     for (int i = 0; i < configuration.size(); i++) fout << configuration.v[i];

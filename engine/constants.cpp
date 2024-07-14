@@ -36,6 +36,7 @@ double combo9Ratio = 46.0 / 62.0;
 double floorPositionLimit = -0.001;
 double timeBarHeight = 0.01;
 double timeMagic = 1.875;
+double judgelineIdTextHeight = 0.05;
 
 #if play || watch
 let strictMode = LevelOption.get(Options.StrictMode);
@@ -47,6 +48,7 @@ let background = LevelOption.get(Options.Background);
 let sonolusPause = LevelOption.get(Options.SystemPause);
 let sonolusCombo = LevelOption.get(Options.SystemCombo);
 let sonolusPrimaryMetric = LevelOption.get(Options.SystemPrimaryMetric);
+let hasJudgelineId = LevelOption.get(Options.JudgelineId);
 #endif
 
 #if play || watch
@@ -89,6 +91,7 @@ class score {
 	let good = 0;
 }score;
 
+Variable<LevelMemoryId> allocateJudgelineId;
 Variable<LevelMemoryId> combo;
 Variable<LevelMemoryId> maxCombo;
 Variable<LevelMemoryId> judgeStatus;

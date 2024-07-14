@@ -6,14 +6,14 @@ using namespace std;
 class EnginePreviewDataArchetypeCallback {
     public:
 
-    double index = 0;
+    int index = 0;
     double order = 0;
 
     EnginePreviewDataArchetypeCallback(){}
-    EnginePreviewDataArchetypeCallback(double index, double order): index(index), order(order){};
+    EnginePreviewDataArchetypeCallback(int index, double order): index(index), order(order){};
     EnginePreviewDataArchetypeCallback(Json::Value arr){
         if (arr.isNull() == true) return;
-        index = arr["index"].asInt(), order = arr["order"].asInt();
+        index = arr["index"].asInt(), order = arr["order"].asDouble();
     }
 
     Json::Value toJsonObject() {

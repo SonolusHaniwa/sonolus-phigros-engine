@@ -48,14 +48,14 @@ class EngineDataBucket{
 class EngineDataArchetypeCallback {
     public:
 
-    double index = 0;
+    int index = 0;
     double order = 0;
 
     EngineDataArchetypeCallback(){}
-    EngineDataArchetypeCallback(double index, double order): index(index), order(order){};
+    EngineDataArchetypeCallback(int index, double order): index(index), order(order){};
     EngineDataArchetypeCallback(Json::Value arr){
         if (arr.isNull() == true) return;
-        index = arr["index"].asInt(), order = arr["order"].asInt();
+        index = arr["index"].asInt(), order = arr["order"].asDouble();
     }
 
     Json::Value toJsonObject() {
