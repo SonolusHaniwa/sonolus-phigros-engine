@@ -40,13 +40,20 @@ class FlickNote: public Archetype {
 		inputTimeMin = time - judgment.good;
 		isMulti = isMulti && hasSimul;
 		maxTime = Max(maxTime, time);
+		IF (hasSFX && autoSFX) PlayScheduled(Clips.Flick, time, minSFXDistance); FI
+		return VOID;
+	}
+
+	SonolusApi initialize() {
+		FUNCBEGIN
+		IF (hasSFX && autoSFX) PlayScheduled(Clips.Flick, time, minSFXDistance); FI
 		return VOID;
 	}
 
 	SonolusApi complete(let hitTime) {
 		FUNCBEGIN
 		IF (Abs(hitTime - time) <= judgment.good) {
-			IF (hasSFX) Play(Clips.Flick, minSFXDistance); FI
+			IF (hasSFX && !autoSFX) Play(Clips.Flick, minSFXDistance); FI
 			judgeStatus = Min(judgeStatus, 2); combo = combo + 1;
 			accscore = accscore + score.perfect;
 			SpawnParticleEffect(Effects.perfect, 

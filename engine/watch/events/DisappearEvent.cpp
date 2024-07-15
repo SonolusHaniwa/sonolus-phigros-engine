@@ -23,7 +23,6 @@ class DisappearEvent: public Archetype {
 
 	SonolusApi updateSequential() {
 		FUNCBEGIN
-		Debuglog(start); Debuglog(end); Debuglog(startTime); Debuglog(endTime);
 		EntitySharedMemoryArray[judgelineId].set(4,
 			getEaseValue(easing, startTime * timeMagic / bpm, endTime * timeMagic / bpm, start, end, times.now)
 		);

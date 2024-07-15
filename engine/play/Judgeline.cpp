@@ -113,6 +113,7 @@ class Judgeline: public Archetype {
 			{1, Sprites.FullComboJudgeline},
 			{0, Sprites.NormalJudgeline}
 		}), x3, y3, x4, y4, x5, y5, x6, y6, 10000, disappear);
+
 		IF (hasJudgelineId) {
 			var tmpId = allocatedId.get();
 			var width = 0;
@@ -150,7 +151,7 @@ class Judgeline: public Archetype {
                     {0, Sprites.Combo0}, {1, Sprites.Combo1}, {2, Sprites.Combo2},
                     {3, Sprites.Combo3}, {4, Sprites.Combo4}, {5, Sprites.Combo5},
                     {6, Sprites.Combo6}, {7, Sprites.Combo7}, {8, Sprites.Combo8}, {9, Sprites.Combo9}
-                }), x9, y9, x10, y10, x11, y11, x12, y12, 20000, 1);
+                }), x9, y9, x10, y10, x11, y11, x12, y12, 19999 - allocatedId, 1);
 				tmpId = Floor(tmpId / 10);
 			} DONE
 		} FI

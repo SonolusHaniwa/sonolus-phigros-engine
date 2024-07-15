@@ -17,15 +17,16 @@ class SpeedEvent: public Archetype {
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		bpm = EntityDataArray[judgelineId].get(5);
-		baseFloorPosition = EntitySharedMemoryArray[judgelineId].get(0);
-		EntitySharedMemoryArray[judgelineId].set(0, baseFloorPosition + (endTime - startTime) * timeMagic / bpm * value);
+		baseFloorPosition = EntitySharedMemoryArray[judgelineId].get(5);
+		EntitySharedMemoryArray[judgelineId].set(5, baseFloorPosition + (endTime * timeMagic / bpm - startTime * timeMagic / bpm) * value);
+		Debuglog(baseFloorPosition);
 		return VOID;
 	}
 
 	SonolusApi updateSequential() {
 		FUNCBEGIN
 		EntitySharedMemoryArray[judgelineId].set(0, value);
-		EntitySharedMemoryArray[judgelineId].set(5, baseFloorPosition + (times.now - startTime) * timeMagic / bpm * value);
+		EntitySharedMemoryArray[judgelineId].set(5, baseFloorPosition + (times.now - startTime * timeMagic / bpm) * value);
 		return VOID;
 	}
 };

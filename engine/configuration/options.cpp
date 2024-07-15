@@ -13,6 +13,7 @@ class Options {
     int SystemCombo = 7;
     int SystemPrimaryMetric = 8;
     int JudgelineId = 9;
+    int AutoSFX = 10;
 }Options;
 
 auto options = defineOptions<class Options>({
@@ -78,6 +79,12 @@ auto options = defineOptions<class Options>({
         def: 0
     }, {
         name: "Display Judgeline Index & Direction",
+        scope: Scope,
+        standard: 0,
+        type: OptionType.Toggle,
+        def: 0
+    }, {
+        name: "Auto SFX",
         scope: Scope,
         standard: 0,
         type: OptionType.Toggle,

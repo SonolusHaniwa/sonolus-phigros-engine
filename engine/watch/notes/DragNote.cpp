@@ -1,7 +1,7 @@
-class NormalNote: public Archetype {
+class DragNote: public Archetype {
 	public:
 
-	static constexpr const char* name = "Phigros Normal Note";
+	static constexpr const char* name = "Phigros Drag Note";
 	bool hasInput = true;
 	defineImports(time);
 	defineImports(positionX);
@@ -43,46 +43,19 @@ class NormalNote: public Archetype {
 		return VOID;
 	}
 
-	SonolusApi initialize() {
-		FUNCBEGIN
-		IF (hasSFX && autoSFX) PlayScheduled(Clips.Note, time, minSFXDistance); FI
-		return VOID;
-	}
-
 	SonolusApi complete(let hitTime) {
 		FUNCBEGIN
-		IF (Abs(hitTime - time) <= judgment.great) {
-			IF (hasSFX && !autoSFX) Play(Clips.Note, minSFXDistance); FI
-	 	} FI
-		IF (Abs(hitTime - time) <= judgment.perfect) {
-			accscore = accscore + score.perfect;
+		IF (Abs(hitTime - time) <= judgment.good) {
+			IF (hasSFX) Play(Clips.Drag, minSFXDistance); FI
 			judgeStatus = Min(judgeStatus, 2); combo = combo + 1;
+			accscore = accscore + score.perfect;
 			SpawnParticleEffect(Effects.perfect, 
 				effectX1, effectY1, effectX2, effectY2,
 				effectX3, effectY3, effectX4, effectY4,
 				effectDurationTime);
 			EntityInput.set(0, 1); 
 			EntityInput.set(1, hitTime - time);
-			EntityInput.set(2, Buckets.note);
-			EntityInput.set(3, hitTime - time);
-		} FI
-		IF (Abs(hitTime - time) > judgment.perfect && Abs(hitTime - time) <= judgment.great) {
-			accscore = accscore + score.great;
-			judgeStatus = Min(judgeStatus, 1); combo = combo + 1;
-			SpawnParticleEffect(Effects.great, 
-				effectX1, effectY1, effectX2, effectY2,
-				effectX3, effectY3, effectX4, effectY4,
-				effectDurationTime);
-			EntityInput.set(0, 2); 
-			EntityInput.set(1, hitTime - time);
-			EntityInput.set(2, Buckets.note);
-			EntityInput.set(3, hitTime - time);
-		} FI
-		IF (Abs(hitTime - time) > judgment.great && Abs(hitTime - time) <= judgment.good) {
-			judgeStatus = Min(judgeStatus, 0); combo = 0;
-			EntityInput.set(0, 3); 
-			EntityInput.set(1, hitTime - time);
-			EntityInput.set(2, Buckets.note);
+			EntityInput.set(2, Buckets.drag);
 			EntityInput.set(3, hitTime - time);
 		} FI
 		IF (Abs(hitTime - time) > judgment.good) {
@@ -100,16 +73,19 @@ class NormalNote: public Archetype {
 		// Claim
 		IF (times.now < inputTimeMin) Return(0); FI
 		IF (times.now > inputTimeMax) complete(-1); FI
-		claimStart(EntityInfo.get(0));
+		IF (played) {
+			IF (times.now < time) Return(0); FI
+			complete(times.now);
+			Return(0);
+		} FI
 		return VOID;
 	}
 
 	SonolusApi touch() {
 		FUNCBEGIN
+		IF (played) Return(0); FI
 		IF (times.now < inputTimeMin) Return(0); FI
-		let index = getClaimedStart(EntityInfo.get(0));
-		IF (index == -1) Return(0); FI
-		complete(times.now);
+		IF (hasTouch(EntityInfo.get(0))) played = 1; FI
 		return VOID;
 	}
 
@@ -130,7 +106,7 @@ class NormalNote: public Archetype {
 		
 		var vec1Length = noteWidth, vec1X = vec1Length * Cos(rotate), vec1Y = vec1Length * Sin(rotate);
 		var x1 = x - vec1X, y1 = y - vec1Y, x2 = x + vec1X, y2 = y + vec1Y;
-		var vec2Length = noteWidth / If(isMulti, hlNoteRatio, noteRatio);
+		var vec2Length = noteWidth / If(isMulti, hlDragRatio, dragRatio);
 		var vec2X = vec2Length * Cos(rotate + PI / 2), vec2Y = vec2Length * Sin(rotate + PI / 2);
 		var x3 = x1 - vec2X, y3 = y1 - vec2Y;
 		var x4 = x1 + vec2X, y4 = y1 + vec2Y;
@@ -142,7 +118,7 @@ class NormalNote: public Archetype {
 		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
 		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
 		
-		Draw(If(isMulti, Sprites.HLNote, Sprites.NormalNote), x3, y3, x4, y4, x5, y5, x6, y6, 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1));
+		Draw(If(isMulti, Sprites.HLDrag, Sprites.NormalDrag), x3, y3, x4, y4, x5, y5, x6, y6, 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1));
 		return VOID;
 	}
 };

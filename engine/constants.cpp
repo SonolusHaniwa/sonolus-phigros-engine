@@ -49,6 +49,7 @@ let sonolusPause = LevelOption.get(Options.SystemPause);
 let sonolusCombo = LevelOption.get(Options.SystemCombo);
 let sonolusPrimaryMetric = LevelOption.get(Options.SystemPrimaryMetric);
 let hasJudgelineId = LevelOption.get(Options.JudgelineId);
+let autoSFX = LevelOption.get(Options.AutoSFX);
 #endif
 
 #if play || watch

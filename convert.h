@@ -157,7 +157,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 		total += item["notesBelow"].size();
 	}
 	cout << "[INFO] Total Entities: " << total << endl;
-	LevelRawData levelData;
+	LevelRawData levelData, noteData;
 	levelData.append(InitializationEntity());
 	levelData.append(StageControllerEntity());
 	levelData.append(InputManagerEntity());
@@ -184,6 +184,8 @@ string fromPGS(string json, double bgmOffset = 0) {
 		JudgelineEntity judgeline;
 
 		// 添加 Speed Event
+		LevelRawData speedData;
+		int tmpSize = levelData.entities.size();
 		for (int j = item["speedEvents"].size() - 1; j >= 0; j--) {
 			auto v = item["speedEvents"][j];
 			SpeedEventEntity speed;
@@ -191,13 +193,14 @@ string fromPGS(string json, double bgmOffset = 0) {
 			speed.endTime = v["endTime"].asDouble();
 			speed.value = v["value"].asDouble();
 			speed.next = j != item["speedEvents"].size() - 1 
-				? levelData.back<SpeedEventEntity>() 
+				? speedData.back<SpeedEventEntity>() 
 				: SpeedEventEntity();
-			levelData.append(speed); INFO;
+			speedData.append(speed); INFO;
 		}
+		for (int j = speedData.entities.size() - 1; j >= 0; j--) levelData.entities.push_back(speedData.entities[j]);
 		judgeline.speedEvent = item["speedEvents"].size()
-				? levelData.back<SpeedEventEntity>() 
-				: SpeedEventEntity();
+			? levelData.get<SpeedEventEntity>(tmpSize) 
+			: SpeedEventEntity();
 
 		// 添加 Move Event
 		if (fmt == official_version) {
@@ -323,10 +326,10 @@ string fromPGS(string json, double bgmOffset = 0) {
 			note.judgeline = judgeline;
 			note.bpm = bpm;
 			switch(v["type"].asInt()) {
-				case 1: levelData.append(transform<NormalNoteEntity>(note)); break;
-				case 2: levelData.append(transform<DragNoteEntity>(note)); break;
-				case 3: levelData.append(transform<HoldNoteEntity>(note)); break;
-				case 4: levelData.append(transform<FlickNoteEntity>(note)); break;
+				case 1: noteData.append(transform<NormalNoteEntity>(note)); break;
+				case 2: noteData.append(transform<DragNoteEntity>(note)); break;
+				case 3: noteData.append(transform<HoldNoteEntity>(note)); break;
+				case 4: noteData.append(transform<FlickNoteEntity>(note)); break;
 			} INFO;
 		}
 		for (int j = 0; j < item["notesBelow"].size(); j++) {
@@ -344,14 +347,19 @@ string fromPGS(string json, double bgmOffset = 0) {
 			note.judgeline = judgeline;
 			note.bpm = bpm;
 			switch(v["type"].asInt()) {
-				case 1: levelData.append(transform<NormalNoteEntity>(note)); break;
-				case 2: levelData.append(transform<DragNoteEntity>(note)); break;
-				case 3: levelData.append(transform<HoldNoteEntity>(note)); break;
-				case 4: levelData.append(transform<FlickNoteEntity>(note)); break;
+				case 1: noteData.append(transform<NormalNoteEntity>(note)); break;
+				case 2: noteData.append(transform<DragNoteEntity>(note)); break;
+				case 3: noteData.append(transform<HoldNoteEntity>(note)); break;
+				case 4: noteData.append(transform<FlickNoteEntity>(note)); break;
 			} INFO;
 		}
 	}
 	
+	// 按键排序
+	sort(noteData.entities.begin(), noteData.entities.end(), [](Json::Value a, Json::Value b){
+		return a["time"].asDouble() < b["time"].asDouble();
+	});
+	for (int i = 0; i < noteData.entities.size(); i++) levelData.entities.push_back(noteData.entities[i]);
 	Json::Value data = levelData.toJsonObject();
 	data["formatVersion"] = 5;
 	return json_encode(data);

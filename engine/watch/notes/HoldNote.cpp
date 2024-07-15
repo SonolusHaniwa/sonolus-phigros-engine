@@ -53,12 +53,6 @@ class HoldNote: public Archetype {
 		return VOID;
 	}
 
-	SonolusApi initialize() {
-		FUNCBEGIN
-		IF (hasSFX && autoSFX) PlayScheduled(Clips.Note, time, minSFXDistance); FI
-		return VOID;
-	}
-
 	SonolusApi updateSequential() {
 		FUNCBEGIN
 		IF (times.now < 0) Return(0); FI
@@ -133,7 +127,7 @@ class HoldNote: public Archetype {
 
 		isActive = true;
 		IF (Abs(times.now - time) <= judgment.perfect) isPerfect = 1; FI
-		IF (hasSFX && !autoSFX) Play(Clips.Note, minSFXDistance); FI 
+		IF (hasSFX) Play(Clips.Note, minSFXDistance); FI 
 		EntityInput.set(1, times.now - time);
 		EntityInput.set(2, Buckets.hold);
 		EntityInput.set(3, times.now - time);

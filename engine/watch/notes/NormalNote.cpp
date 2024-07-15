@@ -23,93 +23,80 @@ class NormalNote: public Archetype {
 	Variable<EntityMemoryId> effectY3;
 	Variable<EntityMemoryId> effectX4;
 	Variable<EntityMemoryId> effectY4;
-	Variable<EntityMemoryId> inputTimeMax;
-	Variable<EntityMemoryId> inputTimeMin;
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
-	SonolusApi spawnOrder() { return 2; }
-	SonolusApi shouldSpawn() { return 1; }
+	SonolusApi spawnTime() { return 0; }
+	SonolusApi despawnTime() { return time; }
 
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		time = time * timeMagic / bpm;
 		notes = notes + 1;
-		played = false;
-		inputTimeMax = time + judgment.good;
-		inputTimeMin = time - judgment.good;
 		isMulti = isMulti && hasSimul;
 		maxTime = Max(maxTime, time);
+		IF (isReplay) {
+			PlayScheduled(Clips.Note, time, minSFXDistance);
+		} ELSE {
+			PlayScheduled(Clips.Note, time, minSFXDistance);
+		} FI
 		return VOID;
 	}
 
-	SonolusApi initialize() {
-		FUNCBEGIN
-		IF (hasSFX && autoSFX) PlayScheduled(Clips.Note, time, minSFXDistance); FI
-		return VOID;
-	}
-
-	SonolusApi complete(let hitTime) {
-		FUNCBEGIN
-		IF (Abs(hitTime - time) <= judgment.great) {
-			IF (hasSFX && !autoSFX) Play(Clips.Note, minSFXDistance); FI
-	 	} FI
-		IF (Abs(hitTime - time) <= judgment.perfect) {
-			accscore = accscore + score.perfect;
-			judgeStatus = Min(judgeStatus, 2); combo = combo + 1;
-			SpawnParticleEffect(Effects.perfect, 
-				effectX1, effectY1, effectX2, effectY2,
-				effectX3, effectY3, effectX4, effectY4,
-				effectDurationTime);
-			EntityInput.set(0, 1); 
-			EntityInput.set(1, hitTime - time);
-			EntityInput.set(2, Buckets.note);
-			EntityInput.set(3, hitTime - time);
-		} FI
-		IF (Abs(hitTime - time) > judgment.perfect && Abs(hitTime - time) <= judgment.great) {
-			accscore = accscore + score.great;
-			judgeStatus = Min(judgeStatus, 1); combo = combo + 1;
-			SpawnParticleEffect(Effects.great, 
-				effectX1, effectY1, effectX2, effectY2,
-				effectX3, effectY3, effectX4, effectY4,
-				effectDurationTime);
-			EntityInput.set(0, 2); 
-			EntityInput.set(1, hitTime - time);
-			EntityInput.set(2, Buckets.note);
-			EntityInput.set(3, hitTime - time);
-		} FI
-		IF (Abs(hitTime - time) > judgment.great && Abs(hitTime - time) <= judgment.good) {
-			judgeStatus = Min(judgeStatus, 0); combo = 0;
-			EntityInput.set(0, 3); 
-			EntityInput.set(1, hitTime - time);
-			EntityInput.set(2, Buckets.note);
-			EntityInput.set(3, hitTime - time);
-		} FI
-		IF (Abs(hitTime - time) > judgment.good) {
-			judgeStatus = Min(judgeStatus, 0); combo = 0;
-		} FI
-		EntityDespawn.set(0, 1);
-		return VOID;
-	}
+	// SonolusApi complete(let hitTime) {
+	// 	FUNCBEGIN
+	// 	IF (Abs(hitTime - time) <= judgment.perfect) {
+	// 		accscore = accscore + score.perfect;
+	// 		judgeStatus = Min(judgeStatus, 2); combo = combo + 1;
+	// 		SpawnParticleEffect(Effects.perfect, 
+	// 			effectX1, effectY1, effectX2, effectY2,
+	// 			effectX3, effectY3, effectX4, effectY4,
+	// 			effectDurationTime);
+	// 		EntityInput.set(0, 1); 
+	// 		EntityInput.set(1, hitTime - time);
+	// 		EntityInput.set(2, Buckets.note);
+	// 		EntityInput.set(3, hitTime - time);
+	// 	} FI
+	// 	IF (Abs(hitTime - time) > judgment.perfect && Abs(hitTime - time) <= judgment.great) {
+	// 		accscore = accscore + score.great;
+	// 		judgeStatus = Min(judgeStatus, 1); combo = combo + 1;
+	// 		SpawnParticleEffect(Effects.great, 
+	// 			effectX1, effectY1, effectX2, effectY2,
+	// 			effectX3, effectY3, effectX4, effectY4,
+	// 			effectDurationTime);
+	// 		EntityInput.set(0, 2); 
+	// 		EntityInput.set(1, hitTime - time);
+	// 		EntityInput.set(2, Buckets.note);
+	// 		EntityInput.set(3, hitTime - time);
+	// 	} FI
+	// 	IF (Abs(hitTime - time) > judgment.great && Abs(hitTime - time) <= judgment.good) {
+	// 		judgeStatus = Min(judgeStatus, 0); combo = 0;
+	// 		EntityInput.set(0, 3); 
+	// 		EntityInput.set(1, hitTime - time);
+	// 		EntityInput.set(2, Buckets.note);
+	// 		EntityInput.set(3, hitTime - time);
+	// 	} FI
+	// 	IF (Abs(hitTime - time) > judgment.good) {
+	// 		judgeStatus = Min(judgeStatus, 0); combo = 0;
+	// 	} FI
+	// 	EntityDespawn.set(0, 1);
+	// 	return VOID;
+	// }
 	SonolusApi updateSequential() {
 		FUNCBEGIN
 		IF (times.now < 0) Return(0); FI
 		IF (isAbove) positionY = floorPosition - line.get(5);
 		ELSE positionY = floorPosition + line.get(5); FI
-
-		// Claim
-		IF (times.now < inputTimeMin) Return(0); FI
-		IF (times.now > inputTimeMax) complete(-1); FI
-		claimStart(EntityInfo.get(0));
 		return VOID;
 	}
 
-	SonolusApi touch() {
+	SonolusApi terminate() {
 		FUNCBEGIN
-		IF (times.now < inputTimeMin) Return(0); FI
-		let index = getClaimedStart(EntityInfo.get(0));
-		IF (index == -1) Return(0); FI
-		complete(times.now);
+		IF (times.skip) Return(0); FI
+		SpawnParticleEffect(Effects.perfect, 
+			effectX1, effectY1, effectX2, effectY2,
+			effectX3, effectY3, effectX4, effectY4,
+			effectDurationTime);
 		return VOID;
 	}
 
@@ -117,6 +104,7 @@ class NormalNote: public Archetype {
 		FUNCBEGIN
 		IF (times.now < 0) Return(0); FI
 		var currentFloorPosition = If(isAbove, positionY, -1 * positionY);
+		Debuglog(judgeline);
 		IF (times.now < time && currentFloorPosition < floorPositionLimit) Return(0); FI
 		var dx = positionX * stage.w * 0.05625;
 		var dy = positionY * speed * stage.h * 0.6;
