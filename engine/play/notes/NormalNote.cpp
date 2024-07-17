@@ -128,9 +128,9 @@ class NormalNote: public Archetype {
 		var x = r * Cos(newAngle) + line.get(1), y = r * Sin(newAngle) + line.get(2);
 		var x0 = dx * Cos(rotate) + line.get(1), y0 = dx * Sin(rotate) + line.get(2);
 		
-		var vec1Length = noteWidth, vec1X = vec1Length * Cos(rotate), vec1Y = vec1Length * Sin(rotate);
+		var vec1Length = noteWidth * If(isMulti, 1089.0 / 989.0, 1), vec1X = vec1Length * Cos(rotate), vec1Y = vec1Length * Sin(rotate);
 		var x1 = x - vec1X, y1 = y - vec1Y, x2 = x + vec1X, y2 = y + vec1Y;
-		var vec2Length = noteWidth / If(isMulti, hlNoteRatio, noteRatio);
+		var vec2Length = noteWidth * If(isMulti, 1089.0 / 989.0, 1) / If(isMulti, hlNoteRatio, noteRatio);
 		var vec2X = vec2Length * Cos(rotate + PI / 2), vec2Y = vec2Length * Sin(rotate + PI / 2);
 		var x3 = x1 - vec2X, y3 = y1 - vec2Y;
 		var x4 = x1 + vec2X, y4 = y1 + vec2Y;
