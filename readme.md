@@ -30,6 +30,30 @@ You need to install [sonolus-server-cpp](https://github.com/SonolusHaniwa/sonolu
 
 ## Documentation
 
+### Merge Sorting
+
+Because in watch mode, it is necessary to sort each entity by time in order to calculate the correct combo number and other information
+
+But in a level, we not only have note entities, but also judgment line event entities, which means we cannot directly sort them. We must filter out note entities and sort them
+
+And the entity index in Sonolus cannot be modified
+
+In summary, we consider creating a linked list for all note entities and storing the index of the next entity in the Entity Shared Memory block of that note entity
+
+If you simply use bubble sort, when the number of notes is too large, it will get stuck on the loading page or even cause the application to crash
+
+Consider using merge sort
+
+However, Sonolus does not support the use of recursive functions, so we are considering using a non-recursive version of merge sort
+
+Algorithm keywords: merge sort, linked list, non-recursive
+
+The detailed alogrithm implementation: [./engine/watch/Preprocess.cpp](./engine/watch/Preprocess.cpp)
+
+The alogrithm implementation in C++: [./mergeSort.cpp](./mergeSort.cpp)
+
+Accepted Submission in Online Judge Platform: <https://www.luogu.com.cn/record/167007458>
+
 ### Chart Optimizier
 
 Because Pigeon Games uses straight lines to fit of all event curves, there are too many events in the official chart.

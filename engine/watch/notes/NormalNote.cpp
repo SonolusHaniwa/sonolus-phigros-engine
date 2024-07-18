@@ -14,7 +14,6 @@ class NormalNote: public Archetype {
 	defineImports(judgeline);
 	defineImports(bpm);
 	Variable<EntityMemoryId> positionY;
-	Variable<EntityMemoryId> played;
 	Variable<EntityMemoryId> effectX1;
 	Variable<EntityMemoryId> effectY1;
 	Variable<EntityMemoryId> effectX2;
@@ -23,6 +22,10 @@ class NormalNote: public Archetype {
 	Variable<EntityMemoryId> effectY3;
 	Variable<EntityMemoryId> effectX4;
 	Variable<EntityMemoryId> effectY4;
+	Variable<EntitySharedMemoryId> nextNote; // 下一个按键信息
+	Variable<EntitySharedMemoryId> currentCombo; // 当前 Combo 数
+	Variable<EntitySharedMemoryId> currentMaxCombo; // 当前最大 Combo 数
+	Variable<EntitySharedMemoryId> currentAccScore; // 当前准度得分
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
@@ -104,7 +107,6 @@ class NormalNote: public Archetype {
 		FUNCBEGIN
 		IF (times.now < 0) Return(0); FI
 		var currentFloorPosition = If(isAbove, positionY, -1 * positionY);
-		Debuglog(judgeline);
 		IF (times.now < time && currentFloorPosition < floorPositionLimit) Return(0); FI
 		var dx = positionX * stage.w * 0.05625;
 		var dy = positionY * speed * stage.h * 0.6;

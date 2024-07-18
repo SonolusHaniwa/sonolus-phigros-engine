@@ -22,115 +22,52 @@ class HoldNote: public Archetype {
 	Variable<EntityMemoryId> effectY3;
 	Variable<EntityMemoryId> effectX4;
 	Variable<EntityMemoryId> effectY4;
-	Variable<EntityMemoryId> inputTimeMax;
-	Variable<EntityMemoryId> inputTimeMin;
-	Variable<EntityMemoryId> isActive;
-	Variable<EntityMemoryId> released;
-	Variable<EntityMemoryId> isPerfect;
-	Variable<EntityMemoryId> comboChanged;
 	Variable<EntityMemoryId> lastSpawn;
+	Variable<EntitySharedMemoryId> nextNote; // 下一个按键信息
+	Variable<EntitySharedMemoryId> currentCombo; // 当前 Combo 数
+	Variable<EntitySharedMemoryId> currentMaxCombo; // 当前最大 Combo 数
+	Variable<EntitySharedMemoryId> currentAccScore; // 当前准度得分
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
-	SonolusApi spawnOrder() { return 2; }
-	SonolusApi shouldSpawn() { return 1; }
+	SonolusApi spawnTime() { return 0; }
+	SonolusApi despawnTime() { return time + holdTime; }
 
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		time = time * timeMagic / bpm;
 		holdTime = holdTime * timeMagic / bpm;
-		notes = notes + 1;
-		isActive = false;
-		released = false;
-		isPerfect = 0;
-		comboChanged = 0;
-		inputTimeMax = time + judgment.good;
-		inputTimeMin = time - judgment.good;
 		isMulti = isMulti && hasSimul;
 		lastSpawn = -1;
-		maxTime = Max(maxTime, time);
-		maxTime = Max(maxTime, time + holdTime);
 		return VOID;
 	}
 
 	SonolusApi updateSequential() {
 		FUNCBEGIN
+		IF (times.skip) lastSpawn = -1; FI
 		IF (times.now < 0) Return(0); FI
-		IF (times.now > time + holdTime) {
-			IF (isActive && !released) {
-				combo = combo + 1;
-				IF (isPerfect) {
-					accscore = accscore + score.perfect;
-					judgeStatus = Min(judgeStatus, 2); EntityInput.set(0, 1);
-				} ELSE {
-					accscore = accscore + score.great;
-					judgeStatus = Min(judgeStatus, 1); EntityInput.set(0, 2); 
-				} FI
-				SpawnParticleEffect(If(isPerfect, Effects.perfect, Effects.great), 
-					effectX1, effectY1, 
-					effectX2, effectY2,
-					effectX3, effectY3, 
-					effectX4, effectY4, effectDurationTime);
-			} ELSE {
-				IF (!comboChanged) {
-					combo = 0;
-					judgeStatus = Min(judgeStatus, 0); 
-				} FI
-				EntityInput.set(0, 0);
-			} FI
-			EntityDespawn.set(0, 1);
-		} FI
 		IF (isAbove) positionY = floorPosition - line.get(5);
 		ELSE positionY = floorPosition + line.get(5); FI
 
-		// 检测
-		IF (isActive && !released && times.now < time + holdTime - holdTailTime) {
-			IF (!hasTouch(EntityInfo.get(0))) {
-				released = true;
-				judgeStatus = Min(judgeStatus, 0); combo = 0;
-				Return(0);
-			} FI
-		} FI
-
 		// 画粒子效果
-		IF (isActive && !released && times.now <= time + holdTime && times.now - lastSpawn >= 30 / bpm) {
-			SpawnParticleEffect(If(isPerfect, Effects.perfect, Effects.great), 
+		IF (times.skip) Return(0); FI
+		IF (times.now >= time && times.now <= time + holdTime && times.now - lastSpawn >= 30 / bpm) {
+			SpawnParticleEffect(Effects.perfect, 
 				effectX1, effectY1, 
 				effectX2, effectY2, 
 				effectX3, effectY3, 
 				effectX4, effectY4, effectDurationTime);
 			lastSpawn = times.now;
 		} FI
-
-		// Claim
-		IF (isActive || released) Return(0); FI
-		IF (times.now < inputTimeMin) Return(0); FI
-		IF (times.now > inputTimeMax) {
-			combo = 0;
-			judgeStatus = Min(judgeStatus, 0); 
-			isActive = true;
-			released = true;
-			comboChanged = true;
-			Return(0);
-		} FI
-		claimStart(EntityInfo.get(0));
 		return VOID;
 	}
 
-	SonolusApi touch() {
+	SonolusApi terminate() {
 		FUNCBEGIN
-		IF (isActive) Return(0); FI
-		IF (times.now < inputTimeMin) Return(0); FI
-		IF (times.now > inputTimeMax) Return(0); FI
-		let index = getClaimedStart(EntityInfo.get(0));
-		IF (index == -1) Return(0); FI
-
-		isActive = true;
-		IF (Abs(times.now - time) <= judgment.perfect) isPerfect = 1; FI
-		IF (hasSFX) Play(Clips.Note, minSFXDistance); FI 
-		EntityInput.set(1, times.now - time);
-		EntityInput.set(2, Buckets.hold);
-		EntityInput.set(3, times.now - time);
+		IF (times.skip) {
+			lastSpawn = -1;
+			Return(0); 
+		} FI
 		return VOID;
 	}
 
@@ -178,8 +115,8 @@ class HoldNote: public Archetype {
 		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
 		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
 		
-		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 10000, If(released, 0.4, 1));
-		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 10000, If(released, 0.4, 1));
+		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 1000, 1);
+		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 1000, 1);
 		return VOID;
 	}
 };

@@ -127,7 +127,10 @@ int main(int argc, char** argv) {
         MoveYEvent,
         RotateEvent,
         DisappearEvent,
-        NormalNote
+        NormalNote,
+        DragNote,
+        HoldNote,
+        FlickNote
 	>(configuration, data);
     ofstream fout((dist + "/EngineConfiguration"));
     for (int i = 0; i < configuration.size(); i++) fout << configuration.v[i];

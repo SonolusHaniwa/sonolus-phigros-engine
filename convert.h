@@ -158,6 +158,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 	}
 	cout << "[INFO] Total Entities: " << total << endl;
 	LevelRawData levelData, noteData;
+	levelData.bgmOffset = bgmOffset;
 	levelData.append(InitializationEntity());
 	levelData.append(StageControllerEntity());
 	levelData.append(InputManagerEntity());

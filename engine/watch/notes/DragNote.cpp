@@ -14,7 +14,6 @@ class DragNote: public Archetype {
 	defineImports(judgeline);
 	defineImports(bpm);
 	Variable<EntityMemoryId> positionY;
-	Variable<EntityMemoryId> played;
 	Variable<EntityMemoryId> effectX1;
 	Variable<EntityMemoryId> effectY1;
 	Variable<EntityMemoryId> effectX2;
@@ -23,69 +22,66 @@ class DragNote: public Archetype {
 	Variable<EntityMemoryId> effectY3;
 	Variable<EntityMemoryId> effectX4;
 	Variable<EntityMemoryId> effectY4;
-	Variable<EntityMemoryId> inputTimeMax;
-	Variable<EntityMemoryId> inputTimeMin;
+	Variable<EntitySharedMemoryId> nextNote; // 下一个按键信息
+	Variable<EntitySharedMemoryId> currentCombo; // 当前 Combo 数
+	Variable<EntitySharedMemoryId> currentMaxCombo; // 当前最大 Combo 数
+	Variable<EntitySharedMemoryId> currentAccScore; // 当前准度得分
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
-	SonolusApi spawnOrder() { return 2; }
-	SonolusApi shouldSpawn() { return 1; }
+	SonolusApi spawnTime() { return 0; }
+	SonolusApi despawnTime() { return time; }
 
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		time = time * timeMagic / bpm;
 		notes = notes + 1;
-		played = false;
-		inputTimeMax = time + judgment.good;
-		inputTimeMin = time - judgment.good;
 		isMulti = isMulti && hasSimul;
 		maxTime = Max(maxTime, time);
+		IF (isReplay) {
+			PlayScheduled(Clips.Note, time, minSFXDistance);
+		} ELSE {
+			PlayScheduled(Clips.Note, time, minSFXDistance);
+		} FI
 		return VOID;
 	}
 
-	SonolusApi complete(let hitTime) {
-		FUNCBEGIN
-		IF (Abs(hitTime - time) <= judgment.good) {
-			IF (hasSFX) Play(Clips.Drag, minSFXDistance); FI
-			judgeStatus = Min(judgeStatus, 2); combo = combo + 1;
-			accscore = accscore + score.perfect;
-			SpawnParticleEffect(Effects.perfect, 
-				effectX1, effectY1, effectX2, effectY2,
-				effectX3, effectY3, effectX4, effectY4,
-				effectDurationTime);
-			EntityInput.set(0, 1); 
-			EntityInput.set(1, hitTime - time);
-			EntityInput.set(2, Buckets.drag);
-			EntityInput.set(3, hitTime - time);
-		} FI
-		IF (Abs(hitTime - time) > judgment.good) {
-			judgeStatus = Min(judgeStatus, 0); combo = 0;
-		} FI
-		EntityDespawn.set(0, 1);
-		return VOID;
-	}
+	// SonolusApi complete(let hitTime) {
+	// 	FUNCBEGIN
+	// 	IF (Abs(hitTime - time) <= judgment.good) {
+	// 		IF (hasSFX) Play(Clips.Drag, minSFXDistance); FI
+	// 		judgeStatus = Min(judgeStatus, 2); combo = combo + 1;
+	// 		accscore = accscore + score.perfect;
+	// 		SpawnParticleEffect(Effects.perfect, 
+	// 			effectX1, effectY1, effectX2, effectY2,
+	// 			effectX3, effectY3, effectX4, effectY4,
+	// 			effectDurationTime);
+	// 		EntityInput.set(0, 1); 
+	// 		EntityInput.set(1, hitTime - time);
+	// 		EntityInput.set(2, Buckets.drag);
+	// 		EntityInput.set(3, hitTime - time);
+	// 	} FI
+	// 	IF (Abs(hitTime - time) > judgment.good) {
+	// 		judgeStatus = Min(judgeStatus, 0); combo = 0;
+	// 	} FI
+	// 	EntityDespawn.set(0, 1);
+	// 	return VOID;
+	// }
 	SonolusApi updateSequential() {
 		FUNCBEGIN
 		IF (times.now < 0) Return(0); FI
 		IF (isAbove) positionY = floorPosition - line.get(5);
 		ELSE positionY = floorPosition + line.get(5); FI
-
-		// Claim
-		IF (times.now < inputTimeMin) Return(0); FI
-		IF (times.now > inputTimeMax) complete(-1); FI
-		IF (played) {
-			IF (times.now < time) Return(0); FI
-			complete(times.now);
-			Return(0);
-		} FI
 		return VOID;
 	}
 
-	SonolusApi touch() {
+	SonolusApi terminate() {
 		FUNCBEGIN
-		IF (played) Return(0); FI
-		IF (times.now < inputTimeMin) Return(0); FI
-		IF (hasTouch(EntityInfo.get(0))) played = 1; FI
+		IF (times.skip) Return(0); FI
+		SpawnParticleEffect(Effects.perfect, 
+			effectX1, effectY1, effectX2, effectY2,
+			effectX3, effectY3, effectX4, effectY4,
+			effectDurationTime);
 		return VOID;
 	}
 

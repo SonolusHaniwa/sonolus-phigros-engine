@@ -5,9 +5,13 @@ class StageController: public Archetype {
     bool hasInput = false;
     Variable<EntityMemoryId> lastClickMenuTime;
 
+    // Inplemented in Preprocess.cpp
+    SonolusApi calcCombo();
+
     SonolusApi preprocess() {
         FUNCBEGIN
         lastClickMenuTime = -10000;
+        calcCombo();
         return VOID;
     }
 

@@ -19,7 +19,6 @@ class SpeedEvent: public Archetype {
 		bpm = EntityDataArray[judgelineId].get(5);
 		baseFloorPosition = EntitySharedMemoryArray[judgelineId].get(5);
 		EntitySharedMemoryArray[judgelineId].set(5, baseFloorPosition + (endTime * timeMagic / bpm - startTime * timeMagic / bpm) * value);
-		Debuglog(baseFloorPosition);
 		return VOID;
 	}
 
