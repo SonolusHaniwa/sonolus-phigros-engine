@@ -93,7 +93,7 @@ class HoldNote: public Archetype {
 		} FI
 
 		// 画粒子效果
-		IF (isActive && !released && times.now <= time + holdTime && times.now - lastSpawn >= holdEffectSpawnDistance) {
+		IF (isActive && !released && times.now <= time + holdTime && times.now - lastSpawn >= 30 / bpm) {
 			SpawnParticleEffect(If(isPerfect, Effects.perfect, Effects.great), 
 				effectX1, effectY1, 
 				effectX2, effectY2, 

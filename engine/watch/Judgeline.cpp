@@ -89,7 +89,7 @@ class Judgeline: public Archetype {
                 }) + numberDistance;
 				tmpId = Floor(tmpId / 10);
             } DONE
-			var cx = x + Cos(rotate + PI / 2) * (numberDistance * 3 + h / 2), cy = y + Sin(rotate + PI / 2) * (numberDistance * 3 + h / 2);
+			var cx = x + Cos(rotate - PI / 2) * (numberDistance * 3 + h / 2), cy = y + Sin(rotate - PI / 2) * (numberDistance * 3 + h / 2);
 			var r = w / 2;
 			tmpId = allocatedId.get();
 			WHILE (tmpId) {
