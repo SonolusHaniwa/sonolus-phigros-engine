@@ -1,4 +1,4 @@
-![](https://cdn.jsdelivr.net/gh/LittleYang0531/phigros-private-data/b4b42df0b336e852d14b4d334c3d99f8992626d8)
+![b4b42df0b336e852d14b4d334c3d99f8992626d8](https://github.com/user-attachments/assets/03fe10a1-d4f4-40e0-9d87-a76897df33d4)
 
 <h1 align="center">Sonolus Phigros Engine</h1>
 
@@ -52,7 +52,9 @@ The detailed alogrithm implementation: [./engine/watch/Preprocess.cpp](./engine/
 
 The alogrithm implementation in C++: [./mergeSort.cpp](./mergeSort.cpp)
 
-Accepted Submission in Online Judge Platform: <https://www.luogu.com.cn/record/167007458>
+Accepted Submission in Online Judge Platform: <https://www.luogu.com.cn/record/167007458> (arraySize <= 1e5, 1s, 256MB)
+
+![image](https://github.com/user-attachments/assets/a9ed1c68-bcdd-4894-a39d-987c422cc5a0)
 
 ### Chart Optimizier
 
