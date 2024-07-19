@@ -5,9 +5,9 @@ SonolusApi getValue(let index) {
     return VAR;
 }
 
-SonolusApi merge(let A, let B, let Asize, let Bsize) {
+SonolusApi merge(let a, let b, let Asize, let Bsize) {
     FUNCBEGIN
-    var Alen = 0, Blen = 0;
+    var Alen = 0, Blen = 0, A = a, B = b;
     var newHead = If(getValue(A) > getValue(B), B, A);
     var pointer = newHead.get();
     IF (getValue(A) > getValue(B)) {
@@ -20,12 +20,12 @@ SonolusApi merge(let A, let B, let Asize, let Bsize) {
     WHILE (Alen < Asize && Blen < Bsize) {
         IF (getValue(A) > getValue(B)) {
             EntitySharedMemoryArray[pointer].set(0, B);
-            pointer = B;
+            pointer = B.get();
             B = EntitySharedMemoryArray[B].get(0);
             Blen = Blen + 1;
         } ELSE {
             EntitySharedMemoryArray[pointer].set(0, A);
-            pointer = A;
+            pointer = A.get();
             A = EntitySharedMemoryArray[A].get(0);
             Alen = Alen + 1;
         } FI
@@ -88,10 +88,10 @@ SonolusApi StageController::calcCombo() {
         } DONE
     } DONE
     // 剩余片段合并
-    var head = -1, currentLen = 0;
+    var head = 0, currentLen = 0;
     FOR (i, 0, 32, 1) {
         IF (cachedSortedListHead.get(i) == 0) CONTINUE; FI
-        IF (head == -1) {
+        IF (head == 0) {
             head = cachedSortedListHead.get(i);
             currentLen = Power({2, i});
             CONTINUE;
@@ -103,10 +103,9 @@ SonolusApi StageController::calcCombo() {
         head = merge(A, B, Asize, Bsize);
         currentLen = Asize + Bsize;
     } DONE
-    // 验证
-    Debuglog(head);
+    // 验证(只要没有输出就是正序)
     // FOR (i, 0, lineLength, 1) {
-    //     Debuglog(head); Debuglog(getValue(head));
+    //     IF (head < lineLength - 1 && getValue(head) > getValue(EntitySharedMemoryArray[head].get(0))) Debuglog(head); FI
     //     head = EntitySharedMemoryArray[head].get(0);
     // } DONE
     return VOID;
