@@ -4,24 +4,60 @@ class StageController: public Archetype {
     static constexpr const char* name = "Phigros Stage Controller";
     bool hasInput = false;
     Variable<EntityMemoryId> lastClickMenuTime;
+    Variable<EntityMemoryId> headNoteId;
+    Variable<EntityMemoryId> noteNumber;
 
     // Inplemented in Preprocess.cpp
     SonolusApi calcCombo();
 
+	int preprocessOrder = 114514;
     SonolusApi preprocess() {
         FUNCBEGIN
         lastClickMenuTime = -10000;
         calcCombo();
+        var head = headNoteId.get();
+        IF (isReplay) {
+	        FOR (i, 0, noteNumber, 1) {
+	        	combo = combo + 1;
+	        	EntitySharedMemoryArray[head].set(2, combo);
+	        	maxCombo = maxCombo + 1;
+	        	EntitySharedMemoryArray[head].set(3, maxCombo);
+	        	judgeStatus = Min(judgeStatus, 2);
+	        	EntitySharedMemoryArray[head].set(4, judgeStatus);
+	        	accscore = accscore + score.perfect;
+	        	EntitySharedMemoryArray[head].set(5, accscore);
+	        	EntitySharedMemoryArray[head].set(6, i);
+	        	head = EntitySharedMemoryArray[head].get(0);
+	        } DONE
+        } ELSE {
+	        FOR (i, 0, noteNumber, 1) {
+	        	IF (head == 6040) Debuglog(head); FI
+	        	combo = combo + 1;
+	        	EntitySharedMemoryArray[head].set(2, combo);
+	        	maxCombo = maxCombo + 1;
+	        	EntitySharedMemoryArray[head].set(3, maxCombo);
+	        	judgeStatus = Min(judgeStatus, 2);
+	        	EntitySharedMemoryArray[head].set(4, judgeStatus);
+	        	accscore = accscore + score.perfect;
+	        	EntitySharedMemoryArray[head].set(5, accscore);
+	        	EntitySharedMemoryArray[head].set(6, i);
+	        	head = EntitySharedMemoryArray[head].get(0);
+	        } DONE
+	    } FI
         return VOID;
     }
 
 	SonolusApi spawnTime() { return -999999; }
 	SonolusApi despawnTime() { return 999999; }
 
-    int updateSequentialOrder = -10000;
+    int updateSequentialOrder = -114514;
     SonolusApi updateSequential() {
         FUNCBEGIN
-        Return(0);
+        combo = 0;
+        maxCombo = 0;
+        judgeStatus = 2;
+        accscore = 0;
+        lastUpdatedTime = 0;
         return VOID;
     }
 

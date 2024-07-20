@@ -23,9 +23,12 @@ class DragNote: public Archetype {
 	Variable<EntityMemoryId> effectX4;
 	Variable<EntityMemoryId> effectY4;
 	Variable<EntitySharedMemoryId> nextNote; // 下一个按键信息
+	Variable<EntitySharedMemoryId> judgeTime; // 判定时间
 	Variable<EntitySharedMemoryId> currentCombo; // 当前 Combo 数
 	Variable<EntitySharedMemoryId> currentMaxCombo; // 当前最大 Combo 数
+	Variable<EntitySharedMemoryId> currentJudgeStatus; // 当前判定结果
 	Variable<EntitySharedMemoryId> currentAccScore; // 当前准度得分
+	Variable<EntitySharedMemoryId> comboId; // Combo 排行
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
@@ -39,9 +42,13 @@ class DragNote: public Archetype {
 		isMulti = isMulti && hasSimul;
 		maxTime = Max(maxTime, time);
 		IF (isReplay) {
+			judgeTime = time.get();
 			PlayScheduled(Clips.Note, time, minSFXDistance);
+			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
 		} ELSE {
+			judgeTime = time.get();
 			PlayScheduled(Clips.Note, time, minSFXDistance);
+			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
 		} FI
 		return VOID;
 	}

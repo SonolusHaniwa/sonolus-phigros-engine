@@ -130,7 +130,8 @@ int main(int argc, char** argv) {
         NormalNote,
         DragNote,
         HoldNote,
-        FlickNote
+        FlickNote,
+        UpdateJudgment
 	>(configuration, data);
     ofstream fout((dist + "/EngineConfiguration"));
     for (int i = 0; i < configuration.size(); i++) fout << configuration.v[i];

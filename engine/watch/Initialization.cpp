@@ -4,7 +4,7 @@ class Initialization: public Archetype {
     static constexpr const char* name = "Phigros Initialization";
     bool hasInput = false;
 
-	int preprocessOrder = 2;
+	int preprocessOrder = -114514;
     SonolusApi preprocess() {
     	FUNCBEGIN
         // 界面开关参数

@@ -38,6 +38,7 @@ string Scope = "phigros";
 #include"watch/events/MoveEvent.cpp"
 #include"watch/events/RotateEvent.cpp"
 #include"watch/events/DisappearEvent.cpp"
+#include"watch/UpdateJudgment.cpp"
 #include"watch/notes/NormalNote.cpp"
 #include"watch/notes/DragNote.cpp"
 #include"watch/notes/HoldNote.cpp"

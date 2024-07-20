@@ -55,16 +55,16 @@ let autoSFX = LevelOption.get(Options.AutoSFX);
 class stage {
 	public:
 
-	Variable<EntityMemoryId> w = If(lockAspectRatio == 0 || screen.aspectRatio < targetAspectRatio,
+	let w = If(lockAspectRatio == 0 || screen.aspectRatio < targetAspectRatio,
         screen.w * extraWidth,
         screen.h * targetAspectRatio);
-    Variable<EntityMemoryId> h = If(lockAspectRatio == 0 || screen.aspectRatio > targetAspectRatio,
+    let h = If(lockAspectRatio == 0 || screen.aspectRatio > targetAspectRatio,
         screen.h,
         screen.w / targetAspectRatio);
-    Variable<EntityMemoryId> l = -1 * w / 2;
-    Variable<EntityMemoryId> r = w / 2;
-    Variable<EntityMemoryId> t = h / 2;
-    Variable<EntityMemoryId> b = -1 * h / 2;
+    let l = -1 * w / 2;
+    let r = w / 2;
+    let t = h / 2;
+    let b = -1 * h / 2;
 }stage;
 #endif
 
@@ -98,3 +98,4 @@ Variable<LevelMemoryId> judgeStatus;
 Variable<LevelMemoryId> notes;
 Variable<LevelMemoryId> accscore;
 Variable<LevelMemoryId> maxTime;
+Variable<LevelMemoryId> lastUpdatedTime;

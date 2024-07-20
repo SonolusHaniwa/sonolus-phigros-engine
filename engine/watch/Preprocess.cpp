@@ -1,7 +1,6 @@
 SonolusApi getValue(let index) {
     FUNCBEGIN
-    IF (EntityInfoArray[index].get(1) != getArchetypeId(HoldNote)) Return(EntityDataArray[index].get(0));
-    ELSE Return(EntityDataArray[index].get(0) + EntityDataArray[index].get(2)); FI 
+    Return(EntitySharedMemoryArray[index].get(1));
     return VAR;
 }
 
@@ -33,6 +32,7 @@ SonolusApi merge(let a, let b, let Asize, let Bsize) {
     // 一定要记得把两个链表连起来，不然就爆了！！！
     IF (Alen < Asize) EntitySharedMemoryArray[pointer].set(0, A); FI
     IF (Blen < Bsize) EntitySharedMemoryArray[pointer].set(0, B); FI
+    	// DebugPause();
     Return(newHead);
     return VAR;
 }
@@ -88,12 +88,12 @@ SonolusApi StageController::calcCombo() {
         } DONE
     } DONE
     // 剩余片段合并
-    var head = 0, currentLen = 0;
+    var head = -1, currentLen = 0;
     FOR (i, 0, 32, 1) {
         IF (cachedSortedListHead.get(i) == 0) CONTINUE; FI
-        IF (head == 0) {
-            head = cachedSortedListHead.get(i);
-            currentLen = Power({2, i});
+        IF (head == -1) {
+            head.set(cachedSortedListHead.get(i));
+            currentLen.set(Power({2, i}));
             CONTINUE;
         } FI
         var A = head.get();
@@ -103,10 +103,13 @@ SonolusApi StageController::calcCombo() {
         head = merge(A, B, Asize, Bsize);
         currentLen = Asize + Bsize;
     } DONE
+    EntityMemory.set(1, head);
+    EntityMemory.set(2, lineLength);
     // 验证(只要没有输出就是正序)
-    // FOR (i, 0, lineLength, 1) {
-    //     IF (head < lineLength - 1 && getValue(head) > getValue(EntitySharedMemoryArray[head].get(0))) Debuglog(head); FI
-    //     head = EntitySharedMemoryArray[head].get(0);
-    // } DONE
+    FOR (i, 0, lineLength, 1) {
+    	Debuglog(head);
+        IF (head < lineLength - 1 && getValue(head) > getValue(EntitySharedMemoryArray[head].get(0))) Debuglog(head); FI
+        head = EntitySharedMemoryArray[head].get(0);
+    } DONE
     return VOID;
 }
