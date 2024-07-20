@@ -106,10 +106,9 @@ SonolusApi StageController::calcCombo() {
     EntityMemory.set(1, head);
     EntityMemory.set(2, lineLength);
     // 验证(只要没有输出就是正序)
-    FOR (i, 0, lineLength, 1) {
-    	Debuglog(head);
-        IF (head < lineLength - 1 && getValue(head) > getValue(EntitySharedMemoryArray[head].get(0))) Debuglog(head); FI
-        head = EntitySharedMemoryArray[head].get(0);
-    } DONE
+    // FOR (i, 0, lineLength, 1) {
+    //     IF (head < lineLength - 1 && getValue(head) > getValue(EntitySharedMemoryArray[head].get(0))) Debuglog(head); FI
+    //     head = EntitySharedMemoryArray[head].get(0);
+    // } DONE
     return VOID;
 }

@@ -31,7 +31,6 @@ class StageController: public Archetype {
 	        } DONE
         } ELSE {
 	        FOR (i, 0, noteNumber, 1) {
-	        	IF (head == 6040) Debuglog(head); FI
 	        	combo = combo + 1;
 	        	EntitySharedMemoryArray[head].set(2, combo);
 	        	maxCombo = maxCombo + 1;

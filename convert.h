@@ -157,7 +157,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 		total += item["notesBelow"].size();
 	}
 	cout << "[INFO] Total Entities: " << total << endl;
-	LevelRawData levelData, noteData;
+	LevelRawData levelData;
 	levelData.bgmOffset = bgmOffset;
 	levelData.append(InitializationEntity());
 	levelData.append(StageControllerEntity());
@@ -327,10 +327,10 @@ string fromPGS(string json, double bgmOffset = 0) {
 			note.judgeline = judgeline;
 			note.bpm = bpm;
 			switch(v["type"].asInt()) {
-				case 1: noteData.append(transform<NormalNoteEntity>(note)); break;
-				case 2: noteData.append(transform<DragNoteEntity>(note)); break;
-				case 3: noteData.append(transform<HoldNoteEntity>(note)); break;
-				case 4: noteData.append(transform<FlickNoteEntity>(note)); break;
+				case 1: levelData.append(transform<NormalNoteEntity>(note)); break;
+				case 2: levelData.append(transform<DragNoteEntity>(note)); break;
+				case 3: levelData.append(transform<HoldNoteEntity>(note)); break;
+				case 4: levelData.append(transform<FlickNoteEntity>(note)); break;
 			} INFO;
 		}
 		for (int j = 0; j < item["notesBelow"].size(); j++) {
@@ -348,19 +348,14 @@ string fromPGS(string json, double bgmOffset = 0) {
 			note.judgeline = judgeline;
 			note.bpm = bpm;
 			switch(v["type"].asInt()) {
-				case 1: noteData.append(transform<NormalNoteEntity>(note)); break;
-				case 2: noteData.append(transform<DragNoteEntity>(note)); break;
-				case 3: noteData.append(transform<HoldNoteEntity>(note)); break;
-				case 4: noteData.append(transform<FlickNoteEntity>(note)); break;
+				case 1: levelData.append(transform<NormalNoteEntity>(note)); break;
+				case 2: levelData.append(transform<DragNoteEntity>(note)); break;
+				case 3: levelData.append(transform<HoldNoteEntity>(note)); break;
+				case 4: levelData.append(transform<FlickNoteEntity>(note)); break;
 			} INFO;
 		}
 	}
 	
-	// 按键排序
-	sort(noteData.entities.begin(), noteData.entities.end(), [](Json::Value a, Json::Value b){
-		return a["time"].asDouble() < b["time"].asDouble();
-	});
-	for (int i = 0; i < noteData.entities.size(); i++) levelData.entities.push_back(noteData.entities[i]);
 	Json::Value data = levelData.toJsonObject();
 	data["formatVersion"] = 5;
 	return json_encode(data);
