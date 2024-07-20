@@ -112,9 +112,12 @@ class NormalNote: public Archetype {
 
 	SonolusApi updateParallel() {
 		FUNCBEGIN
+		IF (EntityInfo.get(0) == 6039) Debuglog(times.now); FI
 		IF (times.now < 0) Return(0); FI
 		var currentFloorPosition = If(isAbove, positionY, -1 * positionY);
+		IF (EntityInfo.get(0) == 6039) Debuglog(positionY); FI
 		IF (times.now < time && currentFloorPosition < floorPositionLimit) Return(0); FI
+		IF (EntityInfo.get(0) == 6039) Debuglog(EntityInfo.get(0)); FI
 		var dx = positionX * stage.w * 0.05625;
 		var dy = positionY * speed * stage.h * 0.6;
 		

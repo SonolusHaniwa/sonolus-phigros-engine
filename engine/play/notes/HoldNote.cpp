@@ -29,6 +29,7 @@ class HoldNote: public Archetype {
 	Variable<EntityMemoryId> isPerfect;
 	Variable<EntityMemoryId> comboChanged;
 	Variable<EntityMemoryId> lastSpawn;
+	Variable<EntityMemoryId> sfxPlayed;
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
@@ -50,12 +51,7 @@ class HoldNote: public Archetype {
 		lastSpawn = -1;
 		maxTime = Max(maxTime, time);
 		maxTime = Max(maxTime, time + holdTime);
-		return VOID;
-	}
-
-	SonolusApi initialize() {
-		FUNCBEGIN
-		IF (hasSFX && autoSFX) PlayScheduled(Clips.Note, time, minSFXDistance); FI
+		sfxPlayed = false;
 		return VOID;
 	}
 
@@ -119,6 +115,7 @@ class HoldNote: public Archetype {
 			comboChanged = true;
 			Return(0);
 		} FI
+		IF (hasSFX && autoSFX && !sfxPlayed) PlayScheduled(Clips.Note, time, minSFXDistance); sfxPlayed = true; FI
 		claimStart(EntityInfo.get(0));
 		return VOID;
 	}

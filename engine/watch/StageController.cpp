@@ -57,7 +57,7 @@ class StageController: public Archetype {
         maxCombo = 0;
         judgeStatus = 2;
         accscore = 0;
-        lastUpdatedTime = 0;
+        lastUpdatedId = 0;
         return VOID;
     }
 

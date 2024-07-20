@@ -25,6 +25,7 @@ class FlickNote: public Archetype {
 	Variable<EntityMemoryId> effectY4;
 	Variable<EntityMemoryId> inputTimeMax;
 	Variable<EntityMemoryId> inputTimeMin;
+	Variable<EntityMemoryId> sfxPlayed;
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
@@ -40,13 +41,7 @@ class FlickNote: public Archetype {
 		inputTimeMin = time - judgment.good;
 		isMulti = isMulti && hasSimul;
 		maxTime = Max(maxTime, time);
-		IF (hasSFX && autoSFX) PlayScheduled(Clips.Flick, time, minSFXDistance); FI
-		return VOID;
-	}
-
-	SonolusApi initialize() {
-		FUNCBEGIN
-		IF (hasSFX && autoSFX) PlayScheduled(Clips.Flick, time, minSFXDistance); FI
+		sfxPlayed = false;
 		return VOID;
 	}
 
@@ -85,6 +80,7 @@ class FlickNote: public Archetype {
 		} FI
 		IF (times.now < inputTimeMin) Return(0); FI
 		IF (times.now > inputTimeMax) complete(-1); FI
+		IF (hasSFX && autoSFX && !sfxPlayed) PlayScheduled(Clips.Flick, time, minSFXDistance); sfxPlayed = true; FI
 		flickClaimStart(EntityInfo.get(0));
 		return VOID;
 	}

@@ -92,15 +92,15 @@ class Judgeline: public Archetype {
 	SonolusApi updateParallel() {
 		FUNCBEGIN
 		var x1 = 0, y1 = 0, x2 = 0, y2 = 0;
-		IF (rotate == PI / 2 || rotate == PI * 3 / 2) x1 = x.get(), y1 = stage.b.get(), x2 = x.get(), y2 = stage.t.get();
+		IF (rotate == PI / 2 || rotate == PI * 3 / 2) x1 = x.get(), y1 = stage.b, x2 = x.get(), y2 = stage.t;
 		ELSE {
 			let k = Tan(rotate);
-			x1 = stage.l.get(); y1 = k * (stage.l - x) + y;
-			x2 = stage.r.get(); y2 = k * (stage.r - x) + y;
-			IF (y1 < stage.b) x1 = 1 / k * (stage.b - y) + x, y1 = stage.b.get(); FI
-			IF (y1 > stage.h) x1 = 1 / k * (stage.h - y) + x, y1 = stage.h.get(); FI
-			IF (y2 < stage.b) x2 = 1 / k * (stage.b - y) + x, y2 = stage.b.get(); FI
-			IF (y2 > stage.h) x2 = 1 / k * (stage.h - y) + x, y2 = stage.h.get(); FI
+			x1 = stage.l; y1 = k * (stage.l - x) + y;
+			x2 = stage.r; y2 = k * (stage.r - x) + y;
+			IF (y1 < stage.b) x1 = 1 / k * (stage.b - y) + x, y1 = stage.b; FI
+			IF (y1 > stage.h) x1 = 1 / k * (stage.h - y) + x, y1 = stage.h; FI
+			IF (y2 < stage.b) x2 = 1 / k * (stage.b - y) + x, y2 = stage.b; FI
+			IF (y2 > stage.h) x2 = 1 / k * (stage.h - y) + x, y2 = stage.h; FI
 		} FI
 		let vectorLength = judgelineHeight / 2;
 		let vectorX = vectorLength * Cos(rotate + PI / 2), vectorY = vectorLength * Sin(rotate + PI / 2);

@@ -25,6 +25,7 @@ class NormalNote: public Archetype {
 	Variable<EntityMemoryId> effectY4;
 	Variable<EntityMemoryId> inputTimeMax;
 	Variable<EntityMemoryId> inputTimeMin;
+	Variable<EntityMemoryId> sfxPlayed;
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
@@ -40,12 +41,7 @@ class NormalNote: public Archetype {
 		inputTimeMin = time - judgment.good;
 		isMulti = isMulti && hasSimul;
 		maxTime = Max(maxTime, time);
-		return VOID;
-	}
-
-	SonolusApi initialize() {
-		FUNCBEGIN
-		IF (hasSFX && autoSFX) PlayScheduled(Clips.Note, time, minSFXDistance); FI
+		sfxPlayed = false;
 		return VOID;
 	}
 
@@ -100,6 +96,7 @@ class NormalNote: public Archetype {
 		// Claim
 		IF (times.now < inputTimeMin) Return(0); FI
 		IF (times.now > inputTimeMax) complete(-1); FI
+		IF (hasSFX && autoSFX && !sfxPlayed) PlayScheduled(Clips.Note, time, minSFXDistance); sfxPlayed = true; FI
 		claimStart(EntityInfo.get(0));
 		return VOID;
 	}

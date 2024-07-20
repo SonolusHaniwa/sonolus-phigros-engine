@@ -25,6 +25,7 @@ class DragNote: public Archetype {
 	Variable<EntityMemoryId> effectY4;
 	Variable<EntityMemoryId> inputTimeMax;
 	Variable<EntityMemoryId> inputTimeMin;
+	Variable<EntityMemoryId> sfxPlayed;
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
@@ -40,13 +41,7 @@ class DragNote: public Archetype {
 		inputTimeMin = time - judgment.good;
 		isMulti = isMulti && hasSimul;
 		maxTime = Max(maxTime, time);
-		IF (hasSFX && autoSFX) PlayScheduled(Clips.Drag, time, minSFXDistance); FI
-		return VOID;
-	}
-
-	SonolusApi initialize() {
-		FUNCBEGIN
-		IF (hasSFX && autoSFX) PlayScheduled(Clips.Drag, time, minSFXDistance); FI
+		sfxPlayed = false;
 		return VOID;
 	}
 
@@ -80,6 +75,7 @@ class DragNote: public Archetype {
 		// Claim
 		IF (times.now < inputTimeMin) Return(0); FI
 		IF (times.now > inputTimeMax) complete(-1); FI
+		IF (hasSFX && autoSFX && !sfxPlayed) PlayScheduled(Clips.Drag, time, minSFXDistance); sfxPlayed = true; FI
 		IF (played) {
 			IF (times.now < time) Return(0); FI
 			complete(times.now);

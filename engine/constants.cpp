@@ -98,4 +98,4 @@ Variable<LevelMemoryId> judgeStatus;
 Variable<LevelMemoryId> notes;
 Variable<LevelMemoryId> accscore;
 Variable<LevelMemoryId> maxTime;
-Variable<LevelMemoryId> lastUpdatedTime;
+Variable<LevelMemoryId> lastUpdatedId;

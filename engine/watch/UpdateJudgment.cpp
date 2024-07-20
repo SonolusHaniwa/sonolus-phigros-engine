@@ -21,12 +21,12 @@ class UpdateJudgment: public Archetype {
  	// int updateSequentialOrder = 1;
 	SonolusApi updateSequential() {
 		FUNCBEGIN
-		IF (lastUpdatedTime > entity.get(6)) Return(0); FI
+		IF (lastUpdatedId > entity.get(6)) Return(0); FI
 		combo = entity.get(2);
 		maxCombo = entity.get(3);
 		judgeStatus = entity.get(4);
 		accscore = entity.get(5);
-		lastUpdatedTime = entity.get(6);
+		lastUpdatedId = entity.get(6);
 		return VOID;
 	}
 };
