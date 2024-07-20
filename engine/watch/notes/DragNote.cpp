@@ -43,11 +43,11 @@ class DragNote: public Archetype {
 		maxTime = Max(maxTime, time);
 		IF (isReplay) {
 			judgeTime = time.get();
-			PlayScheduled(Clips.Note, time, minSFXDistance);
+			PlayScheduled(Clips.Drag, time, minSFXDistance);
 			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
 		} ELSE {
 			judgeTime = time.get();
-			PlayScheduled(Clips.Note, time, minSFXDistance);
+			PlayScheduled(Clips.Drag, time, minSFXDistance);
 			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
 		} FI
 		return VOID;
