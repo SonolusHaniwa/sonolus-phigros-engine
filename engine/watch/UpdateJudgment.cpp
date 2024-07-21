@@ -24,7 +24,6 @@ class UpdateJudgment: public Archetype {
 		IF (lastUpdatedId > entity.get(6)) Return(0); FI
 		combo = entity.get(2);
 		maxCombo = entity.get(3);
-		Debuglog(entityId); Debuglog(entity.get(1)); Debuglog(entity.get(4));
 		judgeStatus = entity.get(4);
 		accscore = entity.get(5);
 		lastUpdatedId = entity.get(6);
