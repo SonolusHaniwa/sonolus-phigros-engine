@@ -74,8 +74,10 @@ class DragNote: public Archetype {
 	// 	EntityDespawn.set(0, 1);
 	// 	return VOID;
 	// }
+	int updateSequentialOrder = 114514;
 	SonolusApi updateSequential() {
 		FUNCBEGIN
+		// IF (currentCombo >= 1137 && currentCombo <= 1139) Debuglog(EntityInfo.get(0)); FI
 		IF (times.now < 0) Return(0); FI
 		IF (isAbove) positionY = floorPosition - line.get(5);
 		ELSE positionY = floorPosition + line.get(5); FI

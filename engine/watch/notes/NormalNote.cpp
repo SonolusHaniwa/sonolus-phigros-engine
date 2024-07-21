@@ -48,6 +48,7 @@ class NormalNote: public Archetype {
 		} ELSE {
 			judgeTime = time.get();
 			PlayScheduled(Clips.Note, time, minSFXDistance);
+			IF (currentCombo >= 1170) Debuglog(EntityInfo.get(0)); FI
 			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
 		} FI
 		return VOID;

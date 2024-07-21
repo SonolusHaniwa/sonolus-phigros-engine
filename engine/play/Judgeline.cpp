@@ -28,6 +28,7 @@ class Judgeline: public Archetype {
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		allocatedId = allocateJudgelineId.get();
+		// allocatedId = EntityInfo.get(0);
 		allocateJudgelineId = allocateJudgelineId + 1;
 		speedEventId = speedEvent.get();
 		moveXEventId = moveXEvent.get();
