@@ -13,6 +13,10 @@ class HoldNote: public Archetype {
 	defineImports(isFake);
 	defineImports(judgeline);
 	defineImports(bpm);
+	defineExports(accuracy);
+	defineExports(judgeResult);
+	defineExports(judgeTime);
+	defineExports(judgeResult2);
 	Variable<EntityMemoryId> positionY;
 	Variable<EntityMemoryId> effectX1;
 	Variable<EntityMemoryId> effectY1;
@@ -64,9 +68,13 @@ class HoldNote: public Archetype {
 				IF (isPerfect) {
 					accscore = accscore + score.perfect;
 					judgeStatus = Min(judgeStatus, 2); EntityInput.set(0, 1);
+					ExportValue(judgeResult, 2);
+					ExportValue(judgeTime, times.now - time);
 				} ELSE {
 					accscore = accscore + score.great;
 					judgeStatus = Min(judgeStatus, 1); EntityInput.set(0, 2); 
+					ExportValue(judgeResult, 2);
+					ExportValue(judgeTime, times.now - time);
 				} FI
 				SpawnParticleEffect(If(isPerfect, Effects.perfect, Effects.great), 
 					effectX1, effectY1, 
@@ -77,6 +85,8 @@ class HoldNote: public Archetype {
 				IF (!comboChanged) {
 					combo = 0;
 					judgeStatus = Min(judgeStatus, 0); 
+					ExportValue(judgeResult, 0);
+					ExportValue(judgeTime, times.now - time);
 				} FI
 				EntityInput.set(0, 0);
 			} FI
@@ -90,6 +100,9 @@ class HoldNote: public Archetype {
 			IF (!hasTouch(EntityInfo.get(0))) {
 				released = true;
 				judgeStatus = Min(judgeStatus, 0); combo = 0;
+				ExportValue(judgeResult, 0);
+				ExportValue(judgeTime, times.now - time);
+				comboChanged = true;
 				Return(0);
 			} FI
 		} FI
@@ -110,11 +123,15 @@ class HoldNote: public Archetype {
 		IF (times.now > inputTimeMax) {
 			combo = 0;
 			judgeStatus = Min(judgeStatus, 0); 
+			ExportValue(judgeResult, 0);
+			ExportValue(judgeTime, times.now - time);
+			ExportValue(judgeResult2, 1);
 			isActive = true;
 			released = true;
 			comboChanged = true;
 			Return(0);
 		} FI
+		ExportValue(accuracy, times.now - time);
 		IF (hasSFX && autoSFX && !sfxPlayed) PlayScheduled(Clips.Note, time, minSFXDistance); sfxPlayed = true; FI
 		claimStart(EntityInfo.get(0));
 		return VOID;

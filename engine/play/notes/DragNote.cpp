@@ -13,6 +13,8 @@ class DragNote: public Archetype {
 	defineImports(isFake);
 	defineImports(judgeline);
 	defineImports(bpm);
+	defineExports(accuracy);
+	defineExports(judgeResult);
 	Variable<EntityMemoryId> positionY;
 	Variable<EntityMemoryId> played;
 	Variable<EntityMemoryId> effectX1;
@@ -47,6 +49,7 @@ class DragNote: public Archetype {
 
 	SonolusApi complete(let hitTime) {
 		FUNCBEGIN
+		ExportValue(accuracy, hitTime - time);
 		IF (Abs(hitTime - time) <= judgment.good) {
 			IF (hasSFX && !autoSFX) Play(Clips.Drag, minSFXDistance); FI
 			judgeStatus = Min(judgeStatus, 2); combo = combo + 1;
@@ -59,9 +62,11 @@ class DragNote: public Archetype {
 			EntityInput.set(1, hitTime - time);
 			EntityInput.set(2, Buckets.drag);
 			EntityInput.set(3, hitTime - time);
+			ExportValue(judgeResult, 2);
 		} FI
 		IF (Abs(hitTime - time) > judgment.good) {
 			judgeStatus = Min(judgeStatus, 0); combo = 0;
+			ExportValue(judgeResult, 0);
 		} FI
 		EntityDespawn.set(0, 1);
 		return VOID;

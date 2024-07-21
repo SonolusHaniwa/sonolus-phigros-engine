@@ -13,6 +13,8 @@ class DragNote: public Archetype {
 	defineImports(isFake);
 	defineImports(judgeline);
 	defineImports(bpm);
+	defineImports(accuracy);
+	defineImports(judgeResult);
 	Variable<EntityMemoryId> positionY;
 	Variable<EntityMemoryId> effectX1;
 	Variable<EntityMemoryId> effectY1;
@@ -33,7 +35,7 @@ class DragNote: public Archetype {
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
 	SonolusApi spawnTime() { return 0; }
-	SonolusApi despawnTime() { return time; }
+	SonolusApi despawnTime() { return If(Abs(time + accuracy + 1) < 0.001, time + judgment.good, time + accuracy); }
 
 	SonolusApi preprocess() {
 		FUNCBEGIN
@@ -42,8 +44,8 @@ class DragNote: public Archetype {
 		isMulti = isMulti && hasSimul;
 		maxTime = Max(maxTime, time);
 		IF (isReplay) {
-			judgeTime = time.get();
-			PlayScheduled(Clips.Drag, time, minSFXDistance);
+			judgeTime = If(Abs(time + accuracy + 1) < 0.001, time + judgment.good, time + accuracy);
+			IF (judgeResult != 0) PlayScheduled(Clips.Drag, time, minSFXDistance); FI
 			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
 		} ELSE {
 			judgeTime = time.get();
@@ -87,7 +89,8 @@ class DragNote: public Archetype {
 	SonolusApi terminate() {
 		FUNCBEGIN
 		IF (times.skip) Return(0); FI
-		SpawnParticleEffect(Effects.perfect, 
+		IF (judgeResult == 0) Return(0); FI
+		SpawnParticleEffect(If(judgeResult == 2, Effects.perfect, Effects.great), 
 			effectX1, effectY1, effectX2, effectY2,
 			effectX3, effectY3, effectX4, effectY4,
 			effectDurationTime);

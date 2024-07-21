@@ -13,6 +13,10 @@ class HoldNote: public Archetype {
 	defineImports(isFake);
 	defineImports(judgeline);
 	defineImports(bpm);
+	defineImports(accuracy);
+	defineImports(judgeResult);
+	defineImports(judgeTime);
+	defineImports(judgeResult2);
 	Variable<EntityMemoryId> positionY;
 	Variable<EntityMemoryId> effectX1;
 	Variable<EntityMemoryId> effectY1;
@@ -24,7 +28,7 @@ class HoldNote: public Archetype {
 	Variable<EntityMemoryId> effectY4;
 	Variable<EntityMemoryId> lastSpawn;
 	Variable<EntitySharedMemoryId> nextNote; // 下一个按键信息
-	Variable<EntitySharedMemoryId> judgeTime; // 判定时间
+	Variable<EntitySharedMemoryId> judgeTime2; // 判定时间
 	Variable<EntitySharedMemoryId> currentCombo; // 当前 Combo 数
 	Variable<EntitySharedMemoryId> currentMaxCombo; // 当前最大 Combo 数
 	Variable<EntitySharedMemoryId> currentJudgeStatus; // 当前判定结果
@@ -44,8 +48,8 @@ class HoldNote: public Archetype {
 		isMulti = isMulti && hasSimul;
 		lastSpawn = -1;
 		IF (isReplay) {
-			judgeTime = time + holdTime;
-			PlayScheduled(Clips.Note, time, minSFXDistance);
+			judgeTime2 = time + judgeTime;
+			IF (accuracy != 0 || judgeResult != 0) PlayScheduled(Clips.Note, time, minSFXDistance); FI
 			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
 		} ELSE {
 			judgeTime = time + holdTime;
@@ -64,13 +68,24 @@ class HoldNote: public Archetype {
 
 		// 画粒子效果
 		IF (times.skip) Return(0); FI
-		IF (times.now >= time && times.now <= time + holdTime && times.now - lastSpawn >= 30 / bpm) {
-			SpawnParticleEffect(Effects.perfect, 
-				effectX1, effectY1, 
-				effectX2, effectY2, 
-				effectX3, effectY3, 
-				effectX4, effectY4, effectDurationTime);
-			lastSpawn = times.now;
+		IF (isReplay) {
+			IF (judgeResult2 == 0 && times.now >= time + accuracy && times.now <= judgeTime2 && times.now - lastSpawn >= 30 / bpm) {
+				SpawnParticleEffect(If(Abs(accuracy) < judgment.perfect, Effects.perfect, Effects.great), 
+					effectX1, effectY1, 
+					effectX2, effectY2, 
+					effectX3, effectY3, 
+					effectX4, effectY4, effectDurationTime);
+				lastSpawn = times.now;
+			} FI
+		} ELSE {
+			IF (times.now >= time && times.now <= time + holdTime && times.now - lastSpawn >= 30 / bpm) {
+				SpawnParticleEffect(Effects.perfect, 
+					effectX1, effectY1, 
+					effectX2, effectY2, 
+					effectX3, effectY3, 
+					effectX4, effectY4, effectDurationTime);
+				lastSpawn = times.now;
+			} FI
 		} FI
 		return VOID;
 	}
@@ -128,8 +143,8 @@ class HoldNote: public Archetype {
 		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
 		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
 		
-		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 1000, 1);
-		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 1000, 1);
+		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 1000, If(times.now > judgeTime2, 0.4, 1));
+		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 1000, If(times.now > judgeTime2, 0.4, 1));
 		return VOID;
 	}
 };

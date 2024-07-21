@@ -13,6 +13,8 @@ class NormalNote: public Archetype {
 	defineImports(isFake);
 	defineImports(judgeline);
 	defineImports(bpm);
+	defineExports(accuracy);
+	defineExports(judgeResult);
 	Variable<EntityMemoryId> positionY;
 	Variable<EntityMemoryId> played;
 	Variable<EntityMemoryId> effectX1;
@@ -47,6 +49,7 @@ class NormalNote: public Archetype {
 
 	SonolusApi complete(let hitTime) {
 		FUNCBEGIN
+		ExportValue(accuracy, hitTime - time);
 		IF (Abs(hitTime - time) <= judgment.great) {
 			IF (hasSFX && !autoSFX) Play(Clips.Note, minSFXDistance); FI
 	 	} FI
@@ -61,6 +64,7 @@ class NormalNote: public Archetype {
 			EntityInput.set(1, hitTime - time);
 			EntityInput.set(2, Buckets.note);
 			EntityInput.set(3, hitTime - time);
+			ExportValue(judgeResult, 2);
 		} FI
 		IF (Abs(hitTime - time) > judgment.perfect && Abs(hitTime - time) <= judgment.great) {
 			accscore = accscore + score.great;
@@ -73,6 +77,7 @@ class NormalNote: public Archetype {
 			EntityInput.set(1, hitTime - time);
 			EntityInput.set(2, Buckets.note);
 			EntityInput.set(3, hitTime - time);
+			ExportValue(judgeResult, 1);
 		} FI
 		IF (Abs(hitTime - time) > judgment.great && Abs(hitTime - time) <= judgment.good) {
 			judgeStatus = Min(judgeStatus, 0); combo = 0;
@@ -80,9 +85,11 @@ class NormalNote: public Archetype {
 			EntityInput.set(1, hitTime - time);
 			EntityInput.set(2, Buckets.note);
 			EntityInput.set(3, hitTime - time);
+			ExportValue(judgeResult, 0);
 		} FI
 		IF (Abs(hitTime - time) > judgment.good) {
 			judgeStatus = Min(judgeStatus, 0); combo = 0;
+			ExportValue(judgeResult, 0);
 		} FI
 		EntityDespawn.set(0, 1);
 		return VOID;

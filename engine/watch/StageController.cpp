@@ -18,14 +18,20 @@ class StageController: public Archetype {
         var head = headNoteId.get();
         IF (isReplay) {
 	        FOR (i, 0, noteNumber, 1) {
-	        	combo = combo + 1;
+	        	IF (EntityDataArray[head].get(11) != 0) combo = combo + 1;
+                ELSE combo = 0; FI
 	        	EntitySharedMemoryArray[head].set(2, combo);
-	        	maxCombo = maxCombo + 1;
+
+	        	maxCombo = Max(maxCombo, combo);
 	        	EntitySharedMemoryArray[head].set(3, maxCombo);
-	        	judgeStatus = Min(judgeStatus, 2);
+
+	        	judgeStatus = Min(judgeStatus, EntityDataArray[head].get(11));
 	        	EntitySharedMemoryArray[head].set(4, judgeStatus);
-	        	accscore = accscore + score.perfect;
+
+	        	IF (EntityDataArray[head].get(11) == 2) accscore = accscore + score.perfect;
+                ELSE IF (EntityDataArray[head].get(11) == 1) accscore = accscore + score.great; FI FI
 	        	EntitySharedMemoryArray[head].set(5, accscore);
+
 	        	EntitySharedMemoryArray[head].set(6, i);
 	        	head = EntitySharedMemoryArray[head].get(0);
 	        } DONE
@@ -54,7 +60,7 @@ class StageController: public Archetype {
         FUNCBEGIN
         combo = 0;
         maxCombo = 0;
-        judgeStatus = 2;
+        judgeStatus = If(hasIndicator, 2, 0);
         accscore = 0;
         lastUpdatedId = 0;
         return VOID;
