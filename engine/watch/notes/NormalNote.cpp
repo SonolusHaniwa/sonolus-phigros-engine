@@ -43,6 +43,7 @@ class NormalNote: public Archetype {
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		time = time * timeMagic / bpm;
+		time = time / levelSpeed;
 		notes = notes + 1;
 		isMulti = isMulti && hasSimul;
 		maxTime = Max(maxTime, time);
@@ -53,7 +54,7 @@ class NormalNote: public Archetype {
 			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
 		} ELSE {
 			judgeTime = time.get();
-			IF (hasSFX) PlayScheduled(Clips.Note, time, minSFXDistance); FI
+			IF (hasSFX) PlayScheduled(Clips.Note, time, minSFXDistance); FI 
 			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
 		} FI
 		return VOID;

@@ -39,6 +39,7 @@ double judgelineIdTextHeight = 0.05;
 
 #if play || watch
 let strictMode = LevelOption.get(Options.StrictMode);
+let levelSpeed = LevelOption.get(Options.LevelSpeed);
 let noteWidth = baseNoteWidth * LevelOption.get(Options.NoteSize);
 let hasSFX = LevelOption.get(Options.HasSFX);
 let hasSimul = LevelOption.get(Options.HasSimul);

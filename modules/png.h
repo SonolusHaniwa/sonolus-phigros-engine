@@ -10,7 +10,7 @@ struct image {
 	image(int width, int height) {
 		this->width = width, this->height = height;
 		this->data = new png_bytep[height];
-		for (int i = 0; i < height; i++) this->data[i] = reinterpret_cast<png_bytep>(new Byte[width * 4]);
+		for (int i = 0; i < height; i++) this->data[i] = reinterpret_cast<png_bytep>(new char[width * 4]);
 	}
 };
 

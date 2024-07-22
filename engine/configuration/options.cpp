@@ -4,16 +4,17 @@ class Options {
     public:
 
     int StrictMode = 0;
-    int NoteSize = 1;
-    int HasSFX = 2;
-    int HasSimul = 3;
-    int HasIndicator = 4;
-    int Background = 5;
-    int SystemPause = 6;
-    int SystemCombo = 7;
-    int SystemPrimaryMetric = 8;
-    int JudgelineId = 9;
-    int AutoSFX = 10;
+    int LevelSpeed = 1;
+    int NoteSize = 2;
+    int HasSFX = 3;
+    int HasSimul = 4;
+    int HasIndicator = 5;
+    int Background = 6;
+    int SystemPause = 7;
+    int SystemCombo = 8;
+    int SystemPrimaryMetric = 9;
+    int JudgelineId = 10;
+    int AutoSFX = 11;
 }Options;
 
 auto options = defineOptions<class Options>({
@@ -23,6 +24,16 @@ auto options = defineOptions<class Options>({
         standard: 1,
         type: OptionType.Toggle,
         def: false
+    }, {
+        name: NameText.LevelSpeed,
+        scope: Scope,
+        standard: 1,
+        type: OptionType.Slider,
+        def: 1,
+        min: 0.5,
+        max: 2,
+        step: 0.05,
+        unit: UnitText.Percentage,
     }, {
         name: NameText.NoteSize,
         scope: Scope,

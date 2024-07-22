@@ -14,6 +14,8 @@ class DisappearEvent: public Archetype {
 
 	SonolusApi preprocess() {
 		FUNCBEGIN
+		startTime = startTime / levelSpeed;
+		endTime = endTime / levelSpeed;
 		EntityDespawn.set(0, 1);
 		return VOID;
 	}

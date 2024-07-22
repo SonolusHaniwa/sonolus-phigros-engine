@@ -128,6 +128,14 @@ class FlickNoteEntity: public CommonNoteEntity {
 	defineArchetypeName("Phigros Flick Note");
 };
 
+class BpmChangeEntity: public LevelEntity {
+	public:
+
+	defineArchetypeName("#BPM_CHANGE");
+    defineLevelDataValueDetailed(beat, "#BEAT");
+    defineLevelDataValueDetailed(bpm, "#BPM");
+};
+
 
 
 // ========================================================================================
@@ -163,6 +171,9 @@ string fromPGS(string json, double bgmOffset = 0) {
 	levelData.append(StageControllerEntity());
 	levelData.append(InputManagerEntity());
 	levelData.append(FlickInputManagerEntity());
+	BpmChangeEntity bpmChange;
+	bpmChange.beat = 0; bpmChange.bpm = 60;
+	levelData.append(bpmChange);
 	// 计算 MultiNote
 	map<double, int> noteNumber;
 	for (int i = 0; i < obj["judgeLineList"].size(); i++) {
