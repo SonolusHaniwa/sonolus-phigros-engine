@@ -35,7 +35,10 @@ class FlickNote: public Archetype {
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
 	SonolusApi spawnTime() { return 0; }
-	SonolusApi despawnTime() { return If(Abs(time + accuracy + 1) < 0.001, time + judgment.good, time + accuracy); }
+	SonolusApi despawnTime() { return If(isReplay,
+		If(Abs(time + accuracy + 1) < 0.001, time + judgment.good, time + accuracy),
+		time
+	); }
 	
 	SonolusApi preprocess() {
 		FUNCBEGIN
@@ -45,11 +48,12 @@ class FlickNote: public Archetype {
 		maxTime = Max(maxTime, time);
 		IF (isReplay) {
 			judgeTime = If(Abs(time + accuracy + 1) < 0.001, time + judgment.good, time + accuracy);
-			IF (judgeResult != 0) PlayScheduled(Clips.Flick, time, minSFXDistance); FI
+			IF (judgeResult != 0 && hasSFX && !autoSFX) PlayScheduled(Clips.Flick, time + accuracy, minSFXDistance); FI
+			IF (autoSFX && hasSFX) PlayScheduled(Clips.Flick, time, minSFXDistance); FI
 			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
 		} ELSE {
 			judgeTime = time.get();
-			PlayScheduled(Clips.Flick, time, minSFXDistance);
+			IF (hasSFX) PlayScheduled(Clips.Flick, time, minSFXDistance); FI
 			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
 		} FI
 		return VOID;
@@ -87,8 +91,8 @@ class FlickNote: public Archetype {
 	SonolusApi terminate() {
 		FUNCBEGIN
 		IF (times.skip) Return(0); FI
-		IF (judgeResult == 0) Return(0); FI
-		SpawnParticleEffect(If(judgeResult == 2, Effects.perfect, Effects.great), 
+		IF (isReplay && judgeResult == 0) Return(0); FI
+		SpawnParticleEffect(If(judgeResult == 2 || !isReplay, Effects.perfect, Effects.great), 
 			effectX1, effectY1, effectX2, effectY2,
 			effectX3, effectY3, effectX4, effectY4,
 			effectDurationTime);

@@ -49,11 +49,12 @@ class HoldNote: public Archetype {
 		lastSpawn = -1;
 		IF (isReplay) {
 			judgeTime2 = time + judgeTime;
-			IF (accuracy != 0 || judgeResult != 0) PlayScheduled(Clips.Note, time, minSFXDistance); FI
+			IF ((accuracy != 0 || judgeResult != 0) && hasSFX && !autoSFX) PlayScheduled(Clips.Note, time + accuracy, minSFXDistance); FI
+			IF (autoSFX && hasSFX) PlayScheduled(Clips.Note, time, minSFXDistance); FI
 			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
 		} ELSE {
-			judgeTime = time + holdTime;
-			PlayScheduled(Clips.Note, time, minSFXDistance);
+			judgeTime2 = time + holdTime;
+			IF (hasSFX) PlayScheduled(Clips.Note, time, minSFXDistance); FI
 			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
 		} FI
 		return VOID;
@@ -143,8 +144,8 @@ class HoldNote: public Archetype {
 		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
 		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
 		
-		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 1000, If(times.now > judgeTime2, 0.4, 1));
-		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 1000, If(times.now > judgeTime2, 0.4, 1));
+		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 1000, If(times.now > judgeTime2 && isReplay, 0.4, 1));
+		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 1000, If(times.now > judgeTime2 && isReplay, 0.4, 1));
 		return VOID;
 	}
 };
