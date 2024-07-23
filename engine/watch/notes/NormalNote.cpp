@@ -52,10 +52,11 @@ class NormalNote: public Archetype {
 		var id = EntityDataArray[judgeline].get(0);
 		WHILE (id) {
 			var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
-			IF (deltaFloorPosition <= 20 / 3 / speed) BREAK; FI
-			appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 20 / 3 / speed) / EntityDataArray[id].get(2);
+			IF (deltaFloorPosition <= 10 / 3 / speed) BREAK; FI
+			appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 10 / 3 / speed) / EntityDataArray[id].get(2);
 			id = EntityDataArray[id].get(3);
 		} DONE
+		appearTime = Max(0, Min(appearTime, time - 0.5));
 		IF (isReplay) {
 			judgeTime = If(Abs(time + accuracy + 1) < 0.001, time + judgment.good, time + accuracy);
 			IF (judgeResult != 0 && hasSFX && !autoSFX) PlayScheduled(Clips.Note, time + accuracy, minSFXDistance); FI
@@ -120,6 +121,9 @@ class NormalNote: public Archetype {
 		FUNCBEGIN
 		IF (times.skip) Return(0); FI
 		IF (isReplay && judgeResult == 0) Return(0); FI
+		// IF (currentCombo == 10)
+		// 	Debuglog(effectX1); Debuglog(effectY1);
+		// FI
 		SpawnParticleEffect(If(judgeResult == 2 || !isReplay, Effects.perfect, Effects.great), 
 			effectX1, effectY1, effectX2, effectY2,
 			effectX3, effectY3, effectX4, effectY4,
