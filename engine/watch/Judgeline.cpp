@@ -40,6 +40,7 @@ class Judgeline: public Archetype {
         id = moveYEvent.get(); jump(id, 5);
         id = rotateEvent.get(); jump(id, 5);
         id = disappearEvent.get(); jump(id, 5);
+		speed = 0; x = 0; y = 0; rotate = 0; disappear = 1; floorPosition = 0;
 		return VOID;
 	}
 

@@ -11,8 +11,8 @@ class StageController: public Archetype {
         return VOID;
     }
 
-	SonolusApi spawnOrder() { return 1; }
-	SonolusApi shouldSpawn() { return 1; }
+	SonolusApi spawnOrder() { return 0; }
+	SonolusApi shouldSpawn() { return true; }
 
     int updateSequentialOrder = -10000;
     SonolusApi updateSequential() {

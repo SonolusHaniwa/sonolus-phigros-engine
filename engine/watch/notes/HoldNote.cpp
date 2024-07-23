@@ -27,6 +27,7 @@ class HoldNote: public Archetype {
 	Variable<EntityMemoryId> effectX4;
 	Variable<EntityMemoryId> effectY4;
 	Variable<EntityMemoryId> lastSpawn;
+	Variable<EntityMemoryId> appearTime;
 	Variable<EntitySharedMemoryId> nextNote; // 下一个按键信息
 	Variable<EntitySharedMemoryId> judgeTime2; // 判定时间
 	Variable<EntitySharedMemoryId> currentCombo; // 当前 Combo 数
@@ -37,9 +38,10 @@ class HoldNote: public Archetype {
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
-	SonolusApi spawnTime() { return 0; }
+	SonolusApi spawnTime() { return appearTime; }
 	SonolusApi despawnTime() { return time + holdTime; }
 
+	int preprocessOrder = 514;
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		time = time * timeMagic / bpm;
@@ -50,6 +52,13 @@ class HoldNote: public Archetype {
 		speed = speed * levelSpeed;
 		isMulti = isMulti && hasSimul;
 		lastSpawn = -1;
+		var id = EntityDataArray[judgeline].get(0);
+		WHILE (id) {
+			var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
+			IF (deltaFloorPosition <= 100 / 3 / speed) BREAK; FI
+			appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 100 / 3 / speed) / EntityDataArray[id].get(2);
+			id = EntityDataArray[id].get(3);
+		} DONE
 		IF (isReplay) {
 			judgeTime2 = time + judgeTime;
 			IF ((accuracy != 0 || judgeResult != 0) && hasSFX && !autoSFX) PlayScheduled(Clips.Note, time + accuracy, minSFXDistance); FI
@@ -147,8 +156,8 @@ class HoldNote: public Archetype {
 		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
 		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
 		
-		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 1000, If(times.now > judgeTime2 && isReplay, 0.4, 1));
-		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 1000, If(times.now > judgeTime2 && isReplay, 0.4, 1));
+		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 1000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > judgeTime2 && isReplay, 0.4, 1));
+		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 1000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > judgeTime2 && isReplay, 0.4, 1));
 		return VOID;
 	}
 };

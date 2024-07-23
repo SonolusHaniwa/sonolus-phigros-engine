@@ -34,12 +34,14 @@ class HoldNote: public Archetype {
 	Variable<EntityMemoryId> comboChanged;
 	Variable<EntityMemoryId> lastSpawn;
 	Variable<EntityMemoryId> sfxPlayed;
+	Variable<EntityMemoryId> appearTime;
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
-	SonolusApi spawnOrder() { return 2; }
-	SonolusApi shouldSpawn() { return 1; }
+	SonolusApi spawnOrder() { return appearTime; }
+	SonolusApi shouldSpawn() { return times.now > appearTime; }
 
+	int preprocessOrder = 514;
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		time = time * timeMagic / bpm;
@@ -59,6 +61,13 @@ class HoldNote: public Archetype {
 		maxTime = Max(maxTime, time);
 		maxTime = Max(maxTime, time + holdTime);
 		sfxPlayed = false;
+		var id = EntityDataArray[judgeline].get(0);
+		WHILE (id) {
+			var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
+			IF (deltaFloorPosition <= 100 / 3 / speed) BREAK; FI
+			appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 100 / 3 / speed) / EntityDataArray[id].get(2);
+			id = EntityDataArray[id].get(3);
+		} DONE
 		return VOID;
 	}
 
@@ -201,8 +210,8 @@ class HoldNote: public Archetype {
 		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
 		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
 		
-		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 1000, If(released, 0.4, 1));
-		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 1000, If(released, 0.4, 1));
+		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 1000 + 1000 - time + EntityInfo.get(0) / 10000, If(released, 0.4, 1));
+		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 1000 + 1000 - time + EntityInfo.get(0) / 10000, If(released, 0.4, 1));
 		return VOID;
 	}
 };

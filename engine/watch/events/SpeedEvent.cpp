@@ -7,13 +7,13 @@ class SpeedEvent: public Archetype {
 	defineImports(value);
 	defineImports(next);
 	Variable<EntityMemoryId> bpm;
-	Variable<EntityMemoryId> baseFloorPosition;
 	Variable<EntitySharedMemoryId> judgelineId;
+	Variable<EntitySharedMemoryId> baseFloorPosition;
 
 	SonolusApi spawnTime() { return startTime * timeMagic / bpm; }
 	SonolusApi despawnTime() { return endTime * timeMagic / bpm; }
 	
-	int preprocessOrder = 114514;
+	int preprocessOrder = 114;
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		startTime = startTime / levelSpeed;

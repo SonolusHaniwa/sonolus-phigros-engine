@@ -14,79 +14,33 @@ class Judgeline: public Archetype {
 	Variable<EntitySharedMemoryId> rotate;
 	Variable<EntitySharedMemoryId> disappear;
 	Variable<EntitySharedMemoryId> floorPosition;
-	Variable<EntityMemoryId> speedEventId;
-	Variable<EntityMemoryId> moveXEventId;
-	Variable<EntityMemoryId> moveYEventId;
-	Variable<EntityMemoryId> rotateEventId;
-	Variable<EntityMemoryId> disappearEventId;
-	Variable<EntityMemoryId> baseFloorPosition;
 	Variable<EntityMemoryId> allocatedId;
 
-	SonolusApi spawnOrder() { return 1; }
-	SonolusApi shouldSpawn() { return 1; }
+	SonolusApi spawnOrder() { return 0; }
+	SonolusApi shouldSpawn() { return true; }
 
+	SonolusApi jump(var &id, int nextId) {
+		FUNCBEGIN
+		WHILE (id != 0) {
+            EntitySharedMemoryArray[id].set(0, EntityInfo.get(0));
+			id = EntityDataArray[id].get(nextId);
+		} DONE
+		return VOID;
+	}
+
+    int preprocessOrder = -114514;
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		allocatedId = allocateJudgelineId.get();
 		// allocatedId = EntityInfo.get(0);
 		allocateJudgelineId = allocateJudgelineId + 1;
-		speedEventId = speedEvent.get();
-		moveXEventId = moveXEvent.get();
-		moveYEventId = moveYEvent.get();
-		rotateEventId = rotateEvent.get();
-		disappearEventId = disappearEvent.get();
-		speed = 1;
-		x = 0, y = 0;
-		rotate = 0;
-		disappear = 0;
-		floorPosition = 0;
-		baseFloorPosition = 0;
-		return VOID;
-	}
-
-	SonolusApi jump(Variable<EntityMemoryId> &id, int nextId, bool isSpeed = false) {
-		FUNCBEGIN
-		WHILE (id != 0) {
-			auto obj = EntityDataArray[id];
-			IF (obj.get(1) * timeMagic / bpm > times.now) BREAK; FI
-			IF (isSpeed) {
-				baseFloorPosition = baseFloorPosition + (obj.get(1) - obj.get(0)) * timeMagic / bpm * obj.get(2); 
-			} FI
-			id = obj.get(nextId);
-		} DONE
-		return VOID;
-	}
-	SonolusApi updateSequential() {
-		FUNCBEGIN
-		jump(speedEventId, 3, true);
-		jump(moveXEventId, 5);
-		jump(moveYEventId, 5);
-		jump(rotateEventId, 5);
-		jump(disappearEventId, 5);
-		IF (speedEventId != 0) {
-			speed = EntityDataArray[speedEventId].get(2); 
-			floorPosition = baseFloorPosition + (times.now - EntityDataArray[speedEventId].get(0) * timeMagic / bpm) * speed;
-		} FI
-		IF (moveXEventId != 0) {
-			auto obj = EntityDataArray[moveXEventId];
-			x = getEaseValue(obj.get(4), obj.get(0) * timeMagic / bpm, obj.get(1) * timeMagic / bpm, obj.get(2), obj.get(3), times.now);
-			x = x * stage.w + stage.l;
-		} FI
-		IF (moveYEventId != 0) {
-			auto obj = EntityDataArray[moveYEventId];
-			y = getEaseValue(obj.get(4), obj.get(0) * timeMagic / bpm, obj.get(1) * timeMagic / bpm, obj.get(2), obj.get(3), times.now);
-			y = y * stage.h + stage.b;
-		} FI
-		IF (rotateEventId != 0) {
-			auto obj = EntityDataArray[rotateEventId];
-			rotate = getEaseValue(obj.get(4), obj.get(0) * timeMagic / bpm, obj.get(1) * timeMagic / bpm, obj.get(2), obj.get(3), times.now) % 360;
-			IF (rotate < 0) rotate = rotate + 360; FI
-			rotate = rotate / 180 * PI;
-		} FI
-		IF (disappearEventId != 0) {
-			auto obj = EntityDataArray[disappearEventId];
-			disappear = getEaseValue(obj.get(4), obj.get(0) * timeMagic / bpm, obj.get(1) * timeMagic / bpm, obj.get(2), obj.get(3), times.now);
-		} FI
+		speed = 0; x = 0; y = 0; rotate = 0; disappear = 1; floorPosition = 0;
+        var id = speedEvent.get(); jump(id, 3);
+        id = moveXEvent.get(); jump(id, 5);
+        id = moveYEvent.get(); jump(id, 5);
+        id = rotateEvent.get(); jump(id, 5);
+        id = disappearEvent.get(); jump(id, 5);
+		speed = 0; x = 0; y = 0; rotate = 0; disappear = 1; floorPosition = 0;
 		return VOID;
 	}
 

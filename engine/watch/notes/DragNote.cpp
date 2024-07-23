@@ -24,6 +24,7 @@ class DragNote: public Archetype {
 	Variable<EntityMemoryId> effectY3;
 	Variable<EntityMemoryId> effectX4;
 	Variable<EntityMemoryId> effectY4;
+	Variable<EntityMemoryId> appearTime;
 	Variable<EntitySharedMemoryId> nextNote; // 下一个按键信息
 	Variable<EntitySharedMemoryId> judgeTime; // 判定时间
 	Variable<EntitySharedMemoryId> currentCombo; // 当前 Combo 数
@@ -34,12 +35,13 @@ class DragNote: public Archetype {
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
-	SonolusApi spawnTime() { return 0; }
+	SonolusApi spawnTime() { return appearTime; }
 	SonolusApi despawnTime() { return If(isReplay,
 		If(Abs(time + accuracy + 1) < 0.001, time + judgment.good, time + accuracy),
 		time
 	); }
 
+	int preprocessOrder = 514;
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		time = time * timeMagic / bpm;
@@ -47,6 +49,13 @@ class DragNote: public Archetype {
 		notes = notes + 1;
 		isMulti = isMulti && hasSimul;
 		maxTime = Max(maxTime, time);
+		var id = EntityDataArray[judgeline].get(0);
+		WHILE (id) {
+			var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
+			IF (deltaFloorPosition <= 20 / 3 / speed) BREAK; FI
+			appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 20 / 3 / speed) / EntityDataArray[id].get(2);
+			id = EntityDataArray[id].get(3);
+		} DONE
 		IF (isReplay) {
 			judgeTime = If(Abs(time + accuracy + 1) < 0.001, time + judgment.good, time + accuracy);
 			IF (judgeResult != 0 && hasSFX && !autoSFX) PlayScheduled(Clips.Drag, time + accuracy, minSFXDistance); FI
@@ -131,7 +140,7 @@ class DragNote: public Archetype {
 		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
 		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
 		
-		Draw(If(isMulti, Sprites.HLDrag, Sprites.NormalDrag), x3, y3, x4, y4, x5, y5, x6, y6, 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1));
+		Draw(If(isMulti, Sprites.HLDrag, Sprites.NormalDrag), x3, y3, x4, y4, x5, y5, x6, y6, 11000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1));
 		return VOID;
 	}
 };

@@ -71,6 +71,6 @@ class Initialization: public Archetype {
         EntityDespawn.set(0, 1);
         return VOID;
     }
-    SonolusApi spawnOrder() { return 0; }
-    SonolusApi shouldSpawn() { return 1; }
+    SonolusApi spawnOrder() { return -114514; }
+    SonolusApi shouldSpawn() { return true; }
 };

@@ -153,8 +153,8 @@ class FlickInputManager: public Archetype {
 
 	static constexpr const char* name = "Phigros Flick Input Manager";
 
-	SonolusApi spawnOrder() { return 1; }
-	SonolusApi shouldSpawn() { return 1; }
+	SonolusApi spawnOrder() { return 0; }
+	SonolusApi shouldSpawn() { return true; }
 	
 	SonolusApi updateSequential() {
 		FUNCBEGIN

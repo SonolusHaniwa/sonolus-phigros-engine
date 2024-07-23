@@ -8,15 +8,28 @@ class RotateEvent: public Archetype {
 	defineImports(end);
 	defineImports(easing);
 	defineImports(next);
+	Variable<EntityMemoryId> bpm;
+	Variable<EntitySharedMemoryId> judgelineId;
 
-	SonolusApi spawnOrder() { return 0; }
-	SonolusApi shouldSpawn() { return true; }
+	SonolusApi spawnOrder() { return startTime * timeMagic / bpm; }
+	SonolusApi shouldSpawn() { return times.now >= startTime * timeMagic / bpm; }
 
+	int preprocessOrder = 114;
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		startTime = startTime / levelSpeed;
 		endTime = endTime / levelSpeed;
-		EntityDespawn.set(0, 1);
+		bpm = EntityDataArray[judgelineId].get(5);
+		return VOID;
+	}
+
+	SonolusApi updateSequential() {
+		FUNCBEGIN
+		var rotate = getEaseValue(easing, startTime * timeMagic / bpm, endTime * timeMagic / bpm, start, end, times.now);
+		IF (rotate < 0) rotate = rotate + 360; FI
+		rotate = rotate / 180 * PI;
+		EntitySharedMemoryArray[judgelineId].set(3, rotate);
+		IF (times.now > endTime * timeMagic / bpm) EntityDespawn.set(0, 1); FI
 		return VOID;
 	}
 };

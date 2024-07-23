@@ -28,12 +28,14 @@ class FlickNote: public Archetype {
 	Variable<EntityMemoryId> inputTimeMax;
 	Variable<EntityMemoryId> inputTimeMin;
 	Variable<EntityMemoryId> sfxPlayed;
+	Variable<EntityMemoryId> appearTime;
 
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
-	SonolusApi spawnOrder() { return 2; }
-	SonolusApi shouldSpawn() { return 1; }
+	SonolusApi spawnOrder() { return appearTime; }
+	SonolusApi shouldSpawn() { return times.now > appearTime; }
 	
+	int preprocessOrder = 514;
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		time = time * timeMagic / bpm;
@@ -45,6 +47,13 @@ class FlickNote: public Archetype {
 		isMulti = isMulti && hasSimul;
 		maxTime = Max(maxTime, time);
 		sfxPlayed = false;
+		var id = EntityDataArray[judgeline].get(0);
+		WHILE (id) {
+			var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
+			IF (deltaFloorPosition <= 20 / 3 / speed) BREAK; FI
+			appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 20 / 3 / speed) / EntityDataArray[id].get(2);
+			id = EntityDataArray[id].get(3);
+		} DONE
 		return VOID;
 	}
 
@@ -131,7 +140,7 @@ class FlickNote: public Archetype {
 		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
 		// IF (x3 >= 0 && x3 <= stage.r && y3 <= 0 && y3 >= stage.b) Debuglog(EntityInfo.get(0)); FI
 		
-		Draw(If(isMulti, Sprites.HLFlick, Sprites.NormalFlick), x3, y3, x4, y4, x5, y5, x6, y6, 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1));
+		Draw(If(isMulti, Sprites.HLFlick, Sprites.NormalFlick), x3, y3, x4, y4, x5, y5, x6, y6, 12000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1));
 		return VOID;
 	}
 };
