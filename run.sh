@@ -19,8 +19,8 @@ sqlite3 sonolus.db ".read ./data.sql"
 ./sonolus import ../phigros/phigros-2024-april.scp
 
 ./sonolus buildcpp play ../phigros -DDISABLE_TRACE
-# ./sonolus buildcpp tutorial ../sirius
-# ./sonolus buildcpp preview ../phigros -DDISABLE_TRACE
+# ./sonolus buildcpp tutorial ../phigros -DDISABLE_TRACE
+./sonolus buildcpp preview ../phigros -DDISABLE_TRACE
 ./sonolus buildcpp watch ../phigros -DDISABLE_TRACE
 # sqlite3 sonolus.db "SELECT * FROM Engine";
 

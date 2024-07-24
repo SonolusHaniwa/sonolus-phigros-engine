@@ -5,6 +5,8 @@
 
 #if play
 using namespace playData;
+#elif preview
+using namespace previewData;
 #elif watch
 using namespace watchData;
 #endif
@@ -29,6 +31,8 @@ string Scope = "phigros";
 #include"play/notes/DragNote.cpp"
 #include"play/notes/HoldNote.cpp"
 #include"play/notes/FlickNote.cpp"
+#elif preview
+#include"preview/Initialization.cpp"
 #elif watch
 #include"watch/updateSpawn.cpp"
 #include"watch/Initialization.cpp"

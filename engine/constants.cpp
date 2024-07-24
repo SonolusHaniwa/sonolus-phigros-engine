@@ -36,6 +36,7 @@ double floorPositionLimit = -0.001;
 double timeBarHeight = 0.01;
 double timeMagic = 1.875;
 double judgelineIdTextHeight = 0.05;
+double tipRatio = 2015.0 / 157.0;
 
 #if play || watch
 let strictMode = LevelOption.get(Options.StrictMode);
@@ -67,7 +68,6 @@ class stage {
     let t = h / 2;
     let b = -1 * h / 2;
 }stage;
-#endif
 
 let t = If(
 	lockAspectRatio && screen.aspectRatio < targetAspectRatio,
@@ -83,6 +83,7 @@ class judgment {
     let great = If(strictMode, 0.075, 0.16);
     let good = If(strictMode, 0.14,0.18);
 }judgment;
+#endif
 
 class score {
 	public:
@@ -92,6 +93,7 @@ class score {
 	let good = 0;
 }score;
 
+#if play || watch
 Variable<LevelMemoryId> allocateJudgelineId;
 Variable<LevelMemoryId> combo;
 Variable<LevelMemoryId> maxCombo;
@@ -100,3 +102,4 @@ Variable<LevelMemoryId> notes;
 Variable<LevelMemoryId> accscore;
 Variable<LevelMemoryId> maxTime;
 Variable<LevelMemoryId> lastUpdatedId;
+#endif

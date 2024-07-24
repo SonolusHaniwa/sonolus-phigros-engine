@@ -29,6 +29,7 @@ class Sprites {
 	int Combo7 = 21;
 	int Combo8 = 22;
 	int Combo9 = 23;
+	int tip = 24;
 }Sprites;
 
 auto skins = defineSkins<class Sprites>({
@@ -57,5 +58,6 @@ auto skins = defineSkins<class Sprites>({
 	{"6", Sprites.Combo6},
 	{"7", Sprites.Combo7},
 	{"8", Sprites.Combo8},
-	{"9", Sprites.Combo9}
+	{"9", Sprites.Combo9},
+	{"tip", Sprites.tip}
 });
