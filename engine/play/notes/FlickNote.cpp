@@ -87,6 +87,7 @@ class FlickNote: public Archetype {
 		IF (times.now < 0) Return(0); FI
 		IF (isAbove) positionY = floorPosition - line.get(5);
 		ELSE positionY = floorPosition + line.get(5); FI
+		IF (hasSFX && autoSFX && !sfxPlayed) PlayScheduled(Clips.Flick, time, minSFXDistance); sfxPlayed = true; FI
 
 		// Claim
 		IF (played) {
@@ -96,7 +97,6 @@ class FlickNote: public Archetype {
 		} FI
 		IF (times.now < inputTimeMin) Return(0); FI
 		IF (times.now > inputTimeMax) complete(-1); FI
-		IF (hasSFX && autoSFX && !sfxPlayed) PlayScheduled(Clips.Flick, time, minSFXDistance); sfxPlayed = true; FI
 		flickClaimStart(EntityInfo.get(0));
 		return VOID;
 	}
