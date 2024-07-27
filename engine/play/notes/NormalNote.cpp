@@ -110,11 +110,11 @@ class NormalNote: public Archetype {
 		IF (times.now < 0) Return(0); FI
 		IF (isAbove) positionY = floorPosition - line.get(5);
 		ELSE positionY = floorPosition + line.get(5); FI
+		IF (hasSFX && autoSFX && !sfxPlayed) PlayScheduled(Clips.Note, time, minSFXDistance); sfxPlayed = true; FI
 
 		// Claim
 		IF (times.now < inputTimeMin) Return(0); FI
 		IF (times.now > inputTimeMax) complete(-1); FI
-		IF (hasSFX && autoSFX && !sfxPlayed) PlayScheduled(Clips.Note, time, minSFXDistance); sfxPlayed = true; FI
 		claimStart(EntityInfo.get(0));
 		return VOID;
 	}
@@ -157,7 +157,7 @@ class NormalNote: public Archetype {
 		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
 		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
 		
-		Draw(If(isMulti, Sprites.HLNote, Sprites.NormalNote), x3, y3, x4, y4, x5, y5, x6, y6, 10000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1));
+		Draw(If(isMulti, Sprites.HLNote, Sprites.NormalNote), x3, y3, x4, y4, x5, y5, x6, y6, 11000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1));
 		return VOID;
 	}
 };
