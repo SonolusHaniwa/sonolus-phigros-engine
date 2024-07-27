@@ -9,3 +9,4 @@ LevelData*
 make
 *.json
 test*
+!LevelData.h
