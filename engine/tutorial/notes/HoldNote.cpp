@@ -36,13 +36,12 @@ SonolusApi HoldNoteFall2(let time, let sum) {
     let bodyWidth = baseNoteWidth, bodyHeight = 0.8 * stage.h * (1 - time / sum);
     let L = x - bodyWidth / 2, R = x + bodyWidth / 2, B = y, T = y + bodyHeight;
     Draw(Sprites.NormalHoldBody, L, B, L, T, R, T, R, B, 2000, 1);
-    drawFrozenHand(Icons.hand, x, y, 1);
+    drawFrozenHand(Icons.hand, x, y, 1, false, false);
     IF (times.now - spawnedEffect >= 30.0 / 138.0) {
         let x = 0, y = stage.t - 0.8 * stage.h;
         let l = x - effectWidth, r = x + effectWidth, b = y - effectWidth, t = y + effectWidth;
         SpawnParticleEffect(Effects.perfect, l, b, l, t, r, t, r, b, 0.5);
         spawnedEffect = times.now;
     } FI
-    drawFrozenHand(Icons.hand, x, y, 1);
     return VOID;
 }
