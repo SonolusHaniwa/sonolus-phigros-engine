@@ -10,8 +10,8 @@ Todo List:
 
 - [x] Finish writing play mode
 - [x] Finish writing buckets system
-- [ ] Finish writing tutorial mode
-- [ ] Finish writing watch mode
+- [x] Finish writing tutorial mode
+- [x] Finish writing watch mode
 - [x] Designed particle effect for phigros
 
 ## Links

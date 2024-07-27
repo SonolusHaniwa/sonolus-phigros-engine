@@ -1,5 +1,5 @@
 #include<bits/stdc++.h>
-#include"sonolus.h"
+#include"sonolus/sonolus.h"
 using namespace std;
 
 const string dist = "./dist";
@@ -98,13 +98,13 @@ int main(int argc, char** argv) {
     fout.close(); fout.open((dist + "/EngineData"));
     // ofstream fout((dist + "/EngineData"));
     for (int i = 0; i < data.size(); i++) fout << data.v[i];
-// #elif tutorial
-//     buffer data, configuration;
-//     build(configuration, data);
-//     ofstream fout((dist + "/EngineConfiguration"));
-//     for (int i = 0; i < configuration.size(); i++) fout << configuration.v[i];
-//     fout.close(); fout.open((dist + "/EngineTutorialData"));
-//     for (int i = 0; i < data.size(); i++) fout << data.v[i];
+#elif tutorial
+    buffer data, configuration;
+    build(configuration, data);
+    ofstream fout((dist + "/EngineConfiguration"));
+    for (int i = 0; i < configuration.size(); i++) fout << configuration.v[i];
+    fout.close(); fout.open((dist + "/EngineTutorialData"));
+    for (int i = 0; i < data.size(); i++) fout << data.v[i];
 #elif preview
     buffer data, configuration;
     build<

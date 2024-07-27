@@ -2,9 +2,13 @@
 #include"effects.cpp"
 #include"particles.cpp"
 #include"buckets.cpp"
+#include"icons.cpp"
+#include"texts.cpp"
 
 #if play
 using namespace playData;
+#elif tutorial
+using namespace tutorialData;
 #elif preview
 using namespace previewData;
 #elif watch
@@ -31,6 +35,16 @@ string Scope = "phigros";
 #include"play/notes/DragNote.cpp"
 #include"play/notes/HoldNote.cpp"
 #include"play/notes/FlickNote.cpp"
+#elif tutorial
+#include"tutorial/Hands.cpp"
+#include"tutorial/Initialization.cpp"
+#include"tutorial/StageController.cpp"
+#include"tutorial/Judgeline.cpp"
+#include"tutorial/notes/NormalNote.cpp"
+#include"tutorial/notes/DragNote.cpp"
+#include"tutorial/notes/HoldNote.cpp"
+#include"tutorial/notes/FlickNote.cpp"
+#include"tutorial/Tutorial.cpp"
 #elif preview
 #include"preview/Initialization.cpp"
 #elif watch

@@ -252,9 +252,15 @@ void build(buffer& configurationBuffer, buffer& dataBuffer) {
 #elif tutorial
     cout << "Solving Archetype \"Sonolus Tutorial Default\"..." << endl;
     time_t st = millitime();
-    engineTutorialData.preprocess = Block(tutorialPreprocess()).getNodeId();
-    engineTutorialData.navigate = Block(tutorialNavigate()).getNodeId();
-    engineTutorialData.update = Block(tutorialUpdate()).getNodeId();
+    createNodeContainer(); auto tmpres = tutorialPreprocess();
+	if (nodesContainer.top().size() == 0) Return(tmpres);
+	engineTutorialData.preprocess = mergeNodeContainer().getNodeId();
+    createNodeContainer(); tmpres = tutorialNavigate();
+	if (nodesContainer.top().size() == 0) Return(tmpres);
+	engineTutorialData.navigate = mergeNodeContainer().getNodeId();
+    createNodeContainer(); tmpres = tutorialUpdate();
+	if (nodesContainer.top().size() == 0) Return(tmpres);
+	engineTutorialData.update = mergeNodeContainer().getNodeId();
 	engineTutorialData.nodes = dataContainer;
     time_t d = millitime() - st;
     cout << "Solved Archetype \"Sonolus Tutorial Default\" in " << d << "ms. Speed: " 
@@ -312,7 +318,7 @@ void build(buffer& configurationBuffer, buffer& dataBuffer) {
 #include"blocks/Array.h"
 #include"blocks/Map.h"
 #include"items/PlayData.h"
-// #include"items/TutorialData.h"
+#include"items/TutorialData.h"
 #include"items/PreviewData.h"
 #include"items/WatchData.h"
 #include"items/LevelData.h"

@@ -20,7 +20,7 @@ double hlHoldOffset = 1062.0 / 49.0;
 double judgeDistanceLimit = baseNoteWidth * 0.875;
 double effectDurationTime = 0.4;
 double effectWidth = baseNoteWidth * 0.75;
-double holdTailTime = 0.16;
+double holdTailTime = 0.18;
 double comboTextRatio = 297.0 / 62.0;
 double combo0Ratio = 46.0 / 62.0;
 double combo1Ratio = 31.0 / 60.0;
@@ -53,7 +53,7 @@ let hasJudgelineId = LevelOption.get(Options.JudgelineId);
 let autoSFX = LevelOption.get(Options.AutoSFX);
 #endif
 
-#if play || watch
+#if play || watch || tutorial
 class stage {
 	public:
 
@@ -75,7 +75,9 @@ let t = If(
 	screen.t
 );
 let b = t - stage.h;
+#endif
 
+#if play || watch
 class judgment {
 	public:
 
@@ -102,4 +104,6 @@ Variable<LevelMemoryId> notes;
 Variable<LevelMemoryId> accscore;
 Variable<LevelMemoryId> maxTime;
 Variable<LevelMemoryId> lastUpdatedId;
+#elif tutorial
+Variable<TutorialMemoryId> spawnedEffect;
 #endif

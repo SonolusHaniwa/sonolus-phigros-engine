@@ -1,8 +1,11 @@
 ARCH="x64"
-VERSION=v1.6.2
 YELLOW="\e[93m"
 RED="\e[91m"
 RESET="\e[0m"
+
+# 获取最新版本
+echo -e $YELLOW"Checking latest version..."$RESET
+VERSION=$(curl -s https://api.github.com/repos/SonolusHaniwa/sonolus-server-cpp/releases/latest | jq -r '.tag_name')
 
 # 下载 Sonolus Server C++
 echo -e $YELLOW"Downloading Sonolus Server $VERSION for $ARCH..."$RESET
@@ -19,7 +22,7 @@ sqlite3 sonolus.db ".read ./data.sql"
 ./sonolus import ../phigros/phigros-2024-april.scp
 
 ./sonolus buildcpp play ../phigros -DDISABLE_TRACE
-# ./sonolus buildcpp tutorial ../phigros -DDISABLE_TRACE
+./sonolus buildcpp tutorial ../phigros -DDISABLE_TRACE
 ./sonolus buildcpp preview ../phigros -DDISABLE_TRACE
 ./sonolus buildcpp watch ../phigros -DDISABLE_TRACE
 # sqlite3 sonolus.db "SELECT * FROM Engine";

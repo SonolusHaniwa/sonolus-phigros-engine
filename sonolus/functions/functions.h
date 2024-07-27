@@ -183,12 +183,11 @@ FuncNode Equal(FuncNode lhs, FuncNode rhs) {
 }
 
 FuncNode Execute(vector<FuncNode> value) {
-	if (value.size() == 1) return value[0];
     return FuncNode(RuntimeFunction.Execute, value);
 }
 
-FuncNode Execute0(vector<FuncNode> value) {
-    return FuncNode(RuntimeFunction.Execute0, value);
+void Execute0(vector<FuncNode> value) {
+    R(FuncNode(RuntimeFunction.Execute0, value));
 }
 
 void ExportValue(FuncNode index, FuncNode value) {
@@ -337,8 +336,8 @@ FuncNode Or(vector<FuncNode> value) {
     return FuncNode(RuntimeFunction.Or, value);
 }
 
-FuncNode Paint(FuncNode id, FuncNode x, FuncNode y, FuncNode size, FuncNode rotation, FuncNode z, FuncNode a) {
-    return FuncNode(RuntimeFunction.Paint, {id, x, y, size, rotation, z, a});
+void Paint(FuncNode id, FuncNode x, FuncNode y, FuncNode size, FuncNode rotation, FuncNode z, FuncNode a) {
+    R(FuncNode(RuntimeFunction.Paint, {id, x, y, size, rotation, z, a}));
 }
 void Play(FuncNode id, FuncNode distance) {
     R(FuncNode(RuntimeFunction.Play, {id, distance}));
