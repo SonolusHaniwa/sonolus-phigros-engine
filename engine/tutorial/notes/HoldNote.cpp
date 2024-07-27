@@ -43,5 +43,6 @@ SonolusApi HoldNoteFall2(let time, let sum) {
         SpawnParticleEffect(Effects.perfect, l, b, l, t, r, t, r, b, 0.5);
         spawnedEffect = times.now;
     } FI
+    drawFrozenHand(Icons.hand, x, y, 1);
     return VOID;
 }

@@ -71,3 +71,9 @@ SonolusApi drawScore(let, let) {
     } DONE
     return VOID;
 }
+
+SonolusApi drawMask(let, let) {
+    FUNCBEGIN
+    Draw(Sprites.Blocker, screen.l, screen.b, screen.l, screen.t, screen.r, screen.t, screen.r, screen.b, -1, 0.5);
+    return VOID;
+}

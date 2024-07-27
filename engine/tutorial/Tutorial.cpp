@@ -25,7 +25,8 @@ const function<FuncNode(let, let)> Statics[] = {
     drawBorder,
     drawJudgeline,
     drawTimeline,
-    drawScore
+    drawScore,
+    drawMask
 };
 
 vector<pair<FuncNode, FuncNode> > duration, baseTime, nextSegment;
