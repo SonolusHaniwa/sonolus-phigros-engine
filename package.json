@@ -32,7 +32,7 @@
         "subtitle": "Pigeon Games",
         "author": "LittleYang0531",
         "skin": "phigros",
-        "background": "sirius-default",
+        "background": "phigros-0",
         "effect": "phigros",
         "particle": "phigros",
         "description": "A recreation of Phigros engine in Sonolus.\nVersion: 1.0.0_20240718_beta\n\nGithub Repository\nhttps://github.com/SonolusHaniwa/sonolus-phigros-engine"
