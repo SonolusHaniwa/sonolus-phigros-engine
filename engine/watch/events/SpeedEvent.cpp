@@ -16,9 +16,6 @@ class SpeedEvent: public Archetype {
 	int preprocessOrder = 114;
 	SonolusApi preprocess() {
 		FUNCBEGIN
-		startTime = startTime / levelSpeed;
-		endTime = endTime / levelSpeed;
-		value = value * levelSpeed;
 		bpm = EntityDataArray[judgelineId].get(5);
 		baseFloorPosition = EntitySharedMemoryArray[judgelineId].get(5);
 		EntitySharedMemoryArray[judgelineId].set(5, baseFloorPosition + (endTime - startTime) * timeMagic / bpm * value);

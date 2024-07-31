@@ -46,9 +46,6 @@ class HoldNote: public Archetype {
 		FUNCBEGIN
 		time = time * timeMagic / bpm;
 		holdTime = holdTime * timeMagic / bpm;
-		time = time / levelSpeed;
-		holdTime = holdTime / levelSpeed;
-		speed = speed * levelSpeed;
 		notes = notes + 1;
 		isActive = false;
 		released = false;

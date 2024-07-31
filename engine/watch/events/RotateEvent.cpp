@@ -17,8 +17,6 @@ class RotateEvent: public Archetype {
 	int preprocessOrder = 114514;
 	SonolusApi preprocess() {
 		FUNCBEGIN
-		startTime = startTime / levelSpeed;
-		endTime = endTime / levelSpeed;
 		bpm = EntityDataArray[judgelineId].get(5);
 		return VOID;
 	}

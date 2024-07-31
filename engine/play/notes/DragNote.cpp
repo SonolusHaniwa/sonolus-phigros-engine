@@ -39,7 +39,6 @@ class DragNote: public Archetype {
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		time = time * timeMagic / bpm;
-		time = time / levelSpeed;
 		notes = notes + 1;
 		played = false;
 		inputTimeMax = time + judgment.good;

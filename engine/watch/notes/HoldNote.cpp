@@ -47,9 +47,6 @@ class HoldNote: public Archetype {
 		time = time * timeMagic / bpm;
 		notes = notes + 1;
 		holdTime = holdTime * timeMagic / bpm;
-		time = time / levelSpeed;
-		holdTime = holdTime / levelSpeed;
-		speed = speed * levelSpeed;
 		isMulti = isMulti && hasSimul;
 		lastSpawn = -1;
 		var id = EntityDataArray[judgeline].get(0);
