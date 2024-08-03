@@ -58,12 +58,12 @@ class NormalNote: public Archetype {
 		appearTime = Max(0, Min(appearTime, time - 0.5));
 		IF (isReplay) {
 			judgeTime = If(Abs(time + accuracy + 1) < 0.001, time + judgment.good, time + accuracy);
-			IF (judgeResult != 0 && hasSFX && !autoSFX) PlayScheduled(Clips.Note, time + accuracy, minSFXDistance); FI
-			IF (autoSFX && hasSFX) PlayScheduled(Clips.Note, time, minSFXDistance); FI
+			IF (judgeResult != 0 && hasSFX && !autoSFX) PlayScheduled(Clips.Note, time / levelSpeed + accuracy, minSFXDistance); FI
+			IF (autoSFX && hasSFX) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); FI
 			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
 		} ELSE {
 			judgeTime = time.get();
-			IF (hasSFX) PlayScheduled(Clips.Note, time, minSFXDistance); FI 
+			IF (hasSFX) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); FI 
 			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
 		} FI
 		return VOID;

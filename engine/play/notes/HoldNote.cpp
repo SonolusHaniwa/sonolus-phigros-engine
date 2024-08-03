@@ -104,7 +104,7 @@ class HoldNote: public Archetype {
 		} FI
 		IF (isAbove) positionY = floorPosition - line.get(5);
 		ELSE positionY = floorPosition + line.get(5); FI
-		IF (hasSFX && autoSFX && !sfxPlayed) PlayScheduled(Clips.Note, time, minSFXDistance); sfxPlayed = true; FI
+		IF (hasSFX && autoSFX && !sfxPlayed) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); sfxPlayed = true; FI
 
 		// 检测
 		IF (isActive && !released && times.now < time + holdTime - holdTailTime) {

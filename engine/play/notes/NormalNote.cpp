@@ -109,7 +109,7 @@ class NormalNote: public Archetype {
 		IF (times.now < 0) Return(0); FI
 		IF (isAbove) positionY = floorPosition - line.get(5);
 		ELSE positionY = floorPosition + line.get(5); FI
-		IF (hasSFX && autoSFX && !sfxPlayed) PlayScheduled(Clips.Note, time, minSFXDistance); sfxPlayed = true; FI
+		IF (hasSFX && autoSFX && !sfxPlayed) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); sfxPlayed = true; FI
 
 		// Claim
 		IF (times.now < inputTimeMin) Return(0); FI
