@@ -99,6 +99,7 @@ class CommonNoteEntity: public LevelEntity {
 	defineLevelDataValue(speed);
 	defineLevelDataValue(floorPosition);
 	defineLevelDataValue(isAbove);
+	defineLevelDataValue(isFake);
 	defineLevelDataValue(isMulti);
 	defineLevelDataRef(judgeline);
 	defineLevelDataValue(bpm);
@@ -110,23 +111,50 @@ class NormalNoteEntity: public CommonNoteEntity {
 	defineArchetypeName("Phigros Normal Note");
 };
 
+class FakeNormalNoteEntity: public NormalNoteEntity {
+	public:
+
+	defineArchetypeName("Phigros Fake Normal Note");
+};
+
 class DragNoteEntity: public CommonNoteEntity {
 	public:
 
 	defineArchetypeName("Phigros Drag Note");
 };
 
+class FakeDragNoteEntity: public DragNoteEntity {
+	public:
+
+	defineArchetypeName("Phigros Fake Drag Note");
+};
+
 class HoldNoteEntity: public CommonNoteEntity {
 	public:
 
 	defineArchetypeName("Phigros Hold Note");
+	defineLevelDataValue(endFloorPosition);
 };
+
+class FakeHoldNoteEntity: public HoldNoteEntity {
+	public:
+
+	defineArchetypeName("Phigros Fake Hold Note");
+};
+
 
 class FlickNoteEntity: public CommonNoteEntity {
 	public:
 
 	defineArchetypeName("Phigros Flick Note");
 };
+
+class FakeFlickNoteEntity: public FlickNoteEntity {
+	public:
+
+	defineArchetypeName("Phigros Fake Flick Note");
+};
+
 
 class BpmChangeEntity: public LevelEntity {
 	public:
@@ -146,6 +174,91 @@ class BpmChangeEntity: public LevelEntity {
 
 
 
+// 结构体定义
+const double basicBpm = 120;
+struct BPM {
+	double startBeat, bpm;
+	double basicTime;
+};
+struct PGRNote {
+	int type, lineId;
+	double time, endTime, offsetX;
+	bool isAbove, isFake;
+	double speed, size;
+	double floorPosition = 0;
+	string cmd;
+
+	Json::Value toJsonObject() {
+		Json::Value obj;
+		obj["type"] = type;
+		obj["judgeline"] = lineId;
+		obj["time"] = time;
+		obj["holdTime"] = endTime - time;
+		obj["positionX"] = offsetX;
+		obj["isAbove"] = isAbove;
+		obj["isFake"] = isFake;
+		obj["speed"] = speed;
+		obj["floorPosition"] = floorPosition;
+		return obj;
+	}
+};
+struct PGRSpeedEvent {
+	double startTime, endTime;
+	double value, floorPosition;
+
+	Json::Value toJsonObject() {
+		Json::Value obj;
+		obj["startTime"] = startTime;
+		obj["endTime"] = endTime;
+		obj["value"] = value;
+		obj["floorPosition"] = floorPosition;
+		return obj;
+	}
+};
+struct PGREvent {
+	double startTime, endTime;
+	double start, end;
+	int easing;
+
+	Json::Value toJsonObject() {
+		Json::Value obj;
+		obj["startTime"] = startTime;
+		obj["endTime"] = endTime;
+		obj["start"] = start;
+		obj["end"] = end;
+		obj["easing"] = easing;
+		return obj;
+	}
+};
+struct PGRJudgeline {
+	double bpm;
+	vector<PGRSpeedEvent> speedEvents;
+	vector<PGREvent> moveXEvents, moveYEvents, rotateEvents, disappearEvents;
+	vector<PGRNote> notesAbove, notesBelow;
+
+	Json::Value toJsonObject() {
+		Json::Value obj;
+		obj["bpm"] = bpm;
+		obj["numOfNotes"] = notesAbove.size() + notesBelow.size();
+		obj["numOfNotesAbove"] = notesAbove.size();
+		obj["numOfNotesBelow"] = notesBelow.size();
+		obj["speedEvents"].resize(0);
+		for (auto &v: speedEvents) obj["speedEvents"].append(v.toJsonObject());
+		obj["judgeLineMoveXEvents"].resize(0);
+		for (auto &v: moveXEvents) obj["judgeLineMoveXEvents"].append(v.toJsonObject());
+		obj["judgeLineMoveYEvents"].resize(0);
+		for (auto &v: moveYEvents) obj["judgeLineMoveYEvents"].append(v.toJsonObject());
+		obj["judgeLineRotateEvents"].resize(0);
+		for (auto &v: rotateEvents) obj["judgeLineRotateEvents"].append(v.toJsonObject());
+		obj["judgeLineDisappearEvents"].resize(0);
+		for (auto &v: disappearEvents) obj["judgeLineDisappearEvents"].append(v.toJsonObject());
+		obj["notesAbove"].resize(0);
+		for (auto &v: notesAbove) obj["notesAbove"].append(v.toJsonObject());
+		obj["notesBelow"].resize(0);
+		for (auto &v: notesBelow) obj["notesBelow"].append(v.toJsonObject());
+		return obj;
+	}
+};
 string fromPGS(string json, double bgmOffset = 0) {
 	Json::Value obj; json_decode(json, obj);
 	int fmt = obj["formatVersion"].asInt();
@@ -196,6 +309,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 		JudgelineEntity judgeline;
 
 		// 添加 Speed Event
+		vector<PGRSpeedEvent> speedEvents;
 		LevelRawData speedData;
 		int tmpSize = levelData.entities.size();
 		for (int j = item["speedEvents"].size() - 1; j >= 0; j--) {
@@ -208,11 +322,21 @@ string fromPGS(string json, double bgmOffset = 0) {
 				? speedData.back<SpeedEventEntity>() 
 				: SpeedEventEntity();
 			speedData.append(speed); INFO;
+			speedEvents.push_back({ v["startTime"].asDouble(), v["endTime"].asDouble(), v["value"].asDouble(), 0 });
 		}
 		for (int j = speedData.entities.size() - 1; j >= 0; j--) levelData.entities.push_back(speedData.entities[j]);
 		judgeline.speedEvent = item["speedEvents"].size()
 			? levelData.get<SpeedEventEntity>(tmpSize) 
 			: SpeedEventEntity();
+		sort(speedEvents.begin(), speedEvents.end(), [&](PGRSpeedEvent a, PGRSpeedEvent b){ return a.startTime + a.endTime < b.startTime + b.endTime; });
+		// 哈哈
+		// for 条件都是命名的 j 变量，结果语句用了 i 变量
+		// 居然导致 LevelRawData 在函数结束释放时报 free(): invalid next size (fast)
+		// 调了大半天才发现这个问题
+		// 警钟长鸣
+		for (int j = 1; j < speedEvents.size(); j++) speedEvents[j].floorPosition = 
+			speedEvents[j - 1].floorPosition + (speedEvents[j - 1].endTime - speedEvents[j - 1].startTime) * speedEvents[j - 1].value / bpm * 1.875;
+		// for (auto v : speedEvents) cout << "V: " << v.startTime << " " << v.endTime << " " << v.value << " " << v.floorPosition << endl;
 
 		// 添加 Move Event
 		if (fmt == official_version) {
@@ -334,14 +458,35 @@ string fromPGS(string json, double bgmOffset = 0) {
 			note.floorPosition = v["floorPosition"].asDouble();
 			note.isAbove = 1;
 			note.isMulti = noteNumber[v["time"].asDouble() / bpm * 1.875] > 1;
-			// note.isFake = fmt == pec_conventor_version ? v["isFake"].asInt() : 0;
+			note.isFake = v.isMember("isFake") ? v["isFake"].asBool() : false;
 			note.judgeline = judgeline;
 			note.bpm = bpm;
 			switch(v["type"].asInt()) {
-				case 1: levelData.append(transform<NormalNoteEntity>(note)); break;
-				case 2: levelData.append(transform<DragNoteEntity>(note)); break;
-				case 3: levelData.append(transform<HoldNoteEntity>(note)); break;
-				case 4: levelData.append(transform<FlickNoteEntity>(note)); break;
+				case 1: {
+					if (note.isFake.value) levelData.append(transform<FakeNormalNoteEntity>(note)); 
+					else levelData.append(transform<NormalNoteEntity>(note)); 
+				} break;
+				case 2: {
+					if (note.isFake.value) levelData.append(transform<FakeDragNoteEntity>(note)); 
+					else levelData.append(transform<DragNoteEntity>(note)); 
+				} break;
+				case 3: {
+					HoldNoteEntity hold = transform<HoldNoteEntity>(note);
+					// 计算 endFloorPosition
+					int k = lower_bound(
+						speedEvents.begin(), 
+						speedEvents.end(), 
+						hold.time.value + hold.holdTime.value, 
+						[&](PGRSpeedEvent a, double b){ return a.startTime < b; }
+					) - speedEvents.begin() - 1;
+					hold.endFloorPosition = speedEvents[k].floorPosition + 
+						(hold.time.value + hold.holdTime.value - speedEvents[k].startTime) * speedEvents[k].value / bpm * 1.875;
+					levelData.append(hold); 
+				} break;
+				case 4: {
+					if (note.isFake.value) levelData.append(transform<FakeFlickNoteEntity>(note)); 
+					else levelData.append(transform<FlickNoteEntity>(note)); 
+				} break;
 			} INFO;
 		}
 		for (int j = 0; j < item["notesBelow"].size(); j++) {
@@ -355,20 +500,41 @@ string fromPGS(string json, double bgmOffset = 0) {
 			note.floorPosition = -1 * v["floorPosition"].asDouble();
 			note.isAbove = 0;
 			note.isMulti = noteNumber[v["time"].asDouble() / bpm * 1.875] > 1;
-			// note.isFake = fmt == pec_conventor_version ? v["isFake"].asInt() : 0;
+			note.isFake = v.isMember("isFake") ? v["isFake"].asBool() : false;
 			note.judgeline = judgeline;
 			note.bpm = bpm;
 			switch(v["type"].asInt()) {
-				case 1: levelData.append(transform<NormalNoteEntity>(note)); break;
-				case 2: levelData.append(transform<DragNoteEntity>(note)); break;
-				case 3: levelData.append(transform<HoldNoteEntity>(note)); break;
-				case 4: levelData.append(transform<FlickNoteEntity>(note)); break;
+				case 1: {
+					if (note.isFake.value) levelData.append(transform<FakeNormalNoteEntity>(note)); 
+					else levelData.append(transform<NormalNoteEntity>(note)); 
+				} break;
+				case 2: {
+					if (note.isFake.value) levelData.append(transform<FakeDragNoteEntity>(note)); 
+					else levelData.append(transform<DragNoteEntity>(note)); 
+				} break;
+				case 3: {
+					HoldNoteEntity hold = transform<HoldNoteEntity>(note);
+					// 计算 endFloorPosition
+					int k = lower_bound(
+						speedEvents.begin(), 
+						speedEvents.end(), 
+						hold.time.value + hold.holdTime.value, 
+						[&](PGRSpeedEvent a, double b){ return a.startTime < b; }
+					) - speedEvents.begin() - 1;
+					hold.endFloorPosition = -1 * (speedEvents[k].floorPosition + 
+						(hold.time.value + hold.holdTime.value - speedEvents[k].startTime) * speedEvents[k].value / bpm * 1.875);
+					levelData.append(hold); 
+				} break;
+				case 4: {
+					if (note.isFake.value) levelData.append(transform<FakeFlickNoteEntity>(note)); 
+					else levelData.append(transform<FlickNoteEntity>(note)); 
+				} break;
 			} INFO;
 		}
 	}
 	
 	Json::Value data = levelData.toJsonObject();
-	data["formatVersion"] = 5;
+	data["formatVersion"] = 6;
 	return json_encode(data);
 }
 
@@ -382,8 +548,17 @@ string fromPGS(string json, double bgmOffset = 0) {
 
 
 
+// 结构体定义
+struct PECEvent {
+	int type, lineId;
+	double startTime, endTime, speed;
+	double offsetX, offsetY, rotate, alpha;
+	int easing;
+	string cmd;
+};
+
 int PECEasingMap[] = {
-	38, 39, 0,
+	0, 0, 0,
 	17, 18, 19,
 	1, 2, 3,
 	5, 6, 7,
@@ -395,294 +570,142 @@ int PECEasingMap[] = {
 	29, 30, 31,
 	0, 0, 0 // Bounce is not supported
 };
+int noteTypeMap[] = { 0, 1, 3, 4, 2 };
 string trim(string s) {
 	while (s.size() && (s.front() <= 32 || s.front() >= 127)) s = s.substr(1);
 	while (s.size() && (s.back() <= 32 || s.back() >= 127)) s.pop_back();
 	return s;
 }
+
 string fromPEC(string txt, double bgmOffset = 0) {
-	int EasingNum = sizeof(PECEasingMap) / sizeof(int);
-	auto lines = explode("\n", txt.c_str());
-	for (int i = 0; i < lines.size(); i++) lines[i] = trim(lines[i]);
-	int total = 0, current = 0; int last = 0, pt = 0;
-	for (int i = 0; i < lines.size(); i++) if (lines[i] != "") lines[pt++] = lines[i];
-	lines.resize(pt);
-	for (int i = 0; i < lines.size(); i++) if (lines[i][0] == 'c' || lines[i][0] == 'n') total++;
-	cout << "[INFO] Total Entities: " << total << endl;
-	Json::Value chart;
-	chart["formatVersion"] = pec_conventor_version;
-	chart["offset"] = stod(lines[0]) / 1e3 - 0.175;
-	chart["judgeLineList"].resize(0);
+	int easingSize = sizeof(PECEasingMap) / sizeof(int);
 
-	struct BPM {
-		double basicBpm = 120;
-		double startBeat, bpm;
-		double basicTime;
-	};
-	struct Note {
-		int type;
-		int lineId;
-		double time;
-		double endTime;
-		double offsetX;
-		bool isAbove;
-		bool isFake;
-		double speed;
-		double size;
-		string cmd;
-	};
-	struct Judgeline {
-		int type;
-		int lineId;
-		double startTime;
-		double endTime;
-		double speed;
-		double offsetX;
-		double offsetY;
-		double rotate;
-		double alpha;
-		int easingType;
-		string cmd;
-	};
-	vector<BPM> bpmList;
-	vector<Note> notes;
-	vector<Judgeline> judgelines;
-	vector<vector<string> > cmds;
-	auto pec2pgr = [&](double beat){
-		double time = 0;
-		int i = lower_bound(bpmList.begin(), bpmList.end(), beat, [&](BPM a, double b){ return a.startBeat < b; }) - bpmList.begin() - 1;
-		return round(((beat - bpmList[i].startBeat) / bpmList[i].bpm + bpmList[i].basicTime) * bpmList[i].basicBpm * 32);
-	};
-
-	for (int i = 1; i < lines.size(); i++) {
-		auto args = explode(" ", lines[i].c_str()); int pt = 0;
-		for (int j = 0; j < args.size(); j++) args[j] = trim(args[j]);
-		for (int j = 0; j < args.size(); j++) if (args[j] != "") args[pt++] = args[j];
-		args.resize(pt);
-		if (args.size() == 0) continue;
-		cmds.push_back(args);
-	}
-	for (int i = 0; i < cmds.size(); i++) {
-		auto args = cmds[i];
-		if (args[0] == "bp") {
-			bpmList.push_back({
-				.startBeat = stod(args[1]), 
-				.bpm = stod(args[2]),
-			});
-		} else if (args[0] == "n1" || args[0] == "n2" || args[0] == "n3" || args[0] == "n4") {
-			Note note; int pt = 1;
-			note.type = args[0][1] - '0';
-			note.lineId = stod(args[pt++]);
-			note.time = stod(args[pt++]);
-			note.endTime = args[0] == "n2" ? stod(args[pt++]) : note.time;
-			note.offsetX = stod(args[pt++]);
-			note.isAbove = stoi(args[pt++]);
-			note.isFake = stoi(args[pt++]);
-			note.speed = i + 1 < cmds.size() && cmds[i + 1][0] == "#" && cmds[i + 1].size() >= 2 ? i++, stod(cmds[i][1]) : 1;
-			note.size = i + 1 < cmds.size() && cmds[i + 1][0] == "&" && cmds[i + 1].size() >= 2 ? i++, stod(cmds[i][1]) : 1;
-			// note.cmd = "";
-			notes.push_back(note);
-		} else if (args[0] == "cv" || args[0] == "cp" || args[0] == "cd" || args[0] == "ca" || args[0] == "cm" || args[0] == "cr" || args[0] == "cf") {
-			Judgeline judgeline; int pt = 1;
-			judgeline.type = args[0][1];
-			judgeline.lineId = stod(args[pt++]);
-			judgeline.startTime = stod(args[pt++]);
-			judgeline.speed = args[0] == "cv" ? stod(args[pt++]) : 1;
-			judgeline.endTime = args[0] == "cm" || args[0] == "cr" || args[0] == "cf" ? stod(args[pt++]) : judgeline.startTime;
-			judgeline.offsetX = args[0] == "cp" || args[0] == "cm" ? stod(args[pt++]) : 0;
-			judgeline.offsetY = args[0] == "cp" || args[0] == "cm" ? stod(args[pt++]) : 0;
-			judgeline.rotate = args[0] == "cd" || args[0] == "cr" ? stod(args[pt++]) : 0;
-			judgeline.alpha = args[0] == "ca" || args[0] == "cf" ? max(0.0, stod(args[pt++])) : 0;
-			judgeline.easingType = args[0] == "cm" || args[0] == "cr" ? stoi(args[pt++]) : 0;
-			// judgeline.cmd = "";
-			judgelines.push_back(judgeline);
-		}
+	// 读取数据
+	stringstream ss; ss << txt;
+	double offset; ss >> offset; offset = offset / 1000.0 - 0.175 + bgmOffset;
+	vector<BPM> bpms;
+	vector<PGRNote> notes;
+	vector<PECEvent> events;
+	int maxLineId = 0;
+	while (!ss.eof()) {
+		string cmd; ss >> cmd;
+		if (cmd == "") break;
+		if (cmd == "bp") {
+			BPM b; ss >> b.startBeat >> b.bpm;
+			bpms.push_back(b);
+		} else if (cmd[0] == 'n') {
+			PGRNote n; n.type = noteTypeMap[cmd[1] - '0'];
+			ss >> n.lineId >> n.time;
+			maxLineId = max(maxLineId, n.lineId);
+			if (n.type == 3) ss >> n.endTime;
+			else n.endTime = n.time;
+			int isAbove;
+			ss >> n.offsetX >> isAbove >> n.isFake;
+			n.offsetX = n.offsetX / 1024.0 * 160.0 / 18.0;
+			n.isAbove = isAbove == 1;
+			notes.push_back(n);
+		} else if (cmd[0] == 'c') {
+			PECEvent e; e.type = cmd[1];
+			ss >> e.lineId >> e.startTime;
+			maxLineId = max(maxLineId, e.lineId);
+			if (e.type == 'v') ss >> e.speed;
+			if (string("mrf").find(e.type) != string::npos) ss >> e.endTime;
+			else e.endTime = e.startTime;
+			if (string("pm").find(e.type) != string::npos) ss >> e.offsetX >> e.offsetY;
+			if (string("dr").find(e.type) != string::npos) ss >> e.rotate;
+			if (string("af").find(e.type) != string::npos) ss >> e.alpha;
+			if (string("mr").find(e.type) != string::npos) ss >> e.easing;
+			else e.easing = 2;
+			events.push_back(e);
+		} else if (cmd[0] == '#') ss >> notes.back().speed;
+		else if (cmd[0] == '&') ss >> notes.back().size;
 	}
 
-	// 处理 BPM 切换事件
-	sort(bpmList.begin(), bpmList.end(), [&](BPM a, BPM b){ return a.startBeat < b.startBeat; });
-	for (int i = 0; i < bpmList.size(); i++)
-		bpmList[i].basicTime = i ? bpmList[i - 1].basicTime + (bpmList[i].startBeat - bpmList[i - 1].startBeat) / bpmList[i - 1].bpm : 0;
-
-	map<int, Json::Value> judgeLineList;
-	auto createNewJudgeline = [&](int id){
-		if (judgeLineList.find(id) != judgeLineList.end()) return;
-		judgeLineList[id] = json_decode(
-			R"delimeter(
-				{
-					"bpm": 120.0,
-					"notesAbove": [],
-					"notesBelow": [],
-					"speedEvents": [],
-					"judgeLineMoveXEvents": [],
-					"judgeLineMoveYEvents": [],
-					"judgeLineRotateEvents": [],
-					"judgeLineDisappearEvents": []
-				}
-			)delimeter"
-		); return;
-	};
-
-	// 处理 Note
-	sort(notes.begin(), notes.end(), [](Note a, Note b){ return a.time < b.time; });
-	for (int i = 0; i < notes.size(); i++) {
-		createNewJudgeline(notes[i].lineId);
-		auto n = notes[i];
-		n.time = pec2pgr(n.time);
-		n.endTime = pec2pgr(n.endTime);
-		judgeLineList[notes[i].lineId][n.isAbove ? "notesAbove" : "notesBelow"].append(
-			json_decode( "{"
-				"\"type\":" + to_string(n.type) + ","
-				"\"time\":" + to_string(n.time) + ","
-				"\"positionX\":" + to_string(n.offsetX / 1024.0) + ","
-				"\"holdTime\":" + to_string(n.endTime - n.time) + ","
-				"\"speed\":" + to_string(n.speed) + ","
-				"\"floorPosition\":" + to_string(0) + ","
-				"\"isAbove\":" + to_string(n.isAbove) + ","
-				"\"isFake\":" + to_string(n.isFake) + ","
-				"\"size\":" + to_string(n.size) + ""
-			"}" )
-		);
-	}
-
-	// 处理 Judgeline
-	sort(judgelines.begin(), judgelines.end(), [](Judgeline a, Judgeline b){ return a.startTime < b.startTime; });
-	for (int i = 0; i < judgelines.size(); i++) {
-		auto e = judgelines[i];
-		double st = pec2pgr(e.startTime);
-		double et = pec2pgr(e.endTime);
-		if (st > et) continue;
-		createNewJudgeline(e.lineId);
-		if (e.type == 'v') {
-			judgeLineList[e.lineId]["speedEvents"].append(
-				json_decode( "{"
-					"\"startTime\":" + to_string(st) + ","
-					"\"endTime\":" + to_string(0) + ","
-					"\"value\":" + to_string(e.speed / 5.85) + ","
-					"\"floorPosition\":0"
-				"}" )
-			);
-		}
-		else if (e.type == 'a' || e.type == 'f') {
-			judgeLineList[e.lineId]["judgeLineDisappearEvents"].append(
-				json_decode( "{"
-					"\"startTime\":" + to_string(st) + ","
-					"\"endTime\":" + to_string(et) + ","
-					"\"start\":" + to_string(0) + ","
-					"\"end\":" + to_string(e.alpha / 255.0) + ","
-					"\"easing\":" + to_string(PECEasingMap[e.easingType]) + ""
-				"}" )
-			);
-		}
-		else if (e.type == 'p' || e.type == 'm') {
-			judgeLineList[e.lineId]["judgeLineMoveXEvents"].append(
-				json_decode( "{"
-					"\"startTime\":" + to_string(st) + ","
-					"\"endTime\":" + to_string(et) + ","
-					"\"start\":" + to_string(0) + ","
-					"\"end\":" + to_string(e.offsetX / 2048.0) + ","
-					"\"easing\":" + to_string(PECEasingMap[e.easingType]) + ""
-				"}" )
-			);
-			judgeLineList[e.lineId]["judgeLineMoveYEvents"].append(
-				json_decode( "{"
-					"\"startTime\":" + to_string(st) + ","
-					"\"endTime\":" + to_string(et) + ","
-					"\"start\":" + to_string(0) + ","
-					"\"end\":" + to_string(e.offsetY / 1400.0) + ","
-					"\"easing\":" + to_string(PECEasingMap[e.easingType]) + ""
-				"}" )
-			);
-		}
-		else if (e.type == 'd' || e.type == 'r') {
-			judgeLineList[e.lineId]["judgeLineRotateEvents"].append(
-				json_decode( "{"
-					"\"startTime\":" + to_string(st) + ","
-					"\"endTime\":" + to_string(et) + ","
-					"\"start\":" + to_string(0) + ","
-					"\"end\":" + to_string(-e.rotate) + ","
-					"\"easing\":" + to_string(PECEasingMap[e.easingType]) + ""
-				"}" )
-			);
-		}
-	}
-
-	// 格式化 json
-	for (auto &v : judgeLineList) {
-		auto &json = v.second;
-		double bpm = json["bpm"].asDouble();
-
-		// 格式化 Speed Event
-		double fp = 0;
-		for (int i = 0; i < json["speedEvents"].size(); i++) {
-			auto &v = json["speedEvents"][i];
-			if (i + 1 < json["speedEvents"].size()) v["endTime"] = json["speedEvents"][i + 1]["startTime"];
-			else v["endTime"] = 999999;
-			v["floorPosition"] = fp;
-			fp += (v["endTime"].asDouble() - v["startTime"].asDouble()) * v["value"].asDouble() / bpm * 1.875;
-			fp = round(fp);
-		}
-
-		// 格式化 Note
-		for (int i = 0; i < json["notesAbove"].size(); i++) {
-			auto &v = json["notesAbove"][i];
-			int Ls = 0, Rs = json["speedEvents"].size() - 1, ans = -1;
-			while (Ls <= Rs) {
-				int mid = (Ls + Rs) / 2;
-				if (json["speedEvents"][mid]["startTime"].asDouble() <= v["time"].asDouble()) ans = mid, Ls = mid + 1;
-				else Rs = mid - 1;
-			}
-			double v1 = json["speedEvents"][ans]["floorPosition"].asDouble();
-			double v2 = json["speedEvents"][ans]["value"].asDouble();
-			double v3 = v["time"].asDouble() - json["speedEvents"][ans]["startTime"].asDouble();
-			assert(ans != -1);
-			if (v["type"].asInt() == 3) v["speed"] = v2;
-			if (v["isFake"].asInt() == 1) v["time"] = v["time"].asDouble() + 999999;
-			v["floorPosition"] = round(v1 + v2 * v3 / bpm * 1.875);
-		}
-		for (int i = 0; i < json["notesBelow"].size(); i++) {
-			auto &v = json["notesBelow"][i];
-			int Ls = 0, Rs = json["speedEvents"].size() - 1, ans = -1;
-			while (Ls <= Rs) {
-				int mid = (Ls + Rs) / 2;
-				if (json["speedEvents"][mid]["startTime"].asDouble() <= v["time"].asDouble()) ans = mid, Ls = mid + 1;
-				else Rs = mid - 1;
-			}
-			double v1 = json["speedEvents"][ans]["floorPosition"].asDouble();
-			double v2 = json["speedEvents"][ans]["value"].asDouble();
-			double v3 = v["time"].asDouble() - json["speedEvents"][ans]["startTime"].asDouble();
-			assert(ans != -1);
-			if (v["type"].asInt() == 3) v["speed"] = v2;
-			if (v["isFake"].asInt() == 1) v["time"] = v["time"].asDouble() + 999999;
-			v["floorPosition"] = round(v1 + v2 * v3 / bpm * 1.875);
-		}
+	// 计算 BPM basicTime;
+	sort(bpms.begin(), bpms.end(), [&](BPM a, BPM b){ return a.startBeat < b.startBeat; });
+	for (int i = 0; i < bpms.size(); i++) bpms[i].basicTime = i ?
+		bpms[i - 1].basicTime + (bpms[i].startBeat - bpms[i - 1].startBeat) / bpms[i - 1].bpm :
+		0;
 	
-		// 格式化 MoveX Event
-		for (int i = 0; i < json["judgeLineMoveXEvents"].size(); i++) {
-			auto &v = json["judgeLineMoveXEvents"][i];
-			if (i) v["start"] = json["judgeLineMoveXEvents"][i - 1]["end"];
+	auto pec2pgr = [&](double beat){
+		int i = lower_bound(bpms.begin(), bpms.end(), beat, [&](BPM a, double b){ return a.startBeat < b; }) - bpms.begin() - 1;
+		if (i < 0) return 0.0;
+		return round(((beat - bpms[i].startBeat) / bpms[i].bpm + bpms[i].basicTime) * basicBpm * 32);
+	};
+	// 先将所有的事件添加进判定线去
+	vector<PGRJudgeline> judgelines(maxLineId + 1);
+	for (auto e : events) {
+		PGRJudgeline &j = judgelines[e.lineId];
+		double st = pec2pgr(e.startTime), et = pec2pgr(e.endTime);
+		if (e.type == 'v') j.speedEvents.push_back({ st, et, e.speed / 5.85, 0 });
+		if (string("af").find(e.type) != string::npos) 
+			j.disappearEvents.push_back({ st, et, 0, e.alpha / 255.0, PECEasingMap[e.easing] });
+		if (string("pm").find(e.type) != string::npos)
+			j.moveXEvents.push_back({ st, et, 0, e.offsetX / 2048.0, PECEasingMap[e.easing] }),
+			j.moveYEvents.push_back({ st, et, 0, e.offsetY / 1400.0, PECEasingMap[e.easing] });
+		if (string("dr").find(e.type) != string::npos) 
+			j.rotateEvents.push_back({ st, et, 0, -e.rotate, PECEasingMap[e.easing] });
+	}
+
+	// 添加按键
+	for (auto n : notes)
+		n.time = pec2pgr(n.time), n.endTime = pec2pgr(n.endTime),
+		(n.isAbove ? judgelines[n.lineId].notesAbove : judgelines[n.lineId].notesBelow).push_back(n);
+
+	// 事件排序并补全
+	for (auto &j : judgelines) {
+		j.bpm = basicBpm;
+		sort(j.speedEvents.begin(), j.speedEvents.end(), [&](PGRSpeedEvent a, PGRSpeedEvent b){ return a.startTime + a.endTime < b.startTime + b.endTime; });
+		sort(j.moveXEvents.begin(), j.moveXEvents.end(), [&](PGREvent a, PGREvent b){ return a.startTime + a.endTime < b.startTime + b.endTime; });
+		sort(j.moveYEvents.begin(), j.moveYEvents.end(), [&](PGREvent a, PGREvent b){ return a.startTime + a.endTime < b.startTime + b.endTime; });
+		sort(j.rotateEvents.begin(), j.rotateEvents.end(), [&](PGREvent a, PGREvent b){ return a.startTime + a.endTime < b.startTime + b.endTime; });
+		sort(j.disappearEvents.begin(), j.disappearEvents.end(), [&](PGREvent a, PGREvent b){ return a.startTime + a.endTime < b.startTime + b.endTime; });
+		for (int i = j.speedEvents.size() - 2; i >= 0; i--) j.speedEvents[i].endTime = j.speedEvents[i + 1].startTime;
+		auto solveEvent = [&](vector<PGREvent> &events, bool output = false){
+			for (int i = 1; i < events.size(); i++) events[i].start = events[i - 1].end;
+			for (int i = events.size() - 2; i >= 0; i--) {
+				double et = events[i].endTime, st = events[i + 1].startTime;
+				if (et < st) events.push_back({ et, st, events[i].end, events[i].end, 0 });
+				if (et > st) events[i + 1].startTime = events[i].endTime;
+			} sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ return a.startTime + a.endTime < b.startTime + b.endTime; });
+		};
+		solveEvent(j.moveXEvents); solveEvent(j.moveYEvents);
+		solveEvent(j.rotateEvents); solveEvent(j.disappearEvents);
+	}
+
+	// 给所有的事件加上个尾巴，不然 tmd 会出事
+	for (auto &j : judgelines) {
+		j.speedEvents.push_back({ j.speedEvents.back().endTime, 999999, j.speedEvents.back().value, 0 });
+		j.moveXEvents.push_back({ j.moveXEvents.back().endTime, 999999, j.moveXEvents.back().end, j.moveXEvents.back().end, 0 });
+		j.moveYEvents.push_back({ j.moveYEvents.back().endTime, 999999, j.moveYEvents.back().end, j.moveYEvents.back().end, 0 });
+		j.rotateEvents.push_back({ j.rotateEvents.back().endTime, 999999, j.rotateEvents.back().end, j.rotateEvents.back().end, 0 });
+		j.disappearEvents.push_back({ j.disappearEvents.back().endTime, 999999, j.disappearEvents.back().end, j.disappearEvents.back().end, 0 });
+	}
+
+	// floorPosition 计算
+	for (auto &j : judgelines) {
+		double bpm = j.bpm; double fp = 0;
+		for (auto &s : j.speedEvents) {
+			s.floorPosition = fp;
+			fp += (s.endTime - s.startTime) * s.value / bpm * 1.875;
 		}
 
-		// 格式化 MoveY Event
-		for (int i = 0; i < json["judgeLineMoveYEvents"].size(); i++) {
-			auto &v = json["judgeLineMoveYEvents"][i];
-			if (i) v["start"] = json["judgeLineMoveYEvents"][i - 1]["end"];
+		for (auto &n : j.notesAbove) {
+			int i = lower_bound(j.speedEvents.begin(), j.speedEvents.end(), n.time, [&](PGRSpeedEvent a, double b){ return a.startTime < b; }) - j.speedEvents.begin() - 1;
+			if (n.type == 3) n.speed *= j.speedEvents[i].value;
+			n.floorPosition = j.speedEvents[i].floorPosition + (n.time - j.speedEvents[i].startTime) * j.speedEvents[i].value / bpm * 1.875;
 		}
-
-		// 格式化 Rotate Event
-		for (int i = 0; i < json["judgeLineRotateEvents"].size(); i++) {
-			auto &v = json["judgeLineRotateEvents"][i];
-			if (i) v["start"] = json["judgeLineRotateEvents"][i - 1]["end"];
-		}
-
-		// 格式化 Disappear Event
-		for (int i = 0; i < json["judgeLineDisappearEvents"].size(); i++) {
-			auto &v = json["judgeLineDisappearEvents"][i];
-			if (i) v["start"] = json["judgeLineDisappearEvents"][i - 1]["end"];
+		for (auto &n : j.notesBelow) {
+			int i = lower_bound(j.speedEvents.begin(), j.speedEvents.end(), n.time, [&](PGRSpeedEvent a, double b){ return a.startTime < b; }) - j.speedEvents.begin() - 1;
+			if (n.type == 3) n.speed *= j.speedEvents[i].value;
+			n.floorPosition = j.speedEvents[i].floorPosition + (n.time - j.speedEvents[i].startTime) * j.speedEvents[i].value / bpm * 1.875;
 		}
 	}
 
 	// 输出
-	for (auto v : judgeLineList) chart["judgeLineList"].append(v.second);
-	return json_pretty_encode(chart);
+	Json::Value obj;
+	obj["formatVersion"] = optimizer_version;
+	obj["judgeLineList"].resize(0);
+	for (auto &j : judgelines) obj["judgeLineList"].append(j.toJsonObject());
+	return json_encode(obj);
 }

@@ -10,3 +10,4 @@ make
 *.json
 test*
 !LevelData.h
+*.pec

@@ -51,8 +51,8 @@ class NormalNote: public Archetype {
 		var id = EntityDataArray[judgeline].get(0);
 		WHILE (id) {
 			var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
-			IF (deltaFloorPosition <= 10 / 3 / speed) BREAK; FI
-			appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 10 / 3 / speed) / EntityDataArray[id].get(2);
+			IF (deltaFloorPosition <= 10 / 3 / speed * 5.85) BREAK; FI
+			appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 10 / 3 / speed * 5.85) / EntityDataArray[id].get(2);
 			id = EntityDataArray[id].get(3);
 		} DONE
 		appearTime = Max(0, Min(appearTime, time - 0.5));
@@ -135,6 +135,7 @@ class NormalNote: public Archetype {
 		IF (times.now < 0) Return(0); FI
 		var currentFloorPosition = If(isAbove, positionY, -1 * positionY);
 		IF (times.now < time && currentFloorPosition < floorPositionLimit) Return(0); FI
+		// IF (time == 9194 * timeMagic / bpm) Debuglog(positionY); FI
 		var dx = positionX * stage.w * 0.05625;
 		var dy = positionY * speed * stage.h * 0.6;
 		

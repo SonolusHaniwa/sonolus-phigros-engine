@@ -8,6 +8,7 @@ class HoldNote: public Archetype {
 	defineImports(holdTime);
 	defineImports(speed);
 	defineImports(floorPosition);
+	defineImports(endFloorPosition);
 	defineImports(isAbove);
 	defineImports(isMulti);
 	defineImports(isFake);
@@ -118,8 +119,7 @@ class HoldNote: public Archetype {
 		var dx = positionX * stage.w * 0.05625;
 		var dy = positionY * stage.h * 0.6;
 		IF (times.now > time) dy = 0; FI
-		var dy2 = dy + speed * holdTime * If(isAbove, 1, -1) * stage.h * 0.6;
-		IF (times.now > time) dy2 = (time + holdTime - times.now) / holdTime * dy2; FI
+		var dy2 = If(isAbove, endFloorPosition - line.get(5), endFloorPosition + line.get(5)) * stage.h * 0.6;
 		
 		var rotate = line.get(3);
 		var r = Power({dx * dx + dy * dy, 0.5});

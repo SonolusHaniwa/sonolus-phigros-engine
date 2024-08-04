@@ -38,5 +38,24 @@
         "description": "A recreation of Phigros engine in Sonolus.\nVersion: 1.1.0_20240727_beta\n\nGithub Repository\nhttps://github.com/SonolusHaniwa/sonolus-phigros-engine"
       }
     ]
+  },
+  "level": {
+    "name": "phigros-test-114514",
+    "generate": "pec2data chart.pec dist/LevelData",
+    "i18n": [
+      {
+        "localization": "default",
+        "title": "Test Level",
+        "rating": 1,
+        "artists": "-",
+        "author": "-",
+        "engine": "phigros",
+        "skin": "",
+        "background": "",
+        "effect": "",
+        "particle": "",
+        "description": ""
+      }
+    ]
   }
 }

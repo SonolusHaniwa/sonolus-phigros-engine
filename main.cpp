@@ -70,6 +70,17 @@ int main(int argc, char** argv) {
             fout.write(LevelData.c_str(), LevelData.size());
             fout.close();
             return 0;
+        } else if (string(argv[1]) == "pec2data") {
+            if (argc != 4) helpText(argc, argv);
+            string chart = readFile(argv[2]);
+            string LevelData = fromPGS(fromPEC(chart));
+            cout << "Compressing..." << endl;
+            buffer data = compress_gzip(LevelData, 9);
+            cout << "Compress Finished." << endl;
+            ofstream fout(argv[3]);
+            for (int i = 0; i < data.size(); i++) fout << data.v[i];
+            fout.close();
+            return 0;
         }
     }
     
