@@ -41,7 +41,6 @@
   },
   "level": {
     "name": "phigros-test-114514",
-    "generate": "pec2data chart.pec dist/LevelData",
     "i18n": [
       {
         "localization": "default",
