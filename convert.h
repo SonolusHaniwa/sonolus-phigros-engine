@@ -239,9 +239,9 @@ struct PGRJudgeline {
 	Json::Value toJsonObject() {
 		Json::Value obj;
 		obj["bpm"] = bpm;
-		obj["numOfNotes"] = notesAbove.size() + notesBelow.size();
-		obj["numOfNotesAbove"] = notesAbove.size();
-		obj["numOfNotesBelow"] = notesBelow.size();
+		obj["numOfNotes"] = (int)notesAbove.size() + (int)notesBelow.size();
+		obj["numOfNotesAbove"] = (int)notesAbove.size();
+		obj["numOfNotesBelow"] = (int)notesBelow.size();
 		obj["speedEvents"].resize(0);
 		for (auto &v: speedEvents) obj["speedEvents"].append(v.toJsonObject());
 		obj["judgeLineMoveXEvents"].resize(0);
