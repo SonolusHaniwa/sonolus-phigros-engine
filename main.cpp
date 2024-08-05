@@ -102,7 +102,11 @@ int main(int argc, char** argv) {
         NormalNote,
         DragNote,
         HoldNote,
-        FlickNote
+        FlickNote,
+        FakeNormalNote,
+        FakeDragNote,
+        FakeHoldNote,
+        FakeFlickNote
     >(configuration, data);
     ofstream fout((dist + "/EngineConfiguration"));
     for (int i = 0; i < configuration.size(); i++) fout << configuration.v[i];
@@ -142,6 +146,10 @@ int main(int argc, char** argv) {
         DragNote,
         HoldNote,
         FlickNote,
+        FakeNormalNote,
+        FakeDragNote,
+        FakeHoldNote,
+        FakeFlickNote,
         UpdateJudgment
 	>(configuration, data);
     ofstream fout((dist + "/EngineConfiguration"));

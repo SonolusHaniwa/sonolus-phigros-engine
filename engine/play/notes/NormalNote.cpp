@@ -39,7 +39,7 @@ class NormalNote: public Archetype {
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		time = time * timeMagic / bpm;
-		notes = notes + 1;
+		IF (!isFake) notes = notes + 1; FI
 		played = false;
 		inputTimeMax = time + judgment.good;
 		inputTimeMin = time - judgment.good;
@@ -109,6 +109,10 @@ class NormalNote: public Archetype {
 		IF (times.now < 0) Return(0); FI
 		IF (isAbove) positionY = floorPosition - line.get(5);
 		ELSE positionY = floorPosition + line.get(5); FI
+		IF (isFake) 
+			IF (times.now > time) EntityDespawn.set(0, 1); FI
+			Return(0); 
+		FI
 		IF (hasSFX && autoSFX && !sfxPlayed) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); sfxPlayed = true; FI
 
 		// Claim
@@ -121,6 +125,7 @@ class NormalNote: public Archetype {
 	SonolusApi touch() {
 		FUNCBEGIN
 		IF (times.now < inputTimeMin) Return(0); FI
+		IF (isFake) Return(0); FI
 		let index = getClaimedStart(EntityInfo.get(0));
 		IF (index == -1) Return(0); FI
 		complete(times.now);
@@ -132,6 +137,7 @@ class NormalNote: public Archetype {
 		IF (times.now < 0) Return(0); FI
 		var currentFloorPosition = If(isAbove, positionY, -1 * positionY);
 		IF (times.now < time && currentFloorPosition < floorPositionLimit) Return(0); FI
+		IF (currentFloorPosition * speed > 10 / 3 * 5.85) Return(0); FI
 		var dx = positionX * stage.w * 0.05625;
 		var dy = positionY * speed * stage.h * 0.6;
 		
@@ -159,4 +165,11 @@ class NormalNote: public Archetype {
 		Draw(If(isMulti, Sprites.HLNote, Sprites.NormalNote), x3, y3, x4, y4, x5, y5, x6, y6, 11000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1));
 		return VOID;
 	}
+};
+
+class FakeNormalNote: public NormalNote {
+	public:
+
+	static constexpr const char* name = "Phigros Fake Normal Note";
+	bool hasInput = false;
 };

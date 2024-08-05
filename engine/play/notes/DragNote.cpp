@@ -39,21 +39,21 @@ class DragNote: public Archetype {
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		time = time * timeMagic / bpm;
-		notes = notes + 1;
+		IF (!isFake) notes = notes + 1; FI
 		played = false;
 		inputTimeMax = time + judgment.good;
 		inputTimeMin = time - judgment.good;
 		isMulti = isMulti && hasSimul;
 		maxTime = Max(maxTime, time);
 		sfxPlayed = false;
-		var id = EntityDataArray[judgeline].get(0);
-		WHILE (id) {
-			var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
-			IF (deltaFloorPosition <= 10 / 3 / speed * 5.85) BREAK; FI
-			appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 10 / 3 / speed * 5.85) / EntityDataArray[id].get(2);
-			id = EntityDataArray[id].get(3);
-		} DONE
-		appearTime = Max(0, Min(appearTime, time - 0.5));
+		// var id = EntityDataArray[judgeline].get(0);
+		// WHILE (id) {
+		// 	var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
+		// 	IF (deltaFloorPosition <= 10 / 3 / speed * 5.85) BREAK; FI
+		// 	appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 10 / 3 / speed * 5.85) / EntityDataArray[id].get(2);
+		// 	id = EntityDataArray[id].get(3);
+		// } DONE
+		// appearTime = Max(0, Min(appearTime, time - 0.5));
 		return VOID;
 	}
 
@@ -86,6 +86,10 @@ class DragNote: public Archetype {
 		IF (times.now < 0) Return(0); FI
 		IF (isAbove) positionY = floorPosition - line.get(5);
 		ELSE positionY = floorPosition + line.get(5); FI
+		IF (isFake) 
+			IF (times.now > time) EntityDespawn.set(0, 1); FI
+			Return(0); 
+		FI
 		IF (hasSFX && autoSFX && !sfxPlayed) PlayScheduled(Clips.Drag, time / levelSpeed, minSFXDistance); sfxPlayed = true; FI
 
 		// Claim
@@ -102,6 +106,7 @@ class DragNote: public Archetype {
 	SonolusApi touch() {
 		FUNCBEGIN
 		IF (played) Return(0); FI
+		IF (isFake) Return(0); FI
 		IF (times.now < inputTimeMin) Return(0); FI
 		IF (hasTouch(EntityInfo.get(0))) played = 1; FI
 		return VOID;
@@ -112,6 +117,7 @@ class DragNote: public Archetype {
 		IF (times.now < 0) Return(0); FI
 		var currentFloorPosition = If(isAbove, positionY, -1 * positionY);
 		IF (times.now < time && currentFloorPosition < floorPositionLimit) Return(0); FI
+		IF (currentFloorPosition * speed > 10 / 3 * 5.85) Return(0); FI
 		var dx = positionX * stage.w * 0.05625;
 		var dy = positionY * speed * stage.h * 0.6;
 		
@@ -139,4 +145,11 @@ class DragNote: public Archetype {
 		Draw(If(isMulti, Sprites.HLDrag, Sprites.NormalDrag), x3, y3, x4, y4, x5, y5, x6, y6, 10000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1));
 		return VOID;
 	}
+};
+
+class FakeDragNote: public DragNote {
+	public:
+
+	static constexpr const char* name = "Phigros Fake Drag Note";
+	bool hasInput = false;
 };

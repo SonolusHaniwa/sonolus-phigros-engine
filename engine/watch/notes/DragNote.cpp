@@ -36,35 +36,43 @@ class DragNote: public Archetype {
 	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
 
 	SonolusApi spawnTime() { return appearTime; }
-	SonolusApi despawnTime() { return If(isReplay,
-		If(Abs(time + accuracy + 1) < 0.001, time + judgment.good, time + accuracy),
-		time
-	); }
+	SonolusApi despawnTime() { return 
+		If (
+			isFake,
+			time,
+			If(isReplay,
+				If(Abs(time + accuracy + 1) < 0.001, time + judgment.good, time + accuracy),
+				time
+			)
+		);
+	}
 
 	int preprocessOrder = 514;
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		time = time * timeMagic / bpm;
-		notes = notes + 1;
 		isMulti = isMulti && hasSimul;
 		maxTime = Max(maxTime, time);
-		var id = EntityDataArray[judgeline].get(0);
-		WHILE (id) {
-			var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
-			IF (deltaFloorPosition <= 10 / 3 / speed * 5.85) BREAK; FI
-			appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 10 / 3 / speed * 5.85) / EntityDataArray[id].get(2);
-			id = EntityDataArray[id].get(3);
-		} DONE
-		appearTime = Max(0, Min(appearTime, time - 0.5));
-		IF (isReplay) {
-			judgeTime = If(Abs(time + accuracy + 1) < 0.001, time + judgment.good, time + accuracy);
-			IF (judgeResult != 0 && hasSFX && !autoSFX) PlayScheduled(Clips.Drag, time / levelSpeed + accuracy, minSFXDistance); FI
-			IF (autoSFX && hasSFX) PlayScheduled(Clips.Drag, time / levelSpeed, minSFXDistance); FI
-			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
-		} ELSE {
-			judgeTime = time.get();
-			IF (hasSFX) PlayScheduled(Clips.Drag, time / levelSpeed, minSFXDistance); FI
-			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
+		// var id = EntityDataArray[judgeline].get(0);
+		// WHILE (id) {
+		// 	var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
+		// 	IF (deltaFloorPosition <= 10 / 3 / speed * 5.85) BREAK; FI
+		// 	appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 10 / 3 / speed * 5.85) / EntityDataArray[id].get(2);
+		// 	id = EntityDataArray[id].get(3);
+		// } DONE
+		// appearTime = Max(0, Min(appearTime, time - 0.5));
+		IF (!isFake) {
+			notes = notes + 1;
+			IF (isReplay) {
+				judgeTime = If(Abs(time + accuracy + 1) < 0.001, time + judgment.good, time + accuracy);
+				IF (judgeResult != 0 && hasSFX && !autoSFX) PlayScheduled(Clips.Drag, time / levelSpeed + accuracy, minSFXDistance); FI
+				IF (autoSFX && hasSFX) PlayScheduled(Clips.Drag, time / levelSpeed, minSFXDistance); FI
+				Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
+			} ELSE {
+				judgeTime = time.get();
+				IF (hasSFX) PlayScheduled(Clips.Drag, time / levelSpeed, minSFXDistance); FI
+				Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
+			} FI
 		} FI
 		return VOID;
 	}
@@ -93,7 +101,6 @@ class DragNote: public Archetype {
 	int updateSequentialOrder = 114514;
 	SonolusApi updateSequential() {
 		FUNCBEGIN
-		// IF (currentCombo >= 1137 && currentCombo <= 1139) Debuglog(EntityInfo.get(0)); FI
 		IF (times.now < 0) Return(0); FI
 		IF (isAbove) positionY = floorPosition - line.get(5);
 		ELSE positionY = floorPosition + line.get(5); FI
@@ -102,7 +109,7 @@ class DragNote: public Archetype {
 
 	SonolusApi terminate() {
 		FUNCBEGIN
-		IF (times.skip) Return(0); FI
+		IF (times.skip || isFake) Return(0); FI
 		IF (isReplay && judgeResult == 0) Return(0); FI
 		SpawnParticleEffect(If(judgeResult == 2 || !isReplay, Effects.perfect, Effects.great), 
 			effectX1, effectY1, effectX2, effectY2,
@@ -116,6 +123,7 @@ class DragNote: public Archetype {
 		IF (times.now < 0) Return(0); FI
 		var currentFloorPosition = If(isAbove, positionY, -1 * positionY);
 		IF (times.now < time && currentFloorPosition < floorPositionLimit) Return(0); FI
+		IF (currentFloorPosition * speed > 10 / 3 * 5.85) Return(0); FI
 		var dx = positionX * stage.w * 0.05625;
 		var dy = positionY * speed * stage.h * 0.6;
 		
@@ -143,4 +151,11 @@ class DragNote: public Archetype {
 		Draw(If(isMulti, Sprites.HLDrag, Sprites.NormalDrag), x3, y3, x4, y4, x5, y5, x6, y6, 10000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1));
 		return VOID;
 	}
+};
+
+class FakeDragNote: public DragNote {
+	public:
+
+	static constexpr const char* name = "Phigros Fake Drag Note";
+	bool hasInput = false;
 };

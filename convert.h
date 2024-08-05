@@ -239,9 +239,9 @@ struct PGRJudgeline {
 	Json::Value toJsonObject() {
 		Json::Value obj;
 		obj["bpm"] = bpm;
-		obj["numOfNotes"] = (int)notesAbove.size() + (int)notesBelow.size();
-		obj["numOfNotesAbove"] = (int)notesAbove.size();
-		obj["numOfNotesBelow"] = (int)notesBelow.size();
+		obj["numOfNotes"] = notesAbove.size() + notesBelow.size();
+		obj["numOfNotesAbove"] = notesAbove.size();
+		obj["numOfNotesBelow"] = notesBelow.size();
 		obj["speedEvents"].resize(0);
 		for (auto &v: speedEvents) obj["speedEvents"].append(v.toJsonObject());
 		obj["judgeLineMoveXEvents"].resize(0);
@@ -481,7 +481,8 @@ string fromPGS(string json, double bgmOffset = 0) {
 					) - speedEvents.begin() - 1;
 					hold.endFloorPosition = speedEvents[k].floorPosition + 
 						(hold.time.value + hold.holdTime.value - speedEvents[k].startTime) * speedEvents[k].value / bpm * 1.875;
-					levelData.append(hold); 
+					if (note.isFake.value) levelData.append(transform<FakeHoldNoteEntity>(hold)); 
+					else levelData.append(hold);
 				} break;
 				case 4: {
 					if (note.isFake.value) levelData.append(transform<FakeFlickNoteEntity>(note)); 
@@ -523,7 +524,8 @@ string fromPGS(string json, double bgmOffset = 0) {
 					) - speedEvents.begin() - 1;
 					hold.endFloorPosition = -1 * (speedEvents[k].floorPosition + 
 						(hold.time.value + hold.holdTime.value - speedEvents[k].startTime) * speedEvents[k].value / bpm * 1.875);
-					levelData.append(hold); 
+					if (note.isFake.value) levelData.append(transform<FakeHoldNoteEntity>(hold)); 
+					else levelData.append(hold);
 				} break;
 				case 4: {
 					if (note.isFake.value) levelData.append(transform<FakeFlickNoteEntity>(note)); 
@@ -706,6 +708,7 @@ string fromPEC(string txt, double bgmOffset = 0) {
 	Json::Value obj;
 	obj["formatVersion"] = optimizer_version;
 	obj["judgeLineList"].resize(0);
+	obj["offset"] = offset;
 	for (auto &j : judgelines) obj["judgeLineList"].append(j.toJsonObject());
 	return json_encode(obj);
 }

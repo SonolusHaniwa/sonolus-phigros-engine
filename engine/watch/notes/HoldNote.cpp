@@ -46,27 +46,29 @@ class HoldNote: public Archetype {
 	SonolusApi preprocess() {
 		FUNCBEGIN
 		time = time * timeMagic / bpm;
-		notes = notes + 1;
 		holdTime = holdTime * timeMagic / bpm;
 		isMulti = isMulti && hasSimul;
 		lastSpawn = -1;
-		var id = EntityDataArray[judgeline].get(0);
-		WHILE (id) {
-			var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
-			IF (deltaFloorPosition <= 10 / 3 / 1) BREAK; FI
-			appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 10 / 3 / 1) / EntityDataArray[id].get(2);
-			id = EntityDataArray[id].get(3);
-		} DONE
-		appearTime = Max(0, Min(appearTime, time - 0.5));
-		IF (isReplay) {
-			judgeTime2 = time + judgeTime;
-			IF ((accuracy != 0 || judgeResult != 0) && hasSFX && !autoSFX) PlayScheduled(Clips.Note, time / levelSpeed + accuracy, minSFXDistance); FI
-			IF (autoSFX && hasSFX) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); FI
-			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
-		} ELSE {
-			judgeTime2 = time + holdTime;
-			IF (hasSFX) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); FI
-			Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
+		// var id = EntityDataArray[judgeline].get(0);
+		// WHILE (id) {
+		// 	var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
+		// 	IF (deltaFloorPosition <= 10 / 3 / 1) BREAK; FI
+		// 	appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 10 / 3 / 1) / EntityDataArray[id].get(2);
+		// 	id = EntityDataArray[id].get(3);
+		// } DONE
+		// appearTime = Max(0, Min(appearTime, time - 0.5));
+		IF (!isFake) {
+			notes = notes + 1;
+			IF (isReplay) {
+				judgeTime2 = time + judgeTime;
+				IF ((accuracy != 0 || judgeResult != 0) && hasSFX && !autoSFX) PlayScheduled(Clips.Note, time / levelSpeed + accuracy, minSFXDistance); FI
+				IF (autoSFX && hasSFX) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); FI
+				Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
+			} ELSE {
+				judgeTime2 = time + holdTime;
+				IF (hasSFX) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); FI
+				Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
+			} FI
 		} FI
 		return VOID;
 	}
@@ -77,6 +79,7 @@ class HoldNote: public Archetype {
 		IF (times.now < 0) Return(0); FI
 		IF (isAbove) positionY = floorPosition - line.get(5);
 		ELSE positionY = floorPosition + line.get(5); FI
+		IF (isFake) Return(0); FI
 
 		// 画粒子效果
 		IF (times.skip) Return(0); FI
@@ -116,6 +119,7 @@ class HoldNote: public Archetype {
 		IF (times.now < 0) Return(0); FI
 		var currentFloorPosition = If(isAbove, positionY, -1 * positionY);
 		IF (times.now < time && currentFloorPosition < floorPositionLimit) Return(0); FI
+		IF (currentFloorPosition * 1 > 10 / 3 * 5.85) Return(0); FI
 		var dx = positionX * stage.w * 0.05625;
 		var dy = positionY * stage.h * 0.6;
 		IF (times.now > time) dy = 0; FI
@@ -158,4 +162,11 @@ class HoldNote: public Archetype {
 		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 1000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > judgeTime2 && isReplay, 0.4, 1));
 		return VOID;
 	}
+};
+
+class FakeHoldNote: public HoldNote {
+	public:
+
+	static constexpr const char* name = "Phigros Fake Hold Note";
+	bool hasInput = false;
 };

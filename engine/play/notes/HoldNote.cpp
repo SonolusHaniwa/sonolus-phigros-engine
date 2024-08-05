@@ -47,7 +47,7 @@ class HoldNote: public Archetype {
 		FUNCBEGIN
 		time = time * timeMagic / bpm;
 		holdTime = holdTime * timeMagic / bpm;
-		notes = notes + 1;
+		IF (!isFake) notes = notes + 1; FI
 		isActive = false;
 		released = false;
 		isPerfect = 0;
@@ -73,6 +73,13 @@ class HoldNote: public Archetype {
 	SonolusApi updateSequential() {
 		FUNCBEGIN
 		IF (times.now < 0) Return(0); FI
+		IF (isAbove) positionY = floorPosition - line.get(5);
+		ELSE positionY = floorPosition + line.get(5); FI
+		IF (isFake) 
+			released = false;
+			IF (times.now > time + holdTime) EntityDespawn.set(0, 1); FI
+			Return(0); 
+		FI
 		IF (times.now > time + holdTime) {
 			IF (isActive && !released) {
 				combo = combo + 1;
@@ -103,8 +110,6 @@ class HoldNote: public Archetype {
 			} FI
 			EntityDespawn.set(0, 1);
 		} FI
-		IF (isAbove) positionY = floorPosition - line.get(5);
-		ELSE positionY = floorPosition + line.get(5); FI
 		IF (hasSFX && autoSFX && !sfxPlayed) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); sfxPlayed = true; FI
 
 		// 检测
@@ -153,6 +158,7 @@ class HoldNote: public Archetype {
 		IF (isActive) Return(0); FI
 		IF (times.now < inputTimeMin) Return(0); FI
 		IF (times.now > inputTimeMax) Return(0); FI
+		IF (isFake) Return(0); FI
 		let index = getClaimedStart(EntityInfo.get(0));
 		IF (index == -1) Return(0); FI
 
@@ -170,6 +176,7 @@ class HoldNote: public Archetype {
 		IF (times.now < 0) Return(0); FI
 		var currentFloorPosition = If(isAbove, positionY, -1 * positionY);
 		IF (times.now < time && currentFloorPosition < floorPositionLimit) Return(0); FI
+		IF (currentFloorPosition * 1 > 10 / 3 * 5.85) Return(0); FI
 		var dx = positionX * stage.w * 0.05625;
 		var dy = positionY * stage.h * 0.6;
 		IF (times.now > time) dy = 0; FI
@@ -212,4 +219,11 @@ class HoldNote: public Archetype {
 		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 1000 + 1000 - time + EntityInfo.get(0) / 10000, If(released, 0.4, 1));
 		return VOID;
 	}
+};
+
+class FakeHoldNote: public HoldNote {
+	public:
+
+	static constexpr const char* name = "Phigros Fake Hold Note";
+	bool hasInput = false;
 };
