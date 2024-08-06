@@ -186,7 +186,6 @@ struct PGRNote {
 	bool isAbove, isFake;
 	double speed, size;
 	double floorPosition = 0;
-	string cmd;
 
 	Json::Value toJsonObject() {
 		Json::Value obj;
@@ -711,4 +710,105 @@ string fromPEC(string txt, double bgmOffset = 0) {
 	obj["offset"] = offset;
 	for (auto &j : judgelines) obj["judgeLineList"].append(j.toJsonObject());
 	return json_encode(obj);
+}
+
+
+
+// ========================================================================================
+//
+//                 RPE Format Chart --> Official Phigros Format Chart
+//
+// ========================================================================================
+
+
+
+double BeatToDouble(Json::Value beat) {
+	return beat[0].asDouble() + beat[1].asDouble() / beat[2].asDouble();
+}
+string fromRPE(string json, double bgmOffset = 0) {
+	Json::Value rpe; json_decode(json, rpe);
+	double offset = rpe["META"]["offset"].asDouble() + bgmOffset;
+
+	// 添加 BPM
+	vector<BPM> bpms;
+	for (int i = 0; i < rpe["BPMList"].size(); i++) 
+		bpms.push_back({ 
+			BeatToDouble(rpe["BPMList"][i]["startTime"]), 
+			rpe["BPMList"][i]["bpm"].asDouble() 
+		});
+	
+	// 计算 BPM basicTime;
+	sort(bpms.begin(), bpms.end(), [&](BPM a, BPM b){ return a.startBeat < b.startBeat; });
+	for (int i = 0; i < bpms.size(); i++) bpms[i].basicTime = i ?
+		bpms[i - 1].basicTime + (bpms[i].startBeat - bpms[i - 1].startBeat) / bpms[i - 1].bpm :
+		0;
+	
+	auto rpe2pgr = [&](double beat){
+		int i = lower_bound(bpms.begin(), bpms.end(), beat, [&](BPM a, double b){ return a.startBeat < b; }) - bpms.begin() - 1;
+		if (i < 0) return 0.0;
+		return round(((beat - bpms[i].startBeat) / bpms[i].bpm + bpms[i].basicTime) * basicBpm * 32);
+	};
+	vector<PGRJudgeline> judgelines(rpe["judgeLineList"].size());
+	for (int i = 0; i < rpe["judgeLineList"].size(); i++) {
+		auto item = rpe["judgeLineList"][i];
+		// 先将所有的事件添加进判定线去
+		for (int j = 0; j < item["eventLayers"].size(); j++) {
+			auto layer = item["eventLayers"][j];
+			for (int k = 0; k < layer["speedEvents"].size(); k++)
+				judgelines[i].speedEvents.push_back({
+					rpe2pgr(BeatToDouble(layer["speedEvents"][k]["startTime"])),
+					rpe2pgr(BeatToDouble(layer["speedEvents"][k]["endTime"])),
+					layer["speedEvents"][k]["start"].asDouble(),
+					layer["speedEvents"][k]["end"].asDouble(),
+				});
+			for (int k = 0; k < layer["moveXEvents"].size(); k++)
+				judgelines[i].moveXEvents.push_back({
+					rpe2pgr(BeatToDouble(layer["moveXEvents"][k]["startTime"])),
+					rpe2pgr(BeatToDouble(layer["moveXEvents"][k]["endTime"])),
+					layer["moveXEvents"][k]["start"].asDouble(),
+					layer["moveXEvents"][k]["end"].asDouble(),
+					layer["moveXEvents"][k]["easingType"].asInt(),
+				});
+			for (int k = 0; k < layer["moveYEvents"].size(); k++)
+				judgelines[i].moveYEvents.push_back({
+					rpe2pgr(BeatToDouble(layer["moveYEvents"][k]["startTime"])),
+					rpe2pgr(BeatToDouble(layer["moveYEvents"][k]["endTime"])),
+					layer["moveYEvents"][k]["start"].asDouble(),
+					layer["moveYEvents"][k]["end"].asDouble(),
+					layer["moveYEvents"][k]["easingType"].asInt(),
+				});
+			for (int k = 0; k < layer["rotateEvents"].size(); k++)
+				judgelines[i].rotateEvents.push_back({
+					rpe2pgr(BeatToDouble(layer["rotateEvents"][k]["startTime"])),
+					rpe2pgr(BeatToDouble(layer["rotateEvents"][k]["endTime"])),
+					layer["rotateEvents"][k]["start"].asDouble(),
+					layer["rotateEvents"][k]["end"].asDouble(),
+					layer["rotateEvents"][k]["easingType"].asInt(),
+				});
+			for (int k = 0; k < layer["alphaEvents"].size(); k++) 
+				judgelines[i].disappearEvents.push_back({
+					rpe2pgr(BeatToDouble(layer["alphaEvents"][k]["startTime"])),
+					rpe2pgr(BeatToDouble(layer["alphaEvents"][k]["endTime"])),
+					layer["alphaEvents"][k]["start"].asDouble(),
+					layer["alphaEvents"][k]["end"].asDouble(),
+					layer["alphaEvents"][k]["easingType"].asInt(),
+				});
+		}
+		// 添加按键
+		for (int j = 0; j < item["notes"].size(); j++) {
+			auto note = item["notes"][j];
+			(note["above"].asBool() ? judgelines[i].notesAbove : judgelines[i].notesBelow).push_back({
+				note["type"].asInt(),
+				i,
+				rpe2pgr(BeatToDouble(note["startTime"])),
+				rpe2pgr(BeatToDouble(note["endTime"])),
+				note["positionX"].asDouble(),
+				note["above"].asBool(),
+				note["isFake"].asBool(),
+				note["speed"].asDouble(),
+				0,
+				0
+			});
+		}
+	}
 }
