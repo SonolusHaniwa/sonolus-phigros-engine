@@ -59,14 +59,14 @@ class HoldNote: public Archetype {
 		maxTime = Max(maxTime, time);
 		maxTime = Max(maxTime, time + holdTime);
 		sfxPlayed = false;
-		// var id = EntityDataArray[judgeline].get(0);
-		// WHILE (id) {
-		// 	var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
-		// 	IF (deltaFloorPosition <= 10 / 3 / 1) BREAK; FI
-		// 	appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 10 / 3 / 1) / EntityDataArray[id].get(2);
-		// 	id = EntityDataArray[id].get(3);
-		// } DONE
-		// appearTime = Max(0, Min(appearTime, time - 0.5));
+		var id = EntityDataArray[judgeline].get(0);
+		WHILE (id) {
+			var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
+			IF (deltaFloorPosition <= 10 / 3 / 1) BREAK; FI
+			appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 10 / 3 / 1) / EntityDataArray[id].get(2);
+			id = EntityDataArray[id].get(3);
+		} DONE
+		appearTime = Max(0, Min(appearTime, time - 0.5));
 		return VOID;
 	}
 
