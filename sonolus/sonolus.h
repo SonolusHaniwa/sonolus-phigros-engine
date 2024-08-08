@@ -229,26 +229,34 @@ void buildArchetype() {
     if constexpr (sizeof...(Args)) buildArchetype<Args...>();
 }
 
+vector<string> explode(const char* seperator, const char* source) {
+	string src = source; vector<string> res;
+	while (src.find(seperator) != string::npos) {
+		int wh = src.find(seperator);
+		res.push_back(src.substr(0, src.find(seperator)));
+		src = src.substr(wh + string(seperator).size());
+	} res.push_back(src);
+	return res;
+}
+
 int allocatedArchetypeCount = 0;
 map<string, int> archetypeId;
-template<typename T, typename... Args>
-void allocateArchetypeId() {
-	archetypeId[typeid(T).name()] = allocatedArchetypeCount++;
-	if constexpr (sizeof...(Args)) allocateArchetypeId<Args...>();
+void allocateArchetypeId(string s) {
+    auto name = explode(", ", s.c_str());
+    for (auto i : name) archetypeId[i] = allocatedArchetypeCount++;
 }
 
 template<typename... Args>
-void build(buffer& configurationBuffer, buffer& dataBuffer) {
+void build(string configurationPath, string dataPath) {
 	Run(1 + 1 == 2); // 防止空函数爆炸
 	preloadElement = nodesContainer.top(); mergeNodeContainer();
 	createAllocatorBackup();
     Json::Value configuration = engineConfiguration.toJsonObject();
-    configurationBuffer = compress_gzip(json_encode(configuration));
+    buffer configurationBuffer = compress_gzip(json_encode(configuration));
 #ifdef play
-	allocateArchetypeId<Args...>();
     buildArchetype<Args...>();
 	engineData.nodes = dataContainer;
-    dataBuffer = compress_gzip(json_encode(engineData.toJsonObject()));
+    buffer data = compress_gzip(json_encode(engineData.toJsonObject()));
 #elif tutorial
     cout << "Solving Archetype \"Sonolus Tutorial Default\"..." << endl;
     time_t st = millitime();
@@ -267,24 +275,32 @@ void build(buffer& configurationBuffer, buffer& dataBuffer) {
 		 << fixed << setprecision(0)
          << 1.0 * (globalCounter - lastGlobalCounter) / (1.0 * d / 1000) << " nodes/s. Total: " 
 		 << (globalCounter - lastGlobalCounter) << " nodes." << endl;
-    dataBuffer = compress_gzip(json_encode(engineTutorialData.toJsonObject()));
+    buffer data = compress_gzip(json_encode(engineTutorialData.toJsonObject()));
 #elif preview
-	allocateArchetypeId<Args...>();
     buildArchetype<Args...>();
 	enginePreviewData.nodes = dataContainer;
-    dataBuffer = compress_gzip(json_encode(enginePreviewData.toJsonObject()));
+    buffer data = compress_gzip(json_encode(enginePreviewData.toJsonObject()));
 #elif watch
-	allocateArchetypeId<Args...>();
     buildArchetype<Args...>();
     createNodeContainer(); auto tmpres = engineWatchData_updateSpawn();
 	if (nodesContainer.top().size() == 0) Return(tmpres);
 	engineWatchData.updateSpawn = mergeNodeContainer().getNodeId();
 	engineWatchData.nodes = dataContainer;
-    dataBuffer = compress_gzip(json_encode(engineWatchData.toJsonObject()));
+    buffer data = compress_gzip(json_encode(engineWatchData.toJsonObject()));
 #endif
+    ofstream fout(configurationPath);
+    for (int i = 0; i < configurationBuffer.size(); i++) fout << configurationBuffer.v[i];
+    fout.close(); fout.open(dataPath);
+    for (int i = 0; i < data.size(); i++) fout << data.v[i];
 }
 
-#define getArchetypeId(T) archetypeId[typeid(T).name()]
+#define getArchetypeId(T) archetypeId[#T]
+
+#ifdef tutorial
+    #define build(configurationPath, dataPath) { build(configurationPath, dataPath); }
+#else
+    #define build(configurationPath, dataPath, args...) { allocateArchetypeId(#args); build<args>(configurationPath, dataPath); }
+#endif
 
 // int ForPtIterator = 0;
 #define IF(cond) e1e1d3d40573127e9ee0480caf1283d6(If(cond, [&](){ NONFUNCBEGIN

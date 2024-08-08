@@ -5,16 +5,6 @@ using namespace std;
 const string dist = "./dist";
 #include"engine/engine.cpp"
 
-vector<string> explode(const char* seperator, const char* source) {
-	string src = source; vector<string> res;
-	while (src.find(seperator) != string::npos) {
-		int wh = src.find(seperator);
-		res.push_back(src.substr(0, src.find(seperator)));
-		src = src.substr(wh + string(seperator).size());
-	} res.push_back(src);
-	return res;
-}
-
 string readFile(string path) {
     ifstream fin(path);
     fin.seekg(0, ios::end);
@@ -86,9 +76,9 @@ int main(int argc, char** argv) {
     
     engineConfiguration.ui = configurationUI;
 #ifdef play
-    buffer data, configuration;
-    build<
-        // Replace with your archetypes here
+    build(
+        dist + "/EngineConfiguration",
+        dist + "/EngineData",
         Initialization,
         StageController,
         InputManager,
@@ -107,33 +97,22 @@ int main(int argc, char** argv) {
         FakeDragNote,
         FakeHoldNote,
         FakeFlickNote
-    >(configuration, data);
-    ofstream fout((dist + "/EngineConfiguration"));
-    for (int i = 0; i < configuration.size(); i++) fout << configuration.v[i];
-    fout.close(); fout.open((dist + "/EngineData"));
-    // ofstream fout((dist + "/EngineData"));
-    for (int i = 0; i < data.size(); i++) fout << data.v[i];
+    );
 #elif tutorial
-    buffer data, configuration;
-    build(configuration, data);
-    ofstream fout((dist + "/EngineConfiguration"));
-    for (int i = 0; i < configuration.size(); i++) fout << configuration.v[i];
-    fout.close(); fout.open((dist + "/EngineTutorialData"));
-    for (int i = 0; i < data.size(); i++) fout << data.v[i];
+    build(
+        dist + "/EngineConfiguration",
+        dist + "/EngineTutorialData"
+    );
 #elif preview
-    buffer data, configuration;
-    build<
-        // Replace with your archetypes here
+    build(
+        dist + "/EngineConfiguration",
+        dist + "/EnginePreviewData",
         Initialization
-    >(configuration, data);
-    ofstream fout((dist + "/EngineConfiguration"));
-    for (int i = 0; i < configuration.size(); i++) fout << configuration.v[i];
-    fout.close(); fout.open((dist + "/EnginePreviewData"));
-    for (int i = 0; i < data.size(); i++) fout << data.v[i];
+    );
 #elif watch
-	buffer data, configuration;
-	build<
-		// Replace with your archetypes here
+	build(
+        dist + "/EngineConfiguration",
+        dist + "/EngineWatchData",
         Initialization,
         StageController,
         Judgeline,
@@ -151,11 +130,7 @@ int main(int argc, char** argv) {
         FakeHoldNote,
         FakeFlickNote,
         UpdateJudgment
-	>(configuration, data);
-    ofstream fout((dist + "/EngineConfiguration"));
-    for (int i = 0; i < configuration.size(); i++) fout << configuration.v[i];
-    fout.close(); fout.open((dist + "/EngineWatchData"));
-    for (int i = 0; i < data.size(); i++) fout << data.v[i];
+    );
 #endif
 
 	// 生成 Skin

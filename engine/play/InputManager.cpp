@@ -32,7 +32,7 @@ class ClaimManager {
 	ClaimInfo getInfo(let index) {
 		auto note = EntityDataArray[index];
 		auto judgeline = EntitySharedMemoryArray[
-			note.get(If(EntityInfoArray[index].get(1) == 12, 9, 8))
+			note.get(If(EntityInfoArray[index].get(1) == getArchetypeId(HoldNote), 9, 8))
 		];
 		let dx = note.get(1) * stage.w * 0.05625;
 		let jx = judgeline.get(1), jy = judgeline.get(2);

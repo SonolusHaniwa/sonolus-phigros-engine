@@ -18,7 +18,7 @@ class StageController: public Archetype {
         var head = headNoteId.get();
         IF (isReplay) {
 	        FOR (i, 0, noteNumber, 1) {
-                var index = If(EntityInfoArray[head].get(1) == 10, 12, 11);
+                var index = If(EntityInfoArray[head].get(1) == getArchetypeId(HoldNote), 12, 11);
 	        	IF (EntityDataArray[head].get(index) != 0) combo = combo + 1;
                 ELSE combo = 0; FI
 	        	EntitySharedMemoryArray[head].set(2, combo);
