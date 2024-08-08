@@ -7,7 +7,7 @@ class Initialization: public Archetype {
     SonolusApi preprocess() {
     	FUNCBEGIN
         // 界面开关参数
-        IF (!sonolusCombo && HasSkinSprite(Sprites.PauseButton)) {
+        IF (!sonolusPause && HasSkinSprite(Sprites.PauseButton)) {
             let menuL = stage.l + 0.005 * stage.w;
             let menuR = stage.l + 0.05 * stage.w;
             let menuT = stage.t + 1.0 / 1080.0 * stage.h;
@@ -56,10 +56,10 @@ class Initialization: public Archetype {
         LevelScore.set(0, score.perfect);
         LevelScore.set(1, score.great);
         LevelScore.set(2, score.good);
-        buckets[Buckets.note].set(-1 * judgment.perfect, judgment.perfect, -1 * judgment.great, judgment.great, -1 * judgment.good, judgment.good);
-        buckets[Buckets.drag].set(-1 * judgment.good, judgment.good, -1 * judgment.good, judgment.good, -1 * judgment.good, judgment.good);
-        buckets[Buckets.hold].set(-1 * judgment.perfect, judgment.perfect, -1 * judgment.good, judgment.good, -1 * judgment.good, judgment.good);
-        buckets[Buckets.flick].set(-1 * judgment.good, judgment.good, -1 * judgment.good, judgment.good, -1 * judgment.good, judgment.good);
+        buckets[Buckets.note].set(-1 * judgment.perfect * 1000, judgment.perfect * 1000, -1 * judgment.great * 1000, judgment.great * 1000, -1 * judgment.good * 1000, judgment.good * 1000);
+        buckets[Buckets.drag].set(-1 * judgment.good * 1000, judgment.good * 1000, -1 * judgment.good * 1000, judgment.good * 1000, -1 * judgment.good * 1000, judgment.good * 1000);
+        buckets[Buckets.hold].set(-1 * judgment.perfect * 1000, judgment.perfect * 1000, -1 * judgment.good * 1000, judgment.good * 1000, -1 * judgment.good * 1000, judgment.good * 1000);
+        buckets[Buckets.flick].set(-1 * judgment.good * 1000, judgment.good * 1000, -1 * judgment.good * 1000, judgment.good * 1000, -1 * judgment.good * 1000, judgment.good * 1000);
 
         combo = 0;
         judgeStatus = If(hasIndicator, 2, 0);

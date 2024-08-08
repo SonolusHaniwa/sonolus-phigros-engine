@@ -18,18 +18,19 @@ class StageController: public Archetype {
         var head = headNoteId.get();
         IF (isReplay) {
 	        FOR (i, 0, noteNumber, 1) {
-	        	IF (EntityDataArray[head].get(11) != 0) combo = combo + 1;
+                var index = If(EntityInfoArray[head].get(1) == 10, 12, 11);
+	        	IF (EntityDataArray[head].get(index) != 0) combo = combo + 1;
                 ELSE combo = 0; FI
 	        	EntitySharedMemoryArray[head].set(2, combo);
 
 	        	maxCombo = Max(maxCombo, combo);
 	        	EntitySharedMemoryArray[head].set(3, maxCombo);
 
-	        	judgeStatus = Min(judgeStatus, EntityDataArray[head].get(11));
+	        	judgeStatus = Min(judgeStatus, EntityDataArray[head].get(index));
 	        	EntitySharedMemoryArray[head].set(4, judgeStatus);
 
-	        	IF (EntityDataArray[head].get(11) == 2) accscore = accscore + score.perfect;
-                ELSE IF (EntityDataArray[head].get(11) == 1) accscore = accscore + score.great; FI FI
+	        	IF (EntityDataArray[head].get(index) == 2) accscore = accscore + score.perfect;
+                ELSE IF (EntityDataArray[head].get(index) == 1) accscore = accscore + score.great; FI FI
 	        	EntitySharedMemoryArray[head].set(5, accscore);
 
 	        	EntitySharedMemoryArray[head].set(6, i);

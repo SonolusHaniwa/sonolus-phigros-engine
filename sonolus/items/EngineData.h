@@ -41,6 +41,7 @@ class EngineDataBucket{
         Json::Value res;
         res["sprites"].resize(0);
         for (int i = 0; i < sprites.size(); i++) res["sprites"].append(sprites[i].toJsonValue());
+        res["unit"] = unit;
         return res;
     }
 };

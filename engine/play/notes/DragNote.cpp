@@ -68,11 +68,11 @@ class DragNote: public Archetype {
 				effectX1, effectY1, effectX2, effectY2,
 				effectX3, effectY3, effectX4, effectY4,
 				effectDurationTime);
+			ExportValue(judgeResult, 2);
 			EntityInput.set(0, 1); 
 			EntityInput.set(1, hitTime - time);
 			EntityInput.set(2, Buckets.drag);
-			EntityInput.set(3, hitTime - time);
-			ExportValue(judgeResult, 2);
+			EntityInput.set(3, (hitTime - time) * 1000);
 		} FI
 		IF (Abs(hitTime - time) > judgment.good) {
 			judgeStatus = Min(judgeStatus, 0); combo = 0;

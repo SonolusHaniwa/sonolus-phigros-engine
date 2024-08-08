@@ -68,10 +68,15 @@ class FlickNote: public Archetype {
 				IF (judgeResult != 0 && hasSFX && !autoSFX) PlayScheduled(Clips.Flick, time / levelSpeed + accuracy, minSFXDistance); FI
 				IF (autoSFX && hasSFX) PlayScheduled(Clips.Flick, time / levelSpeed, minSFXDistance); FI
 				Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
+				Set(EntityInputId, 0, time + accuracy);
+				Set(EntityInputId, 1, Buckets.flick);
+				Set(EntityInputId, 2, accuracy * 1000);
 			} ELSE {
 				judgeTime = time.get();
 				IF (hasSFX) PlayScheduled(Clips.Flick, time / levelSpeed, minSFXDistance); FI
 				Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
+				Set(EntityInputId, 0, time);
+				Set(EntityInputId, 1, Buckets.flick);
 			} FI
 		} FI
 		return VOID;

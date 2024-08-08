@@ -73,8 +73,6 @@ class HoldNote: public Archetype {
 	SonolusApi updateSequential() {
 		FUNCBEGIN
 		IF (times.now < 0) Return(0); FI
-		IF (isAbove) positionY = floorPosition - line.get(5);
-		ELSE positionY = floorPosition + line.get(5); FI
 		IF (isFake) 
 			released = false;
 			IF (times.now > time + holdTime) EntityDespawn.set(0, 1); FI
@@ -110,6 +108,8 @@ class HoldNote: public Archetype {
 			} FI
 			EntityDespawn.set(0, 1);
 		} FI
+		IF (isAbove) positionY = floorPosition - line.get(5);
+		ELSE positionY = floorPosition + line.get(5); FI
 		IF (hasSFX && autoSFX && !sfxPlayed) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); sfxPlayed = true; FI
 
 		// 检测
@@ -167,7 +167,7 @@ class HoldNote: public Archetype {
 		IF (hasSFX && !autoSFX) Play(Clips.Note, minSFXDistance); FI 
 		EntityInput.set(1, times.now - time);
 		EntityInput.set(2, Buckets.hold);
-		EntityInput.set(3, times.now - time);
+		EntityInput.set(3, (times.now - time) * 1000);
 		return VOID;
 	}
 
