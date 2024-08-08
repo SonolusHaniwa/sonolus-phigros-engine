@@ -68,10 +68,15 @@ class NormalNote: public Archetype {
 				IF (judgeResult != 0 && hasSFX && !autoSFX) PlayScheduled(Clips.Note, time / levelSpeed + accuracy, minSFXDistance); FI
 				IF (autoSFX && hasSFX) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); FI
 				Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
+				Set(EntityInputId, 0, time + accuracy);
+				Set(EntityInputId, 1, Buckets.note);
+				Set(EntityInputId, 2, accuracy * 1000);
 			} ELSE {
 				judgeTime = time.get();
 				IF (hasSFX) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); FI 
 				Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
+				Set(EntityInputId, 0, time + accuracy);
+				Set(EntityInputId, 1, Buckets.note);
 			} FI
 		} FI
 		return VOID;

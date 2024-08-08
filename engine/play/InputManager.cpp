@@ -31,7 +31,9 @@ class ClaimManager {
 
 	ClaimInfo getInfo(let index) {
 		auto note = EntityDataArray[index];
-		auto judgeline = EntitySharedMemoryArray[note.get(8)];
+		auto judgeline = EntitySharedMemoryArray[
+			note.get(If(EntityInfoArray[index].get(1) == 12, 9, 8))
+		];
 		let dx = note.get(1) * stage.w * 0.05625;
 		let jx = judgeline.get(1), jy = judgeline.get(2);
 		let rotate = judgeline.get(3);

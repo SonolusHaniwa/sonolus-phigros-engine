@@ -73,7 +73,7 @@ class NormalNote: public Archetype {
 			EntityInput.set(0, 1); 
 			EntityInput.set(1, hitTime - time);
 			EntityInput.set(2, Buckets.note);
-			EntityInput.set(3, hitTime - time);
+			EntityInput.set(3, (hitTime - time) * 1000);
 			ExportValue(judgeResult, 2);
 		} FI
 		IF (Abs(hitTime - time) > judgment.perfect && Abs(hitTime - time) <= judgment.great) {
@@ -86,7 +86,7 @@ class NormalNote: public Archetype {
 			EntityInput.set(0, 2); 
 			EntityInput.set(1, hitTime - time);
 			EntityInput.set(2, Buckets.note);
-			EntityInput.set(3, hitTime - time);
+			EntityInput.set(3, (hitTime - time) * 1000);
 			ExportValue(judgeResult, 1);
 		} FI
 		IF (Abs(hitTime - time) > judgment.great && Abs(hitTime - time) <= judgment.good) {
@@ -94,7 +94,7 @@ class NormalNote: public Archetype {
 			EntityInput.set(0, 3); 
 			EntityInput.set(1, hitTime - time);
 			EntityInput.set(2, Buckets.note);
-			EntityInput.set(3, hitTime - time);
+			EntityInput.set(3, (hitTime - time) * 1000);
 			ExportValue(judgeResult, 0);
 		} FI
 		IF (Abs(hitTime - time) > judgment.good) {

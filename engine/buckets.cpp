@@ -17,7 +17,7 @@ auto bucket = defineBuckets<class Buckets>({
 				x: 0,
 				y: 0,
 				w: 4.0,
-				h: 0.4,
+				h: 4.0,
 				rotation: 0
 			}
         },
@@ -30,7 +30,7 @@ auto bucket = defineBuckets<class Buckets>({
 				x: 0,
 				y: 0,
 				w: 4.0,
-				h: 0.24,
+				h: 4.0,
 				rotation: 0
 			}
         },
@@ -48,7 +48,7 @@ auto bucket = defineBuckets<class Buckets>({
 			},
 			{
 				id: Sprites.NormalHoldBody,
-				x: 0.05,
+				x: 0.04,
 				y: 0,
 				w: 2.0,
 				h: 3.9,
@@ -64,7 +64,7 @@ auto bucket = defineBuckets<class Buckets>({
 				x: 0,
 				y: 0,
 				w: 4.0,
-				h: 0.8,
+				h: 4.0,
 				rotation: 0
 			}
         },

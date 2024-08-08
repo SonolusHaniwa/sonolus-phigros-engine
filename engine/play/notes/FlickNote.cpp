@@ -71,7 +71,7 @@ class FlickNote: public Archetype {
 			EntityInput.set(0, 1); 
 			EntityInput.set(1, hitTime - time);
 			EntityInput.set(2, Buckets.flick);
-			EntityInput.set(3, hitTime - time);
+			EntityInput.set(3, (hitTime - time) * 1000);
 			ExportValue(judgeResult, 2);
 		} FI
 		IF (Abs(hitTime - time) > judgment.good) {
