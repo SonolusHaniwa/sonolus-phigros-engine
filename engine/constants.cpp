@@ -1,7 +1,6 @@
 double PI  = acos(-1);
 double lockAspectRatio = 1;
 double interfaceGap = 0.05;
-double extraWidth = 1;
 double targetAspectRatio = 1920.0 / 1080.0;
 double judgelineHeight = 0.01;
 double baseNoteWidth = 0.48;
@@ -57,24 +56,16 @@ let autoSFX = LevelOption.get(Options.AutoSFX);
 class stage {
 	public:
 
-	let w = If(lockAspectRatio == 0 || screen.aspectRatio < targetAspectRatio,
-        screen.w * extraWidth,
+	let w = If(screen.aspectRatio < targetAspectRatio,
+        screen.w,
         screen.h * targetAspectRatio);
-    let h = If(lockAspectRatio == 0 || screen.aspectRatio > targetAspectRatio,
-        screen.h,
-        screen.w / targetAspectRatio);
+    let h = screen.h;
     let l = -1 * w / 2;
     let r = w / 2;
     let t = h / 2;
     let b = -1 * h / 2;
 }stage;
 
-let t = If(
-	lockAspectRatio && screen.aspectRatio < targetAspectRatio,
-	screen.w / targetAspectRatio * 0.5,
-	screen.t
-);
-let b = t - stage.h;
 #endif
 
 #if play || watch

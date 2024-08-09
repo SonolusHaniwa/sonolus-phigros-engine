@@ -1,7 +1,7 @@
 SonolusApi drawPause(let, let) {
     FUNCBEGIN
-    let menuL = stage.l + 0.005 * stage.w;
-    let menuR = stage.l + 0.05 * stage.w;
+    let menuL = stage.l + 0.005 * 3.556;
+    let menuR = stage.l + 0.05 * 3.556;
     let menuT = stage.t + 1.0 / 1080.0 * stage.h;
     let menuB = stage.t - 0.095 * stage.h;
     let menuWidth = menuR - menuL;
