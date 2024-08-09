@@ -40,7 +40,7 @@ double tipRatio = 2015.0 / 157.0;
 #if play || watch
 let strictMode = LevelOption.get(Options.StrictMode);
 let levelSpeed = LevelOption.get(Options.LevelSpeed);
-let noteWidth = baseNoteWidth * LevelOption.get(Options.NoteSize);
+let noteWidth2 = baseNoteWidth * LevelOption.get(Options.NoteSize);
 let hasSFX = LevelOption.get(Options.HasSFX);
 let hasSimul = LevelOption.get(Options.HasSimul);
 let hasIndicator = LevelOption.get(Options.HasIndicator);
@@ -65,10 +65,10 @@ class stage {
     let t = h / 2;
     let b = -1 * h / 2;
 }stage;
-
 #endif
 
 #if play || watch
+let noteWidth = noteWidth2 / (3.25 / stage.w);
 class judgment {
 	public:
 
