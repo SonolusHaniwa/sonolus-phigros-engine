@@ -107,8 +107,7 @@ class DragNote: public Archetype {
 	SonolusApi updateSequential() {
 		FUNCBEGIN
 		IF (times.now < 0) Return(0); FI
-		IF (isAbove) positionY = floorPosition - line.get(5);
-		ELSE positionY = floorPosition + line.get(5); FI
+		positionY = If(isAbove, floorPosition - line.get(5), floorPosition + line.get(5));
 		return VOID;
 	}
 

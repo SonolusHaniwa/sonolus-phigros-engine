@@ -41,6 +41,7 @@
   },
   "level": {
     "name": "phigros-test-114514",
+    "generate": "",
     "i18n": [
       {
         "localization": "default",

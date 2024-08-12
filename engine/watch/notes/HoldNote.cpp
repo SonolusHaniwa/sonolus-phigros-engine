@@ -82,8 +82,7 @@ class HoldNote: public Archetype {
 		FUNCBEGIN
 		IF (times.skip) lastSpawn = -1; FI
 		IF (times.now < 0) Return(0); FI
-		IF (isAbove) positionY = floorPosition - line.get(5);
-		ELSE positionY = floorPosition + line.get(5); FI
+		positionY = If(isAbove, floorPosition - line.get(5), floorPosition + line.get(5));
 		IF (isFake) Return(0); FI
 
 		// 画粒子效果

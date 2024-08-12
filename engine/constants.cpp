@@ -5,12 +5,12 @@ double targetAspectRatio = 1920.0 / 1080.0;
 double judgelineHeight = 0.01;
 double baseNoteWidth = 0.48;
 double minSFXDistance = 0.02;
-double noteRatio = 1;
-double dragRatio = 1;
-double flickRatio = 1;
-double hlNoteRatio = 1;
-double hlDragRatio = 1;
-double hlFlickRatio = 1;
+double noteRatio = 2;
+double dragRatio = 2;
+double flickRatio = 2;
+double hlNoteRatio = 2;
+double hlDragRatio = 2;
+double hlFlickRatio = 2;
 double holdHeadRatio = 989.0 / 50.0;
 double holdBodyRatio = 989.0 / 1950.0;
 double hlHoldHeadRatio = 1062.0 / 97.0;
@@ -68,7 +68,7 @@ class stage {
 #endif
 
 #if play || watch
-let noteWidth = noteWidth2 / (3.25 / stage.w);
+let noteWidth = noteWidth2 * (stage.w / 3.55) * (stage.w / 3.55);
 class judgment {
 	public:
 

@@ -17,7 +17,7 @@ auto bucket = defineBuckets<class Buckets>({
 				x: 0,
 				y: 0,
 				w: 4.0,
-				h: 4.0,
+				h: 2.0,
 				rotation: 0
 			}
         },
@@ -30,7 +30,7 @@ auto bucket = defineBuckets<class Buckets>({
 				x: 0,
 				y: 0,
 				w: 4.0,
-				h: 4.0,
+				h: 2.0,
 				rotation: 0
 			}
         },
@@ -64,7 +64,7 @@ auto bucket = defineBuckets<class Buckets>({
 				x: 0,
 				y: 0,
 				w: 4.0,
-				h: 4.0,
+				h: 2.0,
 				rotation: 0
 			}
         },
