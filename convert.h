@@ -193,7 +193,7 @@ struct PGRNote {
 	double time, endTime, offsetX;
 	bool isAbove, isFake;
 	double speed = 1, size = 1;
-	double yOffset = 0, visibleTime = 0, alpha = 1;
+	double yOffset = 0, visibleTime = 999999, alpha = 1;
 	double floorPosition = 0;
 
 	Json::Value toJsonObject() {
@@ -340,7 +340,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 			SpeedEventEntity speed;
 			speed.startTime = v["startTime"].asDouble();
 			speed.endTime = v["endTime"].asDouble();
-			if (v.isMember("value")) speed.start = speed.end = v["value"].asDouble();
+			if (v.isMember("value")) speed.start = v["value"].asDouble(), speed.end = v["value"].asDouble();
 			else speed.start = v["start"].asDouble(), speed.end = v["end"].asDouble();
 			speed.next = j != item["speedEvents"].size() - 1 
 				? speedData.back<SpeedEventEntity>() 
@@ -528,7 +528,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 			note.bpm = bpm;
 			note.size = v.isMember("size") ? v["size"].asDouble() : 1;
 			note.yOffset = v.isMember("yOffset") ? v["yOffset"].asDouble() : 0;
-			note.visibleTime = v.isMember("visibleTime") ? v["visibleTime"].asDouble() : 0;
+			note.visibleTime = v.isMember("visibleTime") ? v["visibleTime"].asDouble() : 999999;
 			note.alpha = v.isMember("alpha") ? v["alpha"].asDouble() : 1;
 			switch(v["type"].asInt()) {
 				case 1: {
@@ -575,7 +575,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 			note.bpm = bpm;
 			note.size = v.isMember("size") ? v["size"].asDouble() : 1;
 			note.yOffset = v.isMember("yOffset") ? v["yOffset"].asDouble() : 0;
-			note.visibleTime = v.isMember("visibleTime") ? v["visibleTime"].asDouble() : 0;
+			note.visibleTime = v.isMember("visibleTime") ? v["visibleTime"].asDouble() : 999999;
 			note.alpha = v.isMember("alpha") ? v["alpha"].asDouble() : 1;
 			switch(v["type"].asInt()) {
 				case 1: {
