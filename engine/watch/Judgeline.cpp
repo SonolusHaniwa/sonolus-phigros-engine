@@ -35,11 +35,11 @@ class Judgeline: public Archetype {
 		// allocatedId = EntityInfo.get(0);
 		allocateJudgelineId = allocateJudgelineId + 1;
 		speed = 0; x = 0; y = 0; rotate = 0; disappear = 1; floorPosition = 0;
-        var id = speedEvent.get(); jump(id, 3);
-        id = moveXEvent.get(); jump(id, 5);
-        id = moveYEvent.get(); jump(id, 5);
-        id = rotateEvent.get(); jump(id, 5);
-        id = disappearEvent.get(); jump(id, 5);
+        var id = speedEvent.get(); jump(id, 4);
+        id = moveXEvent.get(); jump(id, 12);
+        id = moveYEvent.get(); jump(id, 12);
+        id = rotateEvent.get(); jump(id, 12);
+        id = disappearEvent.get(); jump(id, 12);
 		speed = 0; x = 0; y = 0; rotate = 0; disappear = 1; floorPosition = 0;
 		return VOID;
 	}

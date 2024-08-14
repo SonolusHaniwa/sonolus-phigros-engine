@@ -4,10 +4,6 @@
 
 const int official_version = 3;
 const int optimizer_version = 13;
-const int pec_version = -1;
-const int pec_conventor_version = 1000;
-const int rpe_version = 123;
-const int rpe_conventor_version = 2123;
 
 class InitializationEntity: public LevelEntity {
 	public:
@@ -51,7 +47,8 @@ class SpeedEventEntity: public LevelEntity {
 	defineArchetypeName("Phigros Judgeline Speed Event");
 	defineLevelDataValue(startTime);
 	defineLevelDataValue(endTime);
-	defineLevelDataValue(value);
+	defineLevelDataValue(start);
+	defineLevelDataValue(end);
 	defineLevelDataRef(next);
 };
 
@@ -63,6 +60,13 @@ class CommonEventEntity: public LevelEntity {
 	defineLevelDataValue(start);
 	defineLevelDataValue(end);
 	defineLevelDataValue(easing);
+	defineLevelDataValue(easingLeft);
+	defineLevelDataValue(easingRight);
+	defineLevelDataValue(bezier);
+	defineLevelDataValue(bezierP1);
+	defineLevelDataValue(bezierP2);
+	defineLevelDataValue(bezierP3);
+	defineLevelDataValue(bezierP4);
 	defineLevelDataRef(next);
 };
 
@@ -103,6 +107,10 @@ class CommonNoteEntity: public LevelEntity {
 	defineLevelDataValue(isMulti);
 	defineLevelDataRef(judgeline);
 	defineLevelDataValue(bpm);
+	defineLevelDataValue(size);
+	defineLevelDataValue(yOffset);
+	defineLevelDataValue(visibleTime);
+	defineLevelDataValue(alpha);
 };
 
 class NormalNoteEntity: public CommonNoteEntity {
@@ -184,7 +192,8 @@ struct PGRNote {
 	int type, lineId;
 	double time, endTime, offsetX;
 	bool isAbove, isFake;
-	double speed, size;
+	double speed = 1, size = 1;
+	double yOffset = 0, visibleTime = 0, alpha = 1;
 	double floorPosition = 0;
 
 	Json::Value toJsonObject() {
@@ -197,6 +206,10 @@ struct PGRNote {
 		obj["isAbove"] = isAbove;
 		obj["isFake"] = isFake;
 		obj["speed"] = speed;
+		obj["size"] = size;
+		obj["yOffset"] = yOffset;
+		obj["visibleTime"] = visibleTime;
+		obj["alpha"] = alpha;
 		obj["floorPosition"] = floorPosition;
 		return obj;
 	}
@@ -217,7 +230,10 @@ struct PGRSpeedEvent {
 struct PGREvent {
 	double startTime, endTime;
 	double start, end;
-	int easing;
+	int easing; 
+	double easingLeft = 0, easingRight = 1;
+	bool bezier = 0; 
+	double bezierP1 = 0, bezierP2 = 0, bezierP3 = 0, bezierP4 = 0;
 
 	Json::Value toJsonObject() {
 		Json::Value obj;
@@ -226,12 +242,20 @@ struct PGREvent {
 		obj["start"] = start;
 		obj["end"] = end;
 		obj["easing"] = easing;
+		obj["easingLeft"] = easingLeft;
+		obj["easingRight"] = easingRight;
+		obj["bezier"] = bezier;
+		obj["bezierP1"] = bezierP1;
+		obj["bezierP2"] = bezierP2;
+		obj["bezierP3"] = bezierP3;
+		obj["bezierP4"] = bezierP4;
 		return obj;
 	}
 };
 struct PGRJudgeline {
 	double bpm;
 	vector<PGRSpeedEvent> speedEvents;
+	vector<PGREvent> rpeSpeedEvents; // rpe 速度事件预留位
 	vector<PGREvent> moveXEvents, moveYEvents, rotateEvents, disappearEvents;
 	vector<PGRNote> notesAbove, notesBelow;
 
@@ -268,7 +292,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 		total++;
 		total += item["speedEvents"].size();
 		if (fmt == official_version) total += item["judgeLineMoveEvents"].size() * 2;
-		else if (fmt == optimizer_version || fmt == pec_conventor_version) 
+		else if (fmt == optimizer_version)
 			total += item["judgeLineMoveXEvents"].size() + item["judgeLineMoveYEvents"].size();
 		else cout << "Unknown format version: " << fmt << endl, exit(1);
 		total += item["judgeLineRotateEvents"].size();
@@ -316,7 +340,8 @@ string fromPGS(string json, double bgmOffset = 0) {
 			SpeedEventEntity speed;
 			speed.startTime = v["startTime"].asDouble();
 			speed.endTime = v["endTime"].asDouble();
-			speed.value = v["value"].asDouble();
+			if (v.isMember("value")) speed.start = speed.end = v["value"].asDouble();
+			else speed.start = v["start"].asDouble(), speed.end = v["end"].asDouble();
 			speed.next = j != item["speedEvents"].size() - 1 
 				? speedData.back<SpeedEventEntity>() 
 				: SpeedEventEntity();
@@ -335,7 +360,6 @@ string fromPGS(string json, double bgmOffset = 0) {
 		// 警钟长鸣
 		for (int j = 1; j < speedEvents.size(); j++) speedEvents[j].floorPosition = 
 			speedEvents[j - 1].floorPosition + (speedEvents[j - 1].endTime - speedEvents[j - 1].startTime) * speedEvents[j - 1].value / bpm * 1.875;
-		// for (auto v : speedEvents) cout << "V: " << v.startTime << " " << v.endTime << " " << v.value << " " << v.floorPosition << endl;
 
 		// 添加 Move Event
 		if (fmt == official_version) {
@@ -348,6 +372,13 @@ string fromPGS(string json, double bgmOffset = 0) {
 				moveX.start = v["start"].asDouble();
 				moveX.end = v["end"].asDouble();
 				moveX.easing = v["easing"].asInt();
+				moveX.easingLeft = v.isMember("easingLeft") ? v["easingLeft"].asInt() : 0;
+				moveX.easingRight = v.isMember("easingRight") ? v["easingRight"].asInt() : 1;
+				moveX.bezier = v.isMember("bezier") ? v["bezier"].asInt() : 0;
+				moveX.bezierP1 = v.isMember("bezierP1") ? v["bezierP1"].asDouble() : 0;
+				moveX.bezierP2 = v.isMember("bezierP2") ? v["bezierP2"].asDouble() : 0;
+				moveX.bezierP3 = v.isMember("bezierP3") ? v["bezierP3"].asDouble() : 0;
+				moveX.bezierP4 = v.isMember("bezierP4") ? v["bezierP4"].asDouble() : 0;
 				moveX.next = j != item["judgeLineMoveEvents"].size() - 1
 					? levelData.get<MoveXEventEntity>(levelData.size() - 2)
 					: MoveXEventEntity();
@@ -359,6 +390,13 @@ string fromPGS(string json, double bgmOffset = 0) {
 				moveY.start = v["start2"].asDouble();
 				moveY.end = v["end2"].asDouble();
 				moveY.easing = v["easing"].asInt();
+				moveY.easingLeft = v.isMember("easingLeft") ? v["easingLeft"].asInt() : 0;
+				moveY.easingRight = v.isMember("easingRight") ? v["easingRight"].asInt() : 1;
+				moveY.bezier = v.isMember("bezier") ? v["bezier"].asInt() : 0;
+				moveY.bezierP1 = v.isMember("bezierP1") ? v["bezierP1"].asDouble() : 0;
+				moveY.bezierP2 = v.isMember("bezierP2") ? v["bezierP2"].asDouble() : 0;
+				moveY.bezierP3 = v.isMember("bezierP3") ? v["bezierP3"].asDouble() : 0;
+				moveY.bezierP4 = v.isMember("bezierP4") ? v["bezierP4"].asDouble() : 0;
 				moveY.next = j != item["judgeLineMoveEvents"].size() - 1
 					? levelData.get<MoveYEventEntity>(levelData.size() - 2)
 					: MoveYEventEntity();
@@ -370,7 +408,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 			judgeline.moveYEvent = item["judgeLineMoveEvents"].size()
 					? levelData.get<MoveYEventEntity>(levelData.size() - 1)
 					: MoveYEventEntity();
-		} else if (fmt == optimizer_version || fmt == pec_conventor_version) {
+		} else if (fmt == optimizer_version) {
 			for (int j = item["judgeLineMoveXEvents"].size() - 1; j >= 0; j--) {
 				auto v = item["judgeLineMoveXEvents"][j];
 				MoveXEventEntity moveX;
@@ -379,6 +417,13 @@ string fromPGS(string json, double bgmOffset = 0) {
 				moveX.start = v["start"].asDouble();
 				moveX.end = v["end"].asDouble();
 				moveX.easing = v["easing"].asInt();
+				moveX.easingLeft = v.isMember("easingLeft") ? v["easingLeft"].asInt() : 0;
+				moveX.easingRight = v.isMember("easingRight") ? v["easingRight"].asInt() : 1;
+				moveX.bezier = v.isMember("bezier") ? v["bezier"].asInt() : 0;
+				moveX.bezierP1 = v.isMember("bezierP1") ? v["bezierP1"].asDouble() : 0;
+				moveX.bezierP2 = v.isMember("bezierP2") ? v["bezierP2"].asDouble() : 0;
+				moveX.bezierP3 = v.isMember("bezierP3") ? v["bezierP3"].asDouble() : 0;
+				moveX.bezierP4 = v.isMember("bezierP4") ? v["bezierP4"].asDouble() : 0;
 				moveX.next = j != item["judgeLineMoveXEvents"].size() - 1
 					? levelData.get<MoveXEventEntity>(levelData.size() - 1)
 					: MoveXEventEntity();
@@ -396,6 +441,13 @@ string fromPGS(string json, double bgmOffset = 0) {
 				moveY.start = v["start"].asDouble();
 				moveY.end = v["end"].asDouble();
 				moveY.easing = v["easing"].asInt();
+				moveY.easingLeft = v.isMember("easingLeft") ? v["easingLeft"].asInt() : 0;
+				moveY.easingRight = v.isMember("easingRight") ? v["easingRight"].asInt() : 1;
+				moveY.bezier = v.isMember("bezier") ? v["bezier"].asInt() : 0;
+				moveY.bezierP1 = v.isMember("bezierP1") ? v["bezierP1"].asDouble() : 0;
+				moveY.bezierP2 = v.isMember("bezierP2") ? v["bezierP2"].asDouble() : 0;
+				moveY.bezierP3 = v.isMember("bezierP3") ? v["bezierP3"].asDouble() : 0;
+				moveY.bezierP4 = v.isMember("bezierP4") ? v["bezierP4"].asDouble() : 0;
 				moveY.next = j != item["judgeLineMoveYEvents"].size() - 1
 					? levelData.get<MoveYEventEntity>(levelData.size() - 1)
 					: MoveYEventEntity();
@@ -415,6 +467,13 @@ string fromPGS(string json, double bgmOffset = 0) {
 			rotate.start = v["start"].asDouble();
 			rotate.end = v["end"].asDouble();
 			rotate.easing = v["easing"].asInt();
+			rotate.easingLeft = v.isMember("easingLeft") ? v["easingLeft"].asInt() : 0;
+			rotate.easingRight = v.isMember("easingRight") ? v["easingRight"].asInt() : 1;
+			rotate.bezier = v.isMember("bezier") ? v["bezier"].asInt() : 0;
+			rotate.bezierP1 = v.isMember("bezierP1") ? v["bezierP1"].asDouble() : 0;
+			rotate.bezierP2 = v.isMember("bezierP2") ? v["bezierP2"].asDouble() : 0;
+			rotate.bezierP3 = v.isMember("bezierP3") ? v["bezierP3"].asDouble() : 0;
+			rotate.bezierP4 = v.isMember("bezierP4") ? v["bezierP4"].asDouble() : 0;
 			rotate.next = j != item["judgeLineRotateEvents"].size() - 1
 				? levelData.get<RotateEventEntity>(levelData.size() - 1)
 				: RotateEventEntity();
@@ -433,6 +492,13 @@ string fromPGS(string json, double bgmOffset = 0) {
 			disappear.start = v["start"].asDouble();
 			disappear.end = v["end"].asDouble();
 			disappear.easing = v["easing"].asInt();
+			disappear.easingLeft = v.isMember("easingLeft") ? v["easingLeft"].asInt() : 0;
+			disappear.easingRight = v.isMember("easingRight") ? v["easingRight"].asInt() : 1;
+			disappear.bezier = v.isMember("bezier") ? v["bezier"].asInt() : 0;
+			disappear.bezierP1 = v.isMember("bezierP1") ? v["bezierP1"].asDouble() : 0;
+			disappear.bezierP2 = v.isMember("bezierP2") ? v["bezierP2"].asDouble() : 0;
+			disappear.bezierP3 = v.isMember("bezierP3") ? v["bezierP3"].asDouble() : 0;
+			disappear.bezierP4 = v.isMember("bezierP4") ? v["bezierP4"].asDouble() : 0;
 			disappear.next = j != item["judgeLineDisappearEvents"].size() - 1
 				? levelData.get<DisappearEventEntity>(levelData.size() - 1)
 				: DisappearEventEntity();
@@ -460,6 +526,10 @@ string fromPGS(string json, double bgmOffset = 0) {
 			note.isFake = v.isMember("isFake") ? v["isFake"].asBool() : false;
 			note.judgeline = judgeline;
 			note.bpm = bpm;
+			note.size = v.isMember("size") ? v["size"].asDouble() : 1;
+			note.yOffset = v.isMember("yOffset") ? v["yOffset"].asDouble() : 0;
+			note.visibleTime = v.isMember("visibleTime") ? v["visibleTime"].asDouble() : 0;
+			note.alpha = v.isMember("alpha") ? v["alpha"].asDouble() : 1;
 			switch(v["type"].asInt()) {
 				case 1: {
 					if (note.isFake.value) levelData.append(transform<FakeNormalNoteEntity>(note)); 
@@ -503,6 +573,10 @@ string fromPGS(string json, double bgmOffset = 0) {
 			note.isFake = v.isMember("isFake") ? v["isFake"].asBool() : false;
 			note.judgeline = judgeline;
 			note.bpm = bpm;
+			note.size = v.isMember("size") ? v["size"].asDouble() : 1;
+			note.yOffset = v.isMember("yOffset") ? v["yOffset"].asDouble() : 0;
+			note.visibleTime = v.isMember("visibleTime") ? v["visibleTime"].asDouble() : 0;
+			note.alpha = v.isMember("alpha") ? v["alpha"].asDouble() : 1;
 			switch(v["type"].asInt()) {
 				case 1: {
 					if (note.isFake.value) levelData.append(transform<FakeNormalNoteEntity>(note)); 
@@ -571,7 +645,7 @@ int PECEasingMap[] = {
 	29, 30, 31,
 	0, 0, 0 // Bounce is not supported
 };
-int noteTypeMap[] = { 0, 1, 3, 4, 2 };
+int PRENoteTypeMap[] = { 0, 1, 3, 4, 2 };
 string trim(string s) {
 	while (s.size() && (s.front() <= 32 || s.front() >= 127)) s = s.substr(1);
 	while (s.size() && (s.back() <= 32 || s.back() >= 127)) s.pop_back();
@@ -603,7 +677,7 @@ string fromPEC(string txt, double bgmOffset = 0) {
 			BPM b; ss >> b.startBeat >> b.bpm;
 			bpms.push_back(b);
 		} else if (cmd[0] == 'n') {
-			PGRNote n; n.type = noteTypeMap[cmd[1] - '0'];
+			PGRNote n; n.type = PRENoteTypeMap[cmd[1] - '0'];
 			ss >> n.lineId >> n.time;
 			maxLineId = max(maxLineId, n.lineId);
 			if (n.type == 3) ss >> n.endTime;
@@ -717,29 +791,190 @@ string fromPEC(string txt, double bgmOffset = 0) {
 // ========================================================================================
 //
 //                 RPE Format Chart --> Official Phigros Format Chart
-// 摆了，太 tm 复杂了，有时间我再写
 //
 // ========================================================================================
 
 
 
+int RPENoteTypeMap[] = { 0, 1, 3, 2, 4 };
 double BeatToDouble(Json::Value beat) {
 	return beat[0].asDouble() + beat[1].asDouble() / beat[2].asDouble();
 }
-void RPESolveEvent(vector<PGRSpeedEvent> &events) {
-	// 排序
-	sort(events.begin(), events.end(), [&](PGRSpeedEvent a, PGRSpeedEvent b){ return a.startTime + a.endTime < b.startTime + b.endTime; });
-	// 先处理异常 1
-	assert(events.size());
-	if (events[0].startTime > 0) events.insert(events.begin(), { 0, events[0].startTime, 0.0, 0 });
-	// 异常 1 处理结束
-	// =========================
-	// 再处理异常 3
-	// for (int i = 0; i < events.size(); i++) if (events[i].startTime > events[i].endTime) 
-
+string to_string(double v, int precision) {
+	stringstream ss; ss << fixed << setprecision(precision) << v; return ss.str();
 }
-void RPESolveEvent(vector<PGREvent> &events) {
+vector<PGRSpeedEvent> RPESolveSpeedEvent(vector<PGREvent> events, int id, double factor) {
+	// 排序
+	vector<PGRSpeedEvent> res;
+	sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime; });
+	// 处理异常 1
+	if (events.size() == 0) {
+		res.push_back({ 0, 999999, 0.0, 0 });
+		cerr << "Warning: Invalid Speed Event List [" << id << "]: Empty Speed Event List." << endl;
+	}
+	if (events[0].startTime > 0) res.push_back({ 0, events[0].startTime, 0.0, 0 });
+	// 处理异常 2，同时拆分 Speed Event
+	double lastTime = events[0].startTime, lastValue = 0;
+	for (int i = 0; i < events.size(); i++) {
+		// 判断异常 3
+		if (events[i].startTime > events[i].endTime) {
+			cerr << "Warning: Invalid Speed Event [" <<
+				id << ", " <<
+				to_string(events[i].startTime, 2) << ", " <<
+				to_string(events[i].endTime, 2) << ", " <<
+				to_string(events[i].start, 2) << ", " <<
+				to_string(events[i].end, 2) <<
+			"]: Start Time is greater than End Time." << endl;
+			continue;
+		}
+		if (lastTime < events[i].startTime) res.push_back({ lastTime, events[i].startTime, lastValue, 0 }); // 相离
+		if (lastTime == events[i].startTime) ; // 相切
+		if (lastTime <= events[i].startTime) {
+			double startTime = events[i].startTime, endTime = events[i].endTime;
+			double start = events[i].start, end = events[i].end;
+			if (start == end) res.push_back({ startTime, endTime, start, 0 });
+			else {
+				double delta = (end - start) / (endTime - startTime);
+				for (double j = startTime; j < endTime; j++) 
+					res.push_back({ j, j + 1, start + (j - startTime) * delta, 0 });
+			}
+		}
 
+		// 相交情况报个错(异常 2)
+		if (lastTime > events[i].startTime) cerr << "Warning: Overlapped Speed Event [" <<
+				to_string(id) << ", " <<
+				to_string(events[i - 1].startTime, 2) << ", " << 
+				to_string(events[i - 1].endTime, 2) << ", " << 
+				to_string(events[i - 1].start, 2) << ", " << 
+				to_string(events[i - 1].end, 2) << 
+			"] and [" <<
+				to_string(id) << ", " <<
+				to_string(events[i].startTime, 2) << ", " << 
+				to_string(events[i].endTime, 2) << ", " <<
+				to_string(events[i].start, 2) << ", " <<
+				to_string(events[i].end, 2) << 
+			"]." << endl;
+
+		if (lastTime >= events[i].endTime) continue; // 包含
+		if (lastTime > events[i].startTime) { // 相交
+			double startTime = lastTime, endTime = events[i].endTime;
+			if (events[i].start == events[i].end) res.push_back({ lastTime, events[i].startTime, lastValue, 0 });
+			else {
+				double delta = (events[i].end - events[i].start) / (events[i].endTime - events[i].startTime);
+				for (double j = startTime; j < endTime; j++) 
+					res.push_back({ j, j + 1, events[i].start + (j - events[i].startTime) * delta, 0 });
+			}
+		}
+		lastTime = events[i].endTime, lastValue = events[i].end;
+	}
+	// 事件排序
+	sort(res.begin(), res.end(), [&](PGRSpeedEvent a, PGRSpeedEvent b){ return a.startTime < b.startTime; });
+	// 添加尾巴
+	if (res.size()) res.push_back({ res.back().endTime, 999999, 0, 0 });
+	else res.push_back({ 0, 999999, 0, 0 });
+	// floorPosition 计算
+	for (int i = 1; i < res.size(); i++) 
+		res[i].floorPosition = res[i - 1].floorPosition + (res[i - 1].endTime - res[i - 1].startTime) * res[i - 1].value / basicBpm / factor * 1.875;
+	// cout << "Speed List [" << id << "]: [" << endl;
+	// for (int i = 0; i < res.size(); i++) cout << "    [" << 
+	// 	res[i].startTime << ", " << 
+	// 	res[i].endTime << ", " << 
+	// 	res[i].value << ", " << 
+	// 	res[i].floorPosition <<
+	// "]" << endl;
+	// cout << "]" << endl;
+	return res;
+}
+void RPESolveEvent(vector<PGREvent> &events, int id, string name) {
+	// 排序
+	vector<PGREvent> extra;
+	sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ return a.startTime + a.endTime < b.startTime + b.endTime; });
+	// 处理异常 1 (事件延拓)
+	if (events.size() == 0) {
+		cerr << "Warning: Invalid " << name << " List [" << id << "]: Empty " << name << " List." << endl;
+		return;
+	}
+	if (events[0].startTime > 0) {
+		events[0].easingLeft = 
+			events[0].easingRight - 
+			(events[0].easingRight - events[0].easingLeft) / 
+			(events[0].endTime - events[0].startTime) * events[0].endTime;
+		events[0].startTime = 0;
+	}
+	if (events.back().endTime < 999999) events.push_back({
+		events.back().endTime,
+		999999,
+		0, 0,
+		0, 0, 1,
+		0, 0, 0, 0, 0
+	});
+	// 同时处理异常 2 和 异常 3
+	for (int i = 0; i < events.size(); i++) {
+		// 先处理异常 3
+		if (events[i].startTime > events[i].endTime) {
+			cerr << "Warning: Invalid " << name << " [" <<
+				id << ", " <<
+				to_string(events[i].startTime, 2) << ", " <<
+				to_string(events[i].endTime, 2) << ", " <<
+				to_string(events[i].start, 2) << ", " <<
+				to_string(events[i].end, 2) <<
+			"]: Start Time is greater than End Time." << endl;
+			events[i].endTime = events[i].startTime;
+			events[i].start = events[i].end;
+		}
+		// 再处理异常 2
+		if (!i) continue;
+		auto &last = events[i - 1], curr = events[i];
+		// 相离
+		if (last.endTime < curr.startTime) extra.push_back({
+			last.endTime,
+			curr.startTime,
+			last.end,
+			last.end,
+			0, 0, 1,
+			0, 0, 0, 0, 0
+		});
+		// 相切
+		if (last.endTime == curr.startTime) ;
+		// 重叠/包含
+		if (last.endTime > curr.startTime) {
+			cerr << "Warning: Overlapped " << name << " [" <<
+				to_string(id) << ", " <<
+				to_string(events[i - 1].startTime, 2) << ", " << 
+				to_string(events[i - 1].endTime, 2) << ", " << 
+				to_string(events[i - 1].start, 2) << ", " << 
+				to_string(events[i - 1].end, 2) << 
+			"] and [" <<
+				to_string(id) << ", " <<
+				to_string(events[i].startTime, 2) << ", " << 
+				to_string(events[i].endTime, 2) << ", " <<
+				to_string(events[i].start, 2) << ", " <<
+				to_string(events[i].end, 2) << 
+			"]." << endl;
+			// 截断上一事件
+			last.easingRight = 
+				last.easingLeft + 
+				(last.easingRight - last.easingLeft) / 
+				(last.endTime - last.startTime) * 
+				(curr.startTime - last.startTime);
+			last.endTime = curr.startTime;
+		}
+	}
+	// 插入额外事件并排序
+	events.insert(events.end(), extra.begin(), extra.end());
+	sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime; });
+	// cout << name << " [" << id << "]: [" << endl;
+	// for (int i = 0; i < events.size(); i++) 
+	// 	cout << "    [" << 
+	// 		events[i].startTime << ", " << 
+	// 		events[i].endTime << ", " << 
+	// 		events[i].start << ", " << 
+	// 		events[i].end << ", " <<
+	// 		events[i].easing << ", " <<
+	// 		events[i].easingLeft << ", " <<
+	// 		events[i].easingRight << 
+	// 	"]" << endl;
+	// cout << "]" << endl;
 }
 string fromRPE(string json, double bgmOffset = 0) {
 	Json::Value rpe; json_decode(json, rpe);
@@ -759,10 +994,10 @@ string fromRPE(string json, double bgmOffset = 0) {
 		bpms[i - 1].basicTime + (bpms[i].startBeat - bpms[i - 1].startBeat) / bpms[i - 1].bpm :
 		0;
 	
-	auto rpe2pgr = [&](double beat){
+	auto rpe2pgr = [&](double beat, double factor){
 		int i = lower_bound(bpms.begin(), bpms.end(), beat, [&](BPM a, double b){ return a.startBeat < b; }) - bpms.begin() - 1;
 		if (i < 0) return 0.0;
-		return round(((beat - bpms[i].startBeat) / bpms[i].bpm + bpms[i].basicTime) * basicBpm * 32);
+		return round(((beat - bpms[i].startBeat) / bpms[i].bpm + bpms[i].basicTime) * basicBpm * factor * 32);
 	};
 	vector<PGRJudgeline> judgelines(rpe["judgeLineList"].size());
 	for (int i = 0; i < rpe["judgeLineList"].size(); i++) {
@@ -772,70 +1007,127 @@ string fromRPE(string json, double bgmOffset = 0) {
 		for (int j = 0; j < item["eventLayers"].size(); j++) {
 			auto layer = item["eventLayers"][j];
 			for (int k = 0; k < layer["speedEvents"].size(); k++)
-				judgelines[i].speedEvents.push_back({
-					rpe2pgr(BeatToDouble(layer["speedEvents"][k]["startTime"])),
-					rpe2pgr(BeatToDouble(layer["speedEvents"][k]["endTime"])),
-					layer["speedEvents"][k]["start"].asDouble(),
-					layer["speedEvents"][k]["end"].asDouble(),
+				judgelines[i].rpeSpeedEvents.push_back({
+					rpe2pgr(BeatToDouble(layer["speedEvents"][k]["startTime"]), item["bpmfactor"].asDouble()),
+					rpe2pgr(BeatToDouble(layer["speedEvents"][k]["endTime"]), item["bpmfactor"].asDouble()),
+					layer["speedEvents"][k]["start"].asDouble() * 11 / 45,
+					layer["speedEvents"][k]["end"].asDouble() * 11 / 45,
+					0,
 				});
 			for (int k = 0; k < layer["moveXEvents"].size(); k++)
 				judgelines[i].moveXEvents.push_back({
-					rpe2pgr(BeatToDouble(layer["moveXEvents"][k]["startTime"])),
-					rpe2pgr(BeatToDouble(layer["moveXEvents"][k]["endTime"])),
-					layer["moveXEvents"][k]["start"].asDouble(),
-					layer["moveXEvents"][k]["end"].asDouble(),
+					rpe2pgr(BeatToDouble(layer["moveXEvents"][k]["startTime"]), item["bpmfactor"].asDouble()),
+					rpe2pgr(BeatToDouble(layer["moveXEvents"][k]["endTime"]), item["bpmfactor"].asDouble()),
+					(layer["moveXEvents"][k]["start"].asDouble() + 675) / 1350,
+					(layer["moveXEvents"][k]["end"].asDouble() + 675) / 1350,
 					layer["moveXEvents"][k]["easingType"].asInt(),
+					layer["moveXEvents"][k]["easingLeft"].asDouble(),
+					layer["moveXEvents"][k]["easingRight"].asDouble(),
+					layer["moveXEvents"][k]["bezier"].asBool(),
+					layer["moveXEvents"][k]["bezierP1"].asDouble(),
+					layer["moveXEvents"][k]["bezierP2"].asDouble(),
+					layer["moveXEvents"][k]["bezierP3"].asDouble(),
+					layer["moveXEvents"][k]["bezierP4"].asDouble()
 				});
 			for (int k = 0; k < layer["moveYEvents"].size(); k++)
 				judgelines[i].moveYEvents.push_back({
-					rpe2pgr(BeatToDouble(layer["moveYEvents"][k]["startTime"])),
-					rpe2pgr(BeatToDouble(layer["moveYEvents"][k]["endTime"])),
-					layer["moveYEvents"][k]["start"].asDouble(),
-					layer["moveYEvents"][k]["end"].asDouble(),
+					rpe2pgr(BeatToDouble(layer["moveYEvents"][k]["startTime"]), item["bpmfactor"].asDouble()),
+					rpe2pgr(BeatToDouble(layer["moveYEvents"][k]["endTime"]), item["bpmfactor"].asDouble()),
+					(layer["moveYEvents"][k]["start"].asDouble() + 450) / 900,
+					(layer["moveYEvents"][k]["end"].asDouble() + 450) / 900,
 					layer["moveYEvents"][k]["easingType"].asInt(),
+					layer["moveYEvents"][k]["easingLeft"].asDouble(),
+					layer["moveYEvents"][k]["easingRight"].asDouble(),
+					layer["moveYEvents"][k]["bezier"].asBool(),
+					layer["moveYEvents"][k]["bezierP1"].asDouble(),
+					layer["moveYEvents"][k]["bezierP2"].asDouble(),
+					layer["moveYEvents"][k]["bezierP3"].asDouble(),
+					layer["moveYEvents"][k]["bezierP4"].asDouble()
 				});
 			for (int k = 0; k < layer["rotateEvents"].size(); k++)
 				judgelines[i].rotateEvents.push_back({
-					rpe2pgr(BeatToDouble(layer["rotateEvents"][k]["startTime"])),
-					rpe2pgr(BeatToDouble(layer["rotateEvents"][k]["endTime"])),
-					layer["rotateEvents"][k]["start"].asDouble(),
-					layer["rotateEvents"][k]["end"].asDouble(),
+					rpe2pgr(BeatToDouble(layer["rotateEvents"][k]["startTime"]), item["bpmfactor"].asDouble()),
+					rpe2pgr(BeatToDouble(layer["rotateEvents"][k]["endTime"]), item["bpmfactor"].asDouble()),
+					-layer["rotateEvents"][k]["start"].asDouble(),
+					-layer["rotateEvents"][k]["end"].asDouble(),
 					layer["rotateEvents"][k]["easingType"].asInt(),
+					layer["rotateEvents"][k]["easingLeft"].asDouble(),
+					layer["rotateEvents"][k]["easingRight"].asDouble(),
+					layer["rotateEvents"][k]["bezier"].asBool(),
+					layer["rotateEvents"][k]["bezierP1"].asDouble(),
+					layer["rotateEvents"][k]["bezierP2"].asDouble(),
+					layer["rotateEvents"][k]["bezierP3"].asDouble(),
+					layer["rotateEvents"][k]["bezierP4"].asDouble()
 				});
 			for (int k = 0; k < layer["alphaEvents"].size(); k++) 
 				judgelines[i].disappearEvents.push_back({
-					rpe2pgr(BeatToDouble(layer["alphaEvents"][k]["startTime"])),
-					rpe2pgr(BeatToDouble(layer["alphaEvents"][k]["endTime"])),
-					layer["alphaEvents"][k]["start"].asDouble(),
-					layer["alphaEvents"][k]["end"].asDouble(),
+					rpe2pgr(BeatToDouble(layer["alphaEvents"][k]["startTime"]), item["bpmfactor"].asDouble()),
+					rpe2pgr(BeatToDouble(layer["alphaEvents"][k]["endTime"]), item["bpmfactor"].asDouble()),
+					max(0.0, layer["alphaEvents"][k]["start"].asDouble()) / 255.0,
+					max(0.0, layer["alphaEvents"][k]["end"].asDouble()) / 255.0,
 					layer["alphaEvents"][k]["easingType"].asInt(),
+					layer["alphaEvents"][k]["easingLeft"].asDouble(),
+					layer["alphaEvents"][k]["easingRight"].asDouble(),
+					layer["alphaEvents"][k]["bezier"].asBool(),
+					layer["alphaEvents"][k]["bezierP1"].asDouble(),
+					layer["alphaEvents"][k]["bezierP2"].asDouble(),
+					layer["alphaEvents"][k]["bezierP3"].asDouble(),
+					layer["alphaEvents"][k]["bezierP4"].asDouble()
 				});
 		}
 		// 添加按键
 		for (int j = 0; j < item["notes"].size(); j++) {
 			auto note = item["notes"][j];
 			(note["above"].asBool() ? judgelines[i].notesAbove : judgelines[i].notesBelow).push_back({
-				note["type"].asInt(),
+				RPENoteTypeMap[note["type"].asInt()],
 				i,
-				rpe2pgr(BeatToDouble(note["startTime"])),
-				rpe2pgr(BeatToDouble(note["endTime"])),
+				rpe2pgr(BeatToDouble(note["startTime"]), item["bpmfactor"].asDouble()),
+				rpe2pgr(BeatToDouble(note["endTime"]), item["bpmfactor"].asDouble()),
 				note["positionX"].asDouble(),
 				note["above"].asBool(),
 				note["isFake"].asBool(),
 				note["speed"].asDouble(),
-				0,
+				note["size"].asDouble(),
+				note["yOffset"].asDouble(),
+				note["visibleTime"].asDouble(),
+				note["alpha"].asDouble(),
 				0
 			});
 		}
 	}
 
+	// 事件处理
+	int id = 0;
 	for (auto &j: judgelines) {
 		sort(j.moveXEvents.begin(), j.moveXEvents.end(), [&](PGREvent a, PGREvent b){ return a.startTime + a.endTime < b.startTime + b.endTime; });
 		sort(j.moveYEvents.begin(), j.moveYEvents.end(), [&](PGREvent a, PGREvent b){ return a.startTime + a.endTime < b.startTime + b.endTime; });
 		sort(j.rotateEvents.begin(), j.rotateEvents.end(), [&](PGREvent a, PGREvent b){ return a.startTime + a.endTime < b.startTime + b.endTime; });
 		sort(j.disappearEvents.begin(), j.disappearEvents.end(), [&](PGREvent a, PGREvent b){ return a.startTime + a.endTime < b.startTime + b.endTime; });
-		RPESolveEvent(j.speedEvents);
-		RPESolveEvent(j.moveXEvents); RPESolveEvent(j.moveYEvents);
-		RPESolveEvent(j.rotateEvents); RPESolveEvent(j.disappearEvents);
+		j.speedEvents = RPESolveSpeedEvent(j.rpeSpeedEvents, id, j.bpm / basicBpm);
+		RPESolveEvent(j.moveXEvents, id, "MoveX Event"); RPESolveEvent(j.moveYEvents, id, "MoveY Event");
+		RPESolveEvent(j.rotateEvents, id, "Rotate Event"); RPESolveEvent(j.disappearEvents, id, "Alpha Event");
+		id++;
 	}
+
+	// floorPosition 计算
+	for (auto &j : judgelines) {
+		double bpm = j.bpm; double fp = 0;
+		for (auto &n : j.notesAbove) {
+			int i = lower_bound(j.speedEvents.begin(), j.speedEvents.end(), n.time, [&](PGRSpeedEvent a, double b){ return a.startTime < b; }) - j.speedEvents.begin() - 1;
+			if (n.type == 3) n.speed *= j.speedEvents[i].value;
+			n.floorPosition = j.speedEvents[i].floorPosition + (n.time - j.speedEvents[i].startTime) * j.speedEvents[i].value / bpm * 1.875;
+		}
+		for (auto &n : j.notesBelow) {
+			int i = lower_bound(j.speedEvents.begin(), j.speedEvents.end(), n.time, [&](PGRSpeedEvent a, double b){ return a.startTime < b; }) - j.speedEvents.begin() - 1;
+			if (n.type == 3) n.speed *= j.speedEvents[i].value;
+			n.floorPosition = j.speedEvents[i].floorPosition + (n.time - j.speedEvents[i].startTime) * j.speedEvents[i].value / bpm * 1.875;
+		}
+	}
+
+	Json::Value obj;
+	obj["formatVersion"] = optimizer_version;
+	obj["judgeLineList"].resize(0);
+	obj["offset"] = offset;
+	for (auto &j : judgelines) obj["judgeLineList"].append(j.toJsonObject());
+	return json_encode(obj);
 }

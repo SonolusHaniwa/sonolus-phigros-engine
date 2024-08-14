@@ -7,6 +7,13 @@ class DisappearEvent: public Archetype {
 	defineImports(start);
 	defineImports(end);
 	defineImports(easing);
+	defineImports(easingLeft);
+	defineImports(easingRight);
+	defineImports(bezier);
+	defineImports(bezierP1);
+	defineImports(bezierP2);
+	defineImports(bezierP3);
+	defineImports(bezierP4);
 	defineImports(next);
 	Variable<EntityMemoryId> bpm;
 	Variable<EntitySharedMemoryId> judgelineId;

@@ -13,6 +13,10 @@ class FlickNote: public Archetype {
 	defineImports(isFake);
 	defineImports(judgeline);
 	defineImports(bpm);
+	defineImports(size);
+	defineImports(yOffset);
+	defineImports(visibleTime);
+	defineImports(alpha);
 	defineImports(accuracy);
 	defineImports(judgeResult);
 	Variable<EntityMemoryId> positionY;

@@ -14,6 +14,10 @@ class HoldNote: public Archetype {
 	defineImports(isFake);
 	defineImports(judgeline);
 	defineImports(bpm);
+	defineImports(size);
+	defineImports(yOffset);
+	defineImports(visibleTime);
+	defineImports(alpha);
 	defineExports(accuracy);
 	defineExports(judgeResult);
 	defineExports(judgeTime);

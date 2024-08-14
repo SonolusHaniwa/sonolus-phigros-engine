@@ -4,7 +4,8 @@ class SpeedEvent: public Archetype {
 	static constexpr const char* name = "Phigros Judgeline Speed Event";
 	defineImports(startTime);
 	defineImports(endTime);
-	defineImports(value);
+	defineImports(start);
+	defineImports(end);
 	defineImports(next);
 	Variable<EntityMemoryId> bpm;
 	Variable<EntitySharedMemoryId> judgelineId;
@@ -18,14 +19,14 @@ class SpeedEvent: public Archetype {
 		FUNCBEGIN
 		bpm = EntityDataArray[judgelineId].get(5);
 		baseFloorPosition = EntitySharedMemoryArray[judgelineId].get(5);
-		EntitySharedMemoryArray[judgelineId].set(5, baseFloorPosition + (endTime - startTime) * timeMagic / bpm * value);
+		EntitySharedMemoryArray[judgelineId].set(5, baseFloorPosition + (endTime - startTime) * timeMagic / bpm * start);
 		return VOID;
 	}
 
 	SonolusApi updateSequential() {
 		FUNCBEGIN
-		EntitySharedMemoryArray[judgelineId].set(0, value);
-		EntitySharedMemoryArray[judgelineId].set(5, baseFloorPosition + (times.now - startTime * timeMagic / bpm) * value);
+		EntitySharedMemoryArray[judgelineId].set(0, start);
+		EntitySharedMemoryArray[judgelineId].set(5, baseFloorPosition + (times.now - startTime * timeMagic / bpm) * start);
 		return VOID;
 	}
 };
