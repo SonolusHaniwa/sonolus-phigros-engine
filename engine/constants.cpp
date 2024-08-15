@@ -68,7 +68,7 @@ class stage {
 #endif
 
 #if play || watch
-let noteWidth = noteWidth2 * (stage.w / 3.55) * (stage.w / 3.55);
+let noteWidth = noteWidth2 * stage.w / 3.55;
 class judgment {
 	public:
 
