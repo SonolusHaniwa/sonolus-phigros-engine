@@ -8,6 +8,7 @@ class Judgeline: public Archetype {
 	defineImports(rotateEvent);
 	defineImports(disappearEvent);
 	defineImports(bpm);
+	defineImports(father);
 	Variable<EntitySharedMemoryId> speed;
 	Variable<EntitySharedMemoryId> x;
 	Variable<EntitySharedMemoryId> y;
@@ -15,6 +16,7 @@ class Judgeline: public Archetype {
 	Variable<EntitySharedMemoryId> disappear;
 	Variable<EntitySharedMemoryId> floorPosition;
 	Variable<EntityMemoryId> allocatedId;
+	BlockPointer<EntitySharedMemoryArrayId> f = EntitySharedMemoryArray[father];
 
 	SonolusApi spawnTime() { return -999999; }
 	SonolusApi despawnTime() { return 999999; }
@@ -41,6 +43,19 @@ class Judgeline: public Archetype {
         id = rotateEvent.get(); jump(id, 12);
         id = disappearEvent.get(); jump(id, 12);
 		speed = 0; x = 0; y = 0; rotate = 0; disappear = 1; floorPosition = 0;
+		return VOID;
+	}
+	
+	int updateSequentialOrder = 114514;
+	SonolusApi updateSequential() {
+		FUNCBEGIN
+		IF (disappear < 0) disappear = 0; FI
+		IF (father == 0) Return(0); FI
+		var angle1 = f.get(3), angle2 = Arctan2(y - stage.b - 0.5 * stage.h, x - stage.l - 0.5 * stage.w);
+		var angle = angle1 + angle2;
+		var distance = Power({(y - stage.b - 0.5 * stage.h) * (y - stage.b - 0.5 * stage.h) + (x - stage.l - 0.5 * stage.w) * (x - stage.l - 0.5 * stage.w), 0.5});
+		var vectorX = distance * Cos(angle), vectorY = distance * Sin(angle);
+		x = f.get(1) + vectorX; y = f.get(2) + vectorY;
 		return VOID;
 	}
 

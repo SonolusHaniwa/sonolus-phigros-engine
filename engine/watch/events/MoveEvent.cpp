@@ -30,7 +30,18 @@ class MoveXEvent: public Archetype {
 
 	SonolusApi updateSequential() {
 		FUNCBEGIN
-		var x = getEaseValue(easing, startTime * timeMagic / bpm, endTime * timeMagic / bpm, start, end, times.now);
+		var x = If(
+			bezier,
+			getBezierValue(
+				bezierP1, bezierP2, bezierP3, bezierP4,
+				startTime * timeMagic / bpm, endTime * timeMagic / bpm, 
+				start, end, times.now, easingLeft, easingRight
+			), getEaseValue(
+				easing, 
+				startTime * timeMagic / bpm, endTime * timeMagic / bpm, 
+				start, end, times.now, easingLeft, easingRight
+			)
+		);
 		x = x * stage.w + stage.l;
 		EntitySharedMemoryArray[judgelineId].set(1, x);
 		return VOID;
@@ -69,7 +80,18 @@ class MoveYEvent: public Archetype {
 
 	SonolusApi updateSequential() {
 		FUNCBEGIN
-		var y = getEaseValue(easing, startTime * timeMagic / bpm, endTime * timeMagic / bpm, start, end, times.now);
+		var y = If(
+			bezier,
+			getBezierValue(
+				bezierP1, bezierP2, bezierP3, bezierP4,
+				startTime * timeMagic / bpm, endTime * timeMagic / bpm, 
+				start, end, times.now, easingLeft, easingRight
+			), getEaseValue(
+				easing, 
+				startTime * timeMagic / bpm, endTime * timeMagic / bpm, 
+				start, end, times.now, easingLeft, easingRight
+			)
+		);
 		y = y * stage.h + stage.b;
 		EntitySharedMemoryArray[judgelineId].set(2, y);
 		return VOID;

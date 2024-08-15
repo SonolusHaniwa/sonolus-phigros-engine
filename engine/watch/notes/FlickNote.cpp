@@ -107,6 +107,7 @@ class FlickNote: public Archetype {
 	// 	EntityDespawn.set(0, 1);
 	// 	return VOID;
 	// }
+	int updateSequentialOrder = 1919810;
 	SonolusApi updateSequential() {
 		FUNCBEGIN
 		IF (times.now < 0) Return(0); FI
@@ -127,7 +128,7 @@ class FlickNote: public Archetype {
 
 	SonolusApi updateParallel() {
 		FUNCBEGIN
-		IF (times.now < 0) Return(0); FI
+		IF (times.now < 0 || time - times.now > visibleTime) Return(0); FI
 		var currentFloorPosition = If(isAbove, positionY, -1 * positionY);
 		IF (times.now < time && currentFloorPosition < floorPositionLimit) Return(0); FI
 		IF (currentFloorPosition * speed > 10 / 3 * 5.85) Return(0); FI
@@ -141,9 +142,9 @@ class FlickNote: public Archetype {
 		var x = r * Cos(newAngle) + line.get(1), y = r * Sin(newAngle) + line.get(2);
 		var x0 = dx * Cos(rotate) + line.get(1), y0 = dx * Sin(rotate) + line.get(2);
 		
-		var vec1Length = noteWidth, vec1X = vec1Length * Cos(rotate), vec1Y = vec1Length * Sin(rotate);
+		var vec1Length = noteWidth * size, vec1X = vec1Length * Cos(rotate), vec1Y = vec1Length * Sin(rotate);
 		var x1 = x - vec1X, y1 = y - vec1Y, x2 = x + vec1X, y2 = y + vec1Y;
-		var vec2Length = noteWidth / If(isMulti, hlFlickRatio, flickRatio);
+		var vec2Length = noteWidth * size / If(isMulti, hlFlickRatio, flickRatio);
 		var vec2X = vec2Length * Cos(rotate + PI / 2), vec2Y = vec2Length * Sin(rotate + PI / 2);
 		var x3 = x1 - vec2X, y3 = y1 - vec2Y;
 		var x4 = x1 + vec2X, y4 = y1 + vec2Y;
@@ -155,7 +156,7 @@ class FlickNote: public Archetype {
 		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
 		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
 		
-		Draw(If(isMulti, Sprites.HLFlick, Sprites.NormalFlick), x3, y3, x4, y4, x5, y5, x6, y6, 12000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1));
+		Draw(If(isMulti, Sprites.HLFlick, Sprites.NormalFlick), x3, y3, x4, y4, x5, y5, x6, y6, 12000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1) * alpha);
 		return VOID;
 	}
 };

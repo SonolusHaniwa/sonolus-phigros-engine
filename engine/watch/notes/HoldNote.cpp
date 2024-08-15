@@ -82,6 +82,7 @@ class HoldNote: public Archetype {
 		return VOID;
 	}
 
+	int updateSequentialOrder = 1919810;
 	SonolusApi updateSequential() {
 		FUNCBEGIN
 		IF (times.skip) lastSpawn = -1; FI
@@ -124,7 +125,7 @@ class HoldNote: public Archetype {
 
 	SonolusApi updateParallel() {
 		FUNCBEGIN
-		IF (times.now < 0) Return(0); FI
+		IF (times.now < 0 || time - times.now > visibleTime) Return(0); FI
 		var currentFloorPosition = If(isAbove, positionY, -1 * positionY);
 		IF (times.now < time && currentFloorPosition < floorPositionLimit) Return(0); FI
 		IF (currentFloorPosition * 1 > 10 / 3 * 5.85) Return(0); FI
@@ -144,12 +145,12 @@ class HoldNote: public Archetype {
 		var hx = hr * Cos(hnewAngle) + line.get(1), hy = hr * Sin(hnewAngle) + line.get(2);
 		var x0 = dx * Cos(rotate) + line.get(1), y0 = dx * Sin(rotate) + line.get(2);
 		
-		var vec1Length = noteWidth / 2, vec1X = vec1Length * Cos(rotate), vec1Y = vec1Length * Sin(rotate);
+		var vec1Length = noteWidth * size / 2, vec1X = vec1Length * Cos(rotate), vec1Y = vec1Length * Sin(rotate);
 		var x1 = x - vec1X, y1 = y - vec1Y, x2 = x + vec1X, y2 = y + vec1Y;
 		var hx1 = hx - vec1X, hy1 = hy - vec1Y, hx2 = hx + vec1X, hy2 = hy + vec1Y;
-		var vec2Length = noteWidth / 2 / If(isMulti, hlHoldHeadRatio, holdHeadRatio);
+		var vec2Length = noteWidth * size / 2 / If(isMulti, hlHoldHeadRatio, holdHeadRatio);
 		var vec2X = vec2Length * Cos(rotate + PI / 2), vec2Y = vec2Length * Sin(rotate + PI / 2);
-		var vec3X = noteWidth / 2 / hlHoldOffset * Cos(rotate - PI / 2), vec3Y = noteWidth / 2 / hlHoldOffset * Sin(rotate - PI / 2);
+		var vec3X = noteWidth * size / 2 / hlHoldOffset * Cos(rotate - PI / 2), vec3Y = noteWidth * size / 2 / hlHoldOffset * Sin(rotate - PI / 2);
 		var x3 = x1, y3 = y1;
 		var x4 = x1 + If(isAbove, 1, -1) * 2 * vec2X, y4 = y1 + If(isAbove, 1, -1) * 2 * vec2Y;
 		var x5 = x2 + If(isAbove, 1, -1) * 2 * vec2X, y5 = y2 + If(isAbove, 1, -1) * 2 * vec2Y;
@@ -166,8 +167,8 @@ class HoldNote: public Archetype {
 		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
 		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
 		
-		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 1000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > judgeTime2 && isReplay, 0.4, 1));
-		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 1000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > judgeTime2 && isReplay, 0.4, 1));
+		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 1000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > judgeTime2 && isReplay, 0.4, 1) * alpha);
+		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 1000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > judgeTime2 && isReplay, 0.4, 1) * alpha);
 		return VOID;
 	}
 };

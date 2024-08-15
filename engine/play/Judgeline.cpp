@@ -8,6 +8,7 @@ class Judgeline: public Archetype {
 	defineImports(rotateEvent);
 	defineImports(disappearEvent);
 	defineImports(bpm);
+	defineImports(father);
 	Variable<EntitySharedMemoryId> speed;
 	Variable<EntitySharedMemoryId> x;
 	Variable<EntitySharedMemoryId> y;
@@ -15,6 +16,7 @@ class Judgeline: public Archetype {
 	Variable<EntitySharedMemoryId> disappear;
 	Variable<EntitySharedMemoryId> floorPosition;
 	Variable<EntityMemoryId> allocatedId;
+	BlockPointer<EntitySharedMemoryArrayId> f = EntitySharedMemoryArray[father];
 
 	SonolusApi spawnOrder() { return 0; }
 	SonolusApi shouldSpawn() { return true; }
@@ -44,6 +46,19 @@ class Judgeline: public Archetype {
 		return VOID;
 	}
 
+	int updateSequentialOrder = 114514;
+	SonolusApi updateSequential() {
+		FUNCBEGIN
+		IF (disappear < 0) disappear = 0; FI
+		IF (father == 0) Return(0); FI
+		var angle1 = f.get(3), angle2 = Arctan2(y - stage.b - 0.5 * stage.h, x - stage.l - 0.5 * stage.w);
+		var angle = angle1 + angle2;
+		var distance = Power({(y - stage.b - 0.5 * stage.h) * (y - stage.b - 0.5 * stage.h) + (x - stage.l - 0.5 * stage.w) * (x - stage.l - 0.5 * stage.w), 0.5});
+		var vectorX = distance * Cos(angle), vectorY = distance * Sin(angle);
+		x = f.get(1) + vectorX; y = f.get(2) + vectorY;
+		return VOID;
+	}
+
 	SonolusApi updateParallel() {
 		FUNCBEGIN
 		var x1 = 0, y1 = 0, x2 = 0, y2 = 0;
@@ -63,11 +78,13 @@ class Judgeline: public Archetype {
 		let x4 = x1 + vectorX, y4 = y1 + vectorY;
 		let x5 = x2 + vectorX, y5 = y2 + vectorY;
 		let x6 = x2 - vectorX, y6 = y2 - vectorY;
-		Draw(Switch(judgeStatus, {
-			{2, Sprites.AllPerfectJudgeline},
-			{1, Sprites.FullComboJudgeline},
-			{0, Sprites.NormalJudgeline}
-		}), x3, y3, x4, y4, x5, y5, x6, y6, 10000, disappear);
+		IF (disappear >= 0) {
+			Draw(Switch(judgeStatus, {
+				{2, Sprites.AllPerfectJudgeline},
+				{1, Sprites.FullComboJudgeline},
+				{0, Sprites.NormalJudgeline}
+			}), x3, y3, x4, y4, x5, y5, x6, y6, 10000, disappear);
+		} FI
 
 		IF (hasJudgelineId) {
 			var tmpId = allocatedId.get();

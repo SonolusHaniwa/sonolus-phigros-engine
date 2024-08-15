@@ -42,13 +42,22 @@ function<let(let)> EasingFunction[] = {
     [](let x){ return If(x < 0.5, 0, 1); },
 };
 
-let getEaseValue(let id, let start, let end, let from, let to, let t) {
+let getEaseValue(let id, let start, let end, let from, let to, let t, let l, let r) {
     id = Round(id);
 	vector<pair<let, let> > branches;
 	for (int i = 0; i < sizeof(EasingFunction) / sizeof(EasingFunction[0]); i++) 
-		branches.push_back({i, EasingFunction[i]((t - start) / (end - start)) * (to - from) + from});
+		branches.push_back({i, EasingFunction[i]((t - start) / (end - start) * (r - l) + l) * (to - from) + from});
 	return If(t < start || t > end,
 		If(t < start, from, to),
 		SwitchWithDefault(id, branches, branches[0].second)
 	);
+}
+
+let getBezierValue(let p1, let p2, let p3, let p4, let start, let end, let from, let to, let t, let l, let r) {
+    let t1 = (t - start) / (end - start) * (r - l) + l;
+    return 
+        Power({(1 - t1), 3}) * p1 + 
+        3 * t1 * Power({(1 - t1), 2}) * p2 + 
+        3 * Power({t1, 2}) * (1 - t1) * p3 +
+        Power({t1, 3}) * p4;
 }

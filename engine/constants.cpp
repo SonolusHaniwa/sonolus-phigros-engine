@@ -1,7 +1,7 @@
 double PI  = acos(-1);
 double lockAspectRatio = 1;
 double interfaceGap = 0.05;
-double targetAspectRatio = 1920.0 / 1080.0;
+double targetAspectRatio = 16.0 / 9.0;
 double judgelineHeight = 0.01;
 double baseNoteWidth = 0.48;
 double minSFXDistance = 0.02;

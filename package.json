@@ -41,7 +41,7 @@
   },
   "level": {
     "name": "phigros-test-114514",
-    "generate": "",
+    "generate": "rpe2data AT15.json dist/LevelData",
     "i18n": [
       {
         "localization": "default",
