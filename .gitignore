@@ -11,3 +11,5 @@ make
 test*
 !LevelData.h
 *.pec
+emsdk
+libphigros*

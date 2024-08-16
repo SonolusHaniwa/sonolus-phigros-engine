@@ -130,9 +130,9 @@ class HoldNote: public Archetype {
 		IF (times.now < time && currentFloorPosition < floorPositionLimit) Return(0); FI
 		IF (currentFloorPosition * 1 > 10 / 3 * 5.85) Return(0); FI
 		var dx = positionX * stage.w * 0.05625;
-		var dy = positionY * stage.h * 0.6;
-		IF (times.now > time) dy = 0; FI
-		var dy2 = If(isAbove, endFloorPosition - line.get(5), endFloorPosition + line.get(5)) * stage.h * 0.6;
+		var dy = If(isAbove, positionY + yOffset, positionY - yOffset) * stage.h * 0.6;
+		IF (times.now > time) dy = If(isAbove, yOffset, -1 * yOffset); FI
+		var dy2 = If(isAbove, endFloorPosition - line.get(5) + yOffset, endFloorPosition + line.get(5) - yOffset) * stage.h * 0.6;
 		
 		var rotate = line.get(3);
 		var r = Power({dx * dx + dy * dy, 0.5});

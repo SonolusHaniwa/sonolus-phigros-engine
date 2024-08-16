@@ -630,7 +630,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 
 // ========================================================================================
 //
-//                 PEC Format Chart --> Official Phigros Format Chart
+//              PEC Format Chart --> Official Phigros Format Chart (Modded)
 //
 // ========================================================================================
 
@@ -807,7 +807,7 @@ string fromPEC(string txt, double bgmOffset = 0) {
 
 // ========================================================================================
 //
-//                 RPE Format Chart --> Official Phigros Format Chart
+//             RPE Format Chart --> Official Phigros Format Chart (Modded)
 //
 // ========================================================================================
 
@@ -1131,7 +1131,7 @@ string fromRPE(string json, double bgmOffset = 0) {
 				note["isFake"].asBool(),
 				note["speed"].asDouble(),
 				note["size"].asDouble(),
-				note["yOffset"].asDouble(),
+				note["yOffset"].asDouble() / 900.0,
 				note["visibleTime"].asDouble(),
 				note["alpha"].asDouble() / 255.0,
 				0

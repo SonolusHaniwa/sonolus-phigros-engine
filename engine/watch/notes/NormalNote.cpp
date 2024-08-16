@@ -155,7 +155,7 @@ class NormalNote: public Archetype {
 		IF (currentFloorPosition * speed > 10 / 3 * 5.85) Return(0); FI
 		// IF (time == 9194 * timeMagic / bpm) Debuglog(positionY); FI
 		var dx = positionX * stage.w * 0.05625;
-		var dy = positionY * speed * stage.h * 0.6;
+		var dy = If(isAbove, positionY + yOffset, positionY - yOffset) * speed * stage.h * 0.6;
 		
 		var rotate = line.get(3);
 		var r = Power({dx * dx + dy * dy, 0.5});

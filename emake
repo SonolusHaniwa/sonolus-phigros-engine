@@ -1,0 +1,7 @@
+emcc emscripten.cpp -o libphigros.js -s MODULARIZE -s EXPORT_ES6=1\
+	-sDEFAULT_LIBRARY_FUNCS_TO_INCLUDE=['$stringToNewUTF8','$UTF8ToString']\
+	-sEXPORTED_RUNTIME_METHODS=['stringToNewUTF8','UTF8ToString']\
+	-fwasm-exceptions -sASSERTIONS\
+	-I./emsdk/include -L./emsdk/lib \
+	-ljsoncpp \
+	-sALLOW_MEMORY_GROWTH -g -O3
