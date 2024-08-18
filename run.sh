@@ -18,7 +18,8 @@ sqlite3 sonolus.db ".read ./data.sql"
 ./sonolus serve >/dev/null 2>&1 &
 
 # 资源导入
-./sonolus import ../phigros/phigros.scp
+./sonolus import ../phigros/phistore.scp
+./sonolus import ../phigros/phigros-official.scp
 ./sonolus import ../phigros/phigros-2024-april.scp
 
 ./sonolus buildcpp play ../phigros -DDISABLE_TRACE
@@ -28,6 +29,8 @@ sqlite3 sonolus.db ".read ./data.sql"
 # sqlite3 sonolus.db "SELECT * FROM Engine";
 
 # 数据导出
+# ./exportor "http://127.0.0.1:8080" data.json 1
+# ./exportor "http://127.0.0.1:8080" engine.json 2
 sudo pkill sonolus
 
 echo -e $YELLOW"Sync finished"$RESET

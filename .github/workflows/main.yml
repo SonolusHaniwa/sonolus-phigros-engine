@@ -34,6 +34,7 @@ jobs:
           git clone https://littleyang0531:$TK@github.com/LittleYang0531/phigros-private phigros-private
           git clone https://littleyang0531:$TK@github.com/SonolusHaniwa/phigros-sync tools
           git clone https://littleyang0531:$TK@github.com/LittleYang0531/phigros-private-data sonolus-data
+          git clone https://littleyang0531:$TK@github.com/LittleYang0531/phistore-private phistore
           
       - name: Preparing C/C++ Compiler
         run: |
@@ -68,6 +69,14 @@ jobs:
           git push origin
           
           cd ../sonolus-data
+          git config --local user.email "littleyang0531@outlook.com"
+          git config --local user.name "LittleYang0531"
+          git add .
+          git commit -m "Update Engine"
+          git push origin
+          echo "Sync Finished!"
+          
+          cd ../phistore
           git config --local user.email "littleyang0531@outlook.com"
           git config --local user.name "LittleYang0531"
           git add .

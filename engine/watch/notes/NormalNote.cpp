@@ -152,7 +152,7 @@ class NormalNote: public Archetype {
 		IF (times.now < 0 || time - times.now > visibleTime) Return(0); FI
 		var currentFloorPosition = If(isAbove, positionY, -1 * positionY);
 		IF (times.now < time && currentFloorPosition < floorPositionLimit) Return(0); FI
-		IF (currentFloorPosition * speed > 10 / 3 * 5.85) Return(0); FI
+		IF (currentFloorPosition * speed > 10 / 3) Return(0); FI
 		// IF (time == 9194 * timeMagic / bpm) Debuglog(positionY); FI
 		var dx = positionX * stage.w * 0.05625;
 		var dy = If(isAbove, positionY + yOffset, positionY - yOffset) * speed * stage.h * 0.6;
@@ -178,6 +178,12 @@ class NormalNote: public Archetype {
 		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
 		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
 		
+		// IF (x3 >= stage.l && x3 <= stage.r && y3 >= stage.b && y3 <= stage.t) {
+		// 	Debuglog(x3); Debuglog(y3);
+		// 	Debuglog(x4); Debuglog(y4);
+		// 	Debuglog(x5); Debuglog(y5);
+		// 	Debuglog(x6); Debuglog(y6);
+		// } FI
 		Draw(If(isMulti, Sprites.HLNote, Sprites.NormalNote), x3, y3, x4, y4, x5, y5, x6, y6, 11000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1) * alpha);
 		return VOID;
 	}

@@ -1,25 +1,25 @@
 {
   "skin": {
-  	"name": "phigros",
+  	"name": "phistore",
   	"i18n": [
   	  {
   	  	"localization": "default",
-  	  	"title": "Phigros",
-        "subtitle": "Pigeon Games",
+  	  	"title": "PhiStore",
+        "subtitle": "PhiStore Default Skin",
         "author": "LittleYang0531",
-        "description": "Version: 1.1.0"
+        "description": "Version: 1.2.0"
   	  }
   	]
   },
   "effect": {
-  	"name": "phigros",
+  	"name": "phistore",
   	"i18n": [
   	  {
   	  	"localization": "default",
-  	  	"title": "Phigros",
-        "subtitle": "Pigeon Games",
+  	  	"title": "PhiStore",
+        "subtitle": "PhiStore Default SFX",
         "author": "LittleYang0531",
-        "description": "Version: 1.1.0"
+        "description": "Version: 1.2.0"
   	  }
   	]
   },
@@ -29,11 +29,11 @@
       {
         "localization": "default",
         "title": "Phigros",
-        "subtitle": "Pigeon Games",
+        "subtitle": "Sonolus Phigros Engine",
         "author": "LittleYang0531",
-        "skin": "phigros",
+        "skin": "phistore",
         "background": "phigros-0",
-        "effect": "phigros",
+        "effect": "phistore",
         "particle": "phigros",
         "description": "A recreation of Phigros engine in Sonolus.\nVersion: 1.1.0_20240727_beta\n\nGithub Repository\nhttps://github.com/SonolusHaniwa/sonolus-phigros-engine"
       }
