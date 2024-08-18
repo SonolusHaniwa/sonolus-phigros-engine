@@ -1,5 +1,5 @@
 dist/*
-!dist/thumbnail.jpg
+!dist/thumbnail.*
 !dist/banner.jpg
 main
 optimizer
