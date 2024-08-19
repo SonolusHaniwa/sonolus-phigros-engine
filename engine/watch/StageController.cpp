@@ -70,7 +70,6 @@ class StageController: public Archetype {
     SonolusApi updateParallel() {
         FUNCBEGIN
         // 暂停按钮绘制
-        // Draw(Sprites.NormalNote, stage.l, stage.b, stage.l, stage.t - 0.1, stage.r, stage.t - 0.1, stage.r, stage.b, 100000, 1);
         IF (!sonolusPause && HasSkinSprite(Sprites.PauseButton)) {
             let menuL = stage.l + 0.005 * 3.556;
             let menuR = stage.l + 0.05 * 3.556;

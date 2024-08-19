@@ -46,7 +46,7 @@ void packSkin(string textureDir, string dataDir) {
 	using namespace rbp;
 	vector<RectSize> rects, rects_back; vector<Rect> result_rects; 
 	vector<size_t> rects_id, rects_id_back, result_ids;
-	for (int i = 0; i < imgs.size(); i++) rects.push_back({imgs[i].width, imgs[i].height});
+	for (int i = 0; i < imgs.size(); i++) rects.push_back({imgs[i].width + 2, imgs[i].height + 2});
 	for (int i = 0; i < imgs.size(); i++) rects_id.push_back(i);
 	rects_id_back = rects_id; rects_back = rects;
 	int width = 512, height = 512;
@@ -64,11 +64,11 @@ void packSkin(string textureDir, string dataDir) {
 	outimg.width = width, outimg.height = height;
 	data.width = width; data.height = height;
 	for (int i = 0; i < result_rects.size(); i++) {
-		int id = result_ids[i], x = result_rects[i].x, y = result_rects[i].y;
+		int id = result_ids[i], x = result_rects[i].x + 1, y = result_rects[i].y + 1;
 		data.sprites[id].x = x; data.sprites[id].y = y;
-		data.sprites[id].w = result_rects[i].width; data.sprites[id].h = result_rects[i].height;
-		for (int j = y; j < y + result_rects[i].height; j++) {
-			for (int k = x; k < x + result_rects[i].width; k++) {
+		data.sprites[id].w = result_rects[i].width - 2; data.sprites[id].h = result_rects[i].height - 2;
+		for (int j = y; j < y + result_rects[i].height - 2; j++) {
+			for (int k = x; k < x + result_rects[i].width - 2; k++) {
 				outimg.data[j][k * 4] = imgs[id].data[j - y][(k - x) * imgs[id].channel];
 				outimg.data[j][k * 4 + 1] = imgs[id].data[j - y][(k - x) * imgs[id].channel + 1];
 				outimg.data[j][k * 4 + 2] = imgs[id].data[j - y][(k - x) * imgs[id].channel + 2];
