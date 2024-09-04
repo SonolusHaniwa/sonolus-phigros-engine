@@ -42,6 +42,7 @@ class MoveXEvent: public Archetype {
 				start, end, times.now, easingLeft, easingRight
 			)
 		);
+		IF (mirror) x = 1.0 - x; FI
 		x = x * stage.w + stage.l;
 		EntitySharedMemoryArray[judgelineId].set(1, x);
 		return VOID;

@@ -53,6 +53,7 @@ class HoldNote: public Archetype {
 		holdTime = holdTime * timeMagic / bpm;
 		isMulti = isMulti && hasSimul;
 		lastSpawn = -1;
+		IF (mirror) positionX = -1 * positionX; FI
 		// var id = EntityDataArray[judgeline].get(0);
 		// WHILE (id) {
 		// 	var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);

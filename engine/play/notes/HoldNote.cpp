@@ -63,6 +63,7 @@ class HoldNote: public Archetype {
 		maxTime = Max(maxTime, time);
 		maxTime = Max(maxTime, time + holdTime);
 		sfxPlayed = false;
+		IF (mirror) positionX = -1 * positionX; FI
 		// var id = EntityDataArray[judgeline].get(0);
 		// WHILE (id) {
 		// 	var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);

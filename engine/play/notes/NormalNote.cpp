@@ -50,6 +50,7 @@ class NormalNote: public Archetype {
 		isMulti = isMulti && hasSimul;
 		maxTime = Max(maxTime, time);
 		sfxPlayed = false;
+		IF (mirror) positionX = -1 * positionX; FI
 		// var id = EntityDataArray[judgeline].get(0);
 		// WHILE (id) {
 		// 	var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);

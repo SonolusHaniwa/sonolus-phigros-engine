@@ -39,6 +39,7 @@ double tipRatio = 2015.0 / 157.0;
 
 #if play || watch
 let strictMode = LevelOption.get(Options.StrictMode);
+let mirror = LevelOption.get(Options.Mirror);
 let levelSpeed = LevelOption.get(Options.LevelSpeed);
 let noteWidth2 = baseNoteWidth * LevelOption.get(Options.NoteSize);
 let hasSFX = LevelOption.get(Options.HasSFX);

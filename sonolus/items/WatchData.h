@@ -378,7 +378,7 @@ namespace watchData {
     class times {
         public:
 
-        FuncNode now = RuntimeUpdate.get(0) * LevelOption.get(1);
+        FuncNode now = RuntimeUpdate.get(0) * LevelOption.get(2);
         FuncNode delta = RuntimeUpdate.get(1);
         FuncNode scaled = RuntimeUpdate.get(2);
         FuncNode skip = RuntimeUpdate.get(3);

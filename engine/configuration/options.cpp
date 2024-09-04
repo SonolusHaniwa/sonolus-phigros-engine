@@ -4,17 +4,18 @@ class Options {
     public:
 
     int StrictMode = 0;
-    int LevelSpeed = 1;
-    int NoteSize = 2;
-    int HasSFX = 3;
-    int HasSimul = 4;
-    int HasIndicator = 5;
-    int Background = 6;
-    int SystemPause = 7;
-    int SystemCombo = 8;
-    int SystemPrimaryMetric = 9;
-    int JudgelineId = 10;
-    int AutoSFX = 11;
+    int Mirror = 1;
+    int LevelSpeed = 2;
+    int NoteSize = 3;
+    int HasSFX = 4;
+    int HasSimul = 5;
+    int HasIndicator = 6;
+    int Background = 7;
+    int SystemPause = 8;
+    int SystemCombo = 9;
+    int SystemPrimaryMetric = 10;
+    int JudgelineId = 11;
+    int AutoSFX = 12;
 }Options;
 
 auto options = defineOptions<class Options>({
@@ -23,7 +24,13 @@ auto options = defineOptions<class Options>({
         scope: Scope,
         standard: 1,
         type: OptionType.Toggle,
-        def: false
+        def: 0
+    }, {
+        name: NameText.MirrorLevel,
+        scope: Scope,
+        standard: 0,
+        type: OptionType.Toggle,
+        def: 0
     }, {
         name: NameText.LevelSpeed,
         scope: Scope,

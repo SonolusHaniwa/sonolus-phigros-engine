@@ -44,6 +44,7 @@ class RotateEvent: public Archetype {
 		);
 		IF (rotate < 0) rotate = rotate + 360; FI
 		rotate = rotate / 180 * PI;
+		IF (mirror) rotate = -1 * rotate; FI
 		EntitySharedMemoryArray[judgelineId].set(3, rotate);
 		IF (times.now > endTime * timeMagic / bpm) EntityDespawn.set(0, 1); FI
 		return VOID;
