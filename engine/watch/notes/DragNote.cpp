@@ -58,6 +58,7 @@ class DragNote: public Archetype {
 		isMulti = isMulti && hasSimul;
 		maxTime = Max(maxTime, time);
 		IF (mirror) positionX = -1 * positionX; FI
+		EntityInput.set(1, judgment.good);
 		// var id = EntityDataArray[judgeline].get(0);
 		// WHILE (id) {
 		// 	var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
