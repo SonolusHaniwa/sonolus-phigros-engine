@@ -117,7 +117,7 @@ class HoldNote: public Archetype {
 			} FI
 			EntityDespawn.set(0, 1);
 		} FI
-		IF (hasSFX && autoSFX && !sfxPlayed && time - times.now <= judgment.good) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); sfxPlayed = true; FI
+		IF (hasSFX && autoSFX && !sfxPlayed && time - times.now <= scheduledSFXTime) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); sfxPlayed = true; FI
 
 		// 检测
 		IF (isActive && !released && times.now < time + holdTime - holdTailTime) {

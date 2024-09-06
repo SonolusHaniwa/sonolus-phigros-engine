@@ -120,7 +120,7 @@ class NormalNote: public Archetype {
 			IF (times.now > time) EntityDespawn.set(0, 1); FI
 			Return(0); 
 		FI
-		IF (autoSFX && hasSFX && !sfxPlayed && time - times.now <= judgment.good) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); sfxPlayed = true; FI
+		IF (autoSFX && hasSFX && !sfxPlayed && time - times.now <= scheduledSFXTime) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); sfxPlayed = true; FI
 
 		// Claim
 		IF (times.now < inputTimeMin) Return(0); FI

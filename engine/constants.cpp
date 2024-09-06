@@ -36,6 +36,7 @@ double timeBarHeight = 0.01;
 double timeMagic = 1.875;
 double judgelineIdTextHeight = 0.05;
 double tipRatio = 2015.0 / 157.0;
+double scheduledSFXTime = 0.3;
 
 #if play || watch
 let strictMode = LevelOption.get(Options.StrictMode);

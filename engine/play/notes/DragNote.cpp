@@ -97,7 +97,7 @@ class DragNote: public Archetype {
 			IF (times.now > time) EntityDespawn.set(0, 1); FI
 			Return(0); 
 		FI
-		IF (hasSFX && autoSFX && !sfxPlayed && time - times.now <= judgment.good) PlayScheduled(Clips.Drag, time / levelSpeed, minSFXDistance); sfxPlayed = true; FI
+		IF (hasSFX && autoSFX && !sfxPlayed && time - times.now <= scheduledSFXTime) PlayScheduled(Clips.Drag, time / levelSpeed, minSFXDistance); sfxPlayed = true; FI
 
 		// Claim
 		IF (times.now < inputTimeMin) Return(0); FI
