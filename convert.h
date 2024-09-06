@@ -2,6 +2,7 @@
 #define INFO if (levelData.size() * 100 / total != last) \
 	last = levelData.size() * 100 / total, cout << "[INFO] Processed: " << levelData.size() << "/" << total << "(" << last << "%)" << endl;
 
+const int old_official_version = 1;
 const int official_version = 3;
 const int optimizer_version = 13;
 
@@ -294,7 +295,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 		auto item = obj["judgeLineList"][i];
 		total++;
 		total += item["speedEvents"].size();
-		if (fmt == official_version) total += item["judgeLineMoveEvents"].size() * 2;
+		if (fmt == official_version || fmt == old_official_version) total += item["judgeLineMoveEvents"].size() * 2;
 		else if (fmt == optimizer_version)
 			total += item["judgeLineMoveXEvents"].size() + item["judgeLineMoveYEvents"].size();
 		else cout << "Unknown format version: " << fmt << endl, exit(1);
@@ -353,8 +354,11 @@ string fromPGS(string json, double bgmOffset = 0) {
 				? speedData.back<SpeedEventEntity>() 
 				: SpeedEventEntity();
 			speedData.append(speed); INFO;
-			if (v.isMember("value")) speedEvents.push_back({ v["startTime"].asDouble(), v["endTime"].asDouble(), v["value"].asDouble(), v["value"].asDouble(), 0 });
-			else speedEvents.push_back({ v["startTime"].asDouble(), v["endTime"].asDouble(), v["start"].asDouble(), v["end"].asDouble(), 0 });
+			// md
+			// 官谱里面居然会出现 startTime < 0
+			// 警钟长鸣
+			if (v.isMember("value")) speedEvents.push_back({ max(0.0, v["startTime"].asDouble()), v["endTime"].asDouble(), v["value"].asDouble(), v["value"].asDouble(), 0 });
+			else speedEvents.push_back({ max(0.0, v["startTime"].asDouble()), v["endTime"].asDouble(), v["start"].asDouble(), v["end"].asDouble(), 0 });
 		}
 		for (int j = speedData.entities.size() - 1; j >= 0; j--) levelData.entities.push_back(speedData.entities[j]);
 		judgeline.speedEvent = item["speedEvents"].size()
@@ -464,6 +468,52 @@ string fromPGS(string json, double bgmOffset = 0) {
 			judgeline.moveYEvent = item["judgeLineMoveYEvents"].size()
 				? levelData.back<MoveYEventEntity>() 
 				: MoveYEventEntity();
+		} else if (fmt == old_official_version) {
+			for (int j = item["judgeLineMoveEvents"].size() - 1; j >= 0; j--) {
+				auto v = item["judgeLineMoveEvents"][j];
+				
+				MoveXEventEntity moveX;
+				moveX.startTime = v["startTime"].asDouble();
+				moveX.endTime = v["endTime"].asDouble();
+				moveX.start = (v["start"].asInt() / 1000) / 880.0;
+				moveX.end = (v["end"].asInt() / 1000) / 880.0;
+				moveX.easing = v["easing"].asInt();
+				moveX.easingLeft = v.isMember("easingLeft") ? v["easingLeft"].asInt() : 0;
+				moveX.easingRight = v.isMember("easingRight") ? v["easingRight"].asInt() : 1;
+				moveX.bezier = v.isMember("bezier") ? v["bezier"].asInt() : 0;
+				moveX.bezierP1 = v.isMember("bezierP1") ? v["bezierP1"].asDouble() : 0;
+				moveX.bezierP2 = v.isMember("bezierP2") ? v["bezierP2"].asDouble() : 0;
+				moveX.bezierP3 = v.isMember("bezierP3") ? v["bezierP3"].asDouble() : 0;
+				moveX.bezierP4 = v.isMember("bezierP4") ? v["bezierP4"].asDouble() : 0;
+				moveX.next = j != item["judgeLineMoveEvents"].size() - 1
+					? levelData.get<MoveXEventEntity>(levelData.size() - 2)
+					: MoveXEventEntity();
+				levelData.append(moveX); INFO;
+				
+				MoveYEventEntity moveY;
+				moveY.startTime = v["startTime"].asDouble();
+				moveY.endTime = v["endTime"].asDouble();
+				moveY.start = (v["start"].asInt() % 1000) / 520.0;
+				moveY.end = (v["end"].asInt() % 1000) / 520.0;
+				moveY.easing = v["easing"].asInt();
+				moveY.easingLeft = v.isMember("easingLeft") ? v["easingLeft"].asInt() : 0;
+				moveY.easingRight = v.isMember("easingRight") ? v["easingRight"].asInt() : 1;
+				moveY.bezier = v.isMember("bezier") ? v["bezier"].asInt() : 0;
+				moveY.bezierP1 = v.isMember("bezierP1") ? v["bezierP1"].asDouble() : 0;
+				moveY.bezierP2 = v.isMember("bezierP2") ? v["bezierP2"].asDouble() : 0;
+				moveY.bezierP3 = v.isMember("bezierP3") ? v["bezierP3"].asDouble() : 0;
+				moveY.bezierP4 = v.isMember("bezierP4") ? v["bezierP4"].asDouble() : 0;
+				moveY.next = j != item["judgeLineMoveEvents"].size() - 1
+					? levelData.get<MoveYEventEntity>(levelData.size() - 2)
+					: MoveYEventEntity();
+				levelData.append(moveY); INFO;
+			} 
+			judgeline.moveXEvent = item["judgeLineMoveEvents"].size()
+					? levelData.get<MoveXEventEntity>(levelData.size() - 2) 
+					: MoveXEventEntity();
+			judgeline.moveYEvent = item["judgeLineMoveEvents"].size()
+					? levelData.get<MoveYEventEntity>(levelData.size() - 1)
+					: MoveYEventEntity();
 		}
 
 		// 添加 Rotate Event
