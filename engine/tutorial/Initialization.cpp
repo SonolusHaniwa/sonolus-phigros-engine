@@ -1,14 +1,22 @@
 SonolusApi Initialization() {
     FUNCBEGIN
-    let menuL = stage.l + 0.005 * stage.w;
-    let menuR = stage.l + 0.05 * stage.w;
-    let menuT = stage.t + 1.0 / 1080.0 * stage.h;
-    let menuB = stage.t - 0.095 * stage.h;
-    let menuX = (menuR + menuL) / 2;
-    let menuY = (menuT + menuB) / 2;
-    let menuWidth = menuR - menuL;
-    let menuHeight = menuT - menuB;
-    ui.menu.set(menuX, menuY, 0.5, 0.5, menuWidth, menuHeight, 0, 0, true);
+    IF (HasSkinSprite(Sprites.PauseButton)) {
+        let menuL = stage.l + 0.005 * stage.w;
+        let menuR = stage.l + 0.05 * stage.w;
+        let menuT = stage.t + 1.0 / 1080.0 * stage.h;
+        let menuB = stage.t - 0.095 * stage.h;
+        let menuX = (menuR + menuL) / 2;
+        let menuY = (menuT + menuB) / 2;
+        let menuWidth = menuR - menuL;
+        let menuHeight = menuT - menuB;
+        ui.menu.set(menuX, menuY, 0.5, 0.5, menuWidth, menuHeight, 0, 0, true);
+    } ELSE {
+        let menuWidth = 0.15;
+        let menuHeight = 0.15;
+        let menuX = stage.l + interfaceGap;
+        let menuY = stage.t - interfaceGap;
+        ui.menu.set(menuX, menuY, 0, 1, menuWidth, menuHeight, 0, 1, true);
+    } FI
 
     var previousWidth = 0.15 * ui.navigationConfiguration.scale;
     var previousHeight = 0.15 * ui.navigationConfiguration.scale;

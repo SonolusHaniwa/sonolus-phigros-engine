@@ -5,9 +5,13 @@ SonolusApi NormalNoteFall(let time, let sum) {
     let t = stage.t;
     let b = t - 0.8 * stage.h;
     let x = 0, y = Lerp(t, b, time / sum);
-    let w = baseNoteWidth * 2, h = w / noteRatio;
+    let w = baseNoteWidth * If(HasSkinSprite(Sprites.NormalNote), 2, 1), 
+        h = w / If(HasSkinSprite(Sprites.NormalNote), noteRatio, fallBackNoteRatio);
     let L = x - w / 2, R = x + w / 2, B = y - h / 2, T = y + h / 2;
-    Draw(Sprites.NormalNote, L, B, L, T, R, T, R, B, 10000, 1);
+    Draw(
+        If(HasSkinSprite(Sprites.NormalNote), Sprites.NormalNote, Sprites.FallbackNormalNote), 
+        L, B, L, T, R, T, R, B, 10000, 1
+    );
     return VOID;
 }
 
@@ -16,9 +20,13 @@ SonolusApi NormalNoteFrozen(let time, let sum) {
     instruction = Texts.Tap;
     spawnedEffect = 0;
     let x = 0, y = stage.t - 0.8 * stage.h;
-    let w = baseNoteWidth * 2, h = w / noteRatio;
+    let w = baseNoteWidth * If(HasSkinSprite(Sprites.NormalNote), 2, 1), 
+        h = w / If(HasSkinSprite(Sprites.NormalNote), noteRatio, fallBackNoteRatio);
     let L = x - w / 2, R = x + w / 2, B = y - h / 2, T = y + h / 2;
-    Draw(Sprites.NormalNote, L, B, L, T, R, T, R, B, 10000, 1);
+    Draw(
+        If(HasSkinSprite(Sprites.NormalNote), Sprites.NormalNote, Sprites.FallbackNormalNote), 
+        L, B, L, T, R, T, R, B, 10000, 1
+    );
     drawFrozenHand(Icons.hand, x, y, time / (sum / 4) % 1);
     return VOID;
 }

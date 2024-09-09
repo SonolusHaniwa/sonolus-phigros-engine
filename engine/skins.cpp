@@ -8,12 +8,15 @@ class Sprites {
 	int FullComboJudgeline = 1002;
 	int NormalNote = 1;
 	int HLNote = 2;
+	int FallbackNormalNote = 2001;
 	int NormalDrag = 3;
 	int HLDrag = 4;
+	int FallbackNormalDrag = 2003;
 	int NormalHoldHead = 5;
 	int HLHoldHead = 6;
 	int NormalFlick = 7;
 	int HLFlick = 8;
+	int FallbackNormalFlick = 2005;
 	int NormalHoldBody = 9;
 	int HLHoldBody = 10;
 	int PauseButton = 11;
@@ -36,10 +39,13 @@ auto skins = defineSkins<class Sprites>({
 	{SkinSpriteName.JudgmentLine, Sprites.NormalJudgeline},
 	{"Judgeline AllPerfect", Sprites.AllPerfectJudgeline},
 	{"Judgeline FullCombo", Sprites.FullComboJudgeline},
-	{SkinSpriteName.NoteHeadCyan, Sprites.NormalNote},
-	{SkinSpriteName.NoteHeadYellow, Sprites.NormalDrag},
+	{"Phigros Normal Note", Sprites.NormalNote},
+	{"Phigros Normal Drag", Sprites.NormalDrag},
+	{"Phigros Normal Flick", Sprites.NormalFlick},
+	{SkinSpriteName.NoteHeadCyan, Sprites.FallbackNormalNote},
+	{SkinSpriteName.NoteHeadYellow, Sprites.FallbackNormalDrag},
 	{SkinSpriteName.NoteHeadBlue, Sprites.NormalHoldHead},
-	{SkinSpriteName.NoteHeadRed, Sprites.NormalFlick},
+	{SkinSpriteName.NoteHeadRed, Sprites.FallbackNormalFlick},
 	{SkinSpriteName.NoteTailCyan, Sprites.HLNote},
 	{SkinSpriteName.NoteTailYellow, Sprites.HLDrag},
 	{SkinSpriteName.NoteTailBlue, Sprites.HLHoldHead},

@@ -16,6 +16,7 @@ double holdBodyRatio = 989.0 / 1950.0;
 double hlHoldHeadRatio = 1062.0 / 97.0;
 double hlHoldBodyRatio = 1062.0 / 1951.0;
 double hlHoldOffset = 1062.0 / 49.0;
+double fallBackNoteRatio = 8;
 double judgeDistanceLimit = baseNoteWidth * 0.875;
 double effectDurationTime = 0.4;
 double effectWidth = baseNoteWidth * 0.75;
@@ -36,7 +37,7 @@ double timeBarHeight = 0.01;
 double timeMagic = 1.875;
 double judgelineIdTextHeight = 0.05;
 double tipRatio = 2015.0 / 157.0;
-double scheduledSFXTime = 0.3;
+double scheduledSFXTime = 0.5;
 
 #if play || watch
 let strictMode = LevelOption.get(Options.StrictMode);
@@ -45,7 +46,7 @@ let levelSpeed = LevelOption.get(Options.LevelSpeed);
 let noteWidth2 = baseNoteWidth * LevelOption.get(Options.NoteSize);
 let hasSFX = LevelOption.get(Options.HasSFX);
 let hasSimul = LevelOption.get(Options.HasSimul);
-let hasIndicator = LevelOption.get(Options.HasIndicator);
+let hasIndicator = LevelOption.get(Options.HasIndicator) && HasSkinSprite(Sprites.AllPerfectJudgeline) && HasSkinSprite(Sprites.FullComboJudgeline);
 let background = LevelOption.get(Options.Background);
 let sonolusPause = LevelOption.get(Options.SystemPause);
 let sonolusCombo = LevelOption.get(Options.SystemCombo);

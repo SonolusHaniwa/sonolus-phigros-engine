@@ -89,10 +89,10 @@ class StageController: public Archetype {
         let screenR = 10000;
         let screenT = 10000;
         let screenB = -10000;
-        Draw(Sprites.Blocker, screenL, screenB, screenL, screenT, stage.l, screenT, stage.l, screenB, 20000, 1);
-        Draw(Sprites.Blocker, stage.r, screenB, stage.r, screenT, screenR, screenT, screenR, screenB, 20000, 1);
-        Draw(Sprites.Blocker, screenL, screenB, screenL, stage.b, screenR, stage.b, screenR, screenB, 20000, 1);
-        Draw(Sprites.Blocker, screenL, stage.t, screenL, screenT, screenR, screenT, screenR, stage.t, 20000, 1);
+        Draw(Sprites.Blocker, screenL, screenB, screenL, screenT, stage.l, screenT, stage.l, screenB, 20000000, 1);
+        Draw(Sprites.Blocker, stage.r, screenB, stage.r, screenT, screenR, screenT, screenR, screenB, 20000000, 1);
+        Draw(Sprites.Blocker, screenL, screenB, screenL, stage.b, screenR, stage.b, screenR, screenB, 20000000, 1);
+        Draw(Sprites.Blocker, screenL, stage.t, screenL, screenT, screenR, screenT, screenR, stage.t, 20000000, 1);
 
         var numberDistance = 0.0068 * stage.h;
         IF (combo > 2 && !sonolusCombo && HasSkinSprite(Sprites.ComboText) && HasSkinSprite(Sprites.Combo0)) {
