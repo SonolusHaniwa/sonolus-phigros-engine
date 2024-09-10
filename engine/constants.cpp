@@ -77,7 +77,7 @@ class judgment {
 
     let perfect = If(strictMode, 0.04, 0.08);
     let great = If(strictMode, 0.075, 0.16);
-    let good = If(strictMode, 0.14,0.18);
+    let good = If(strictMode, 0.14, 0.18);
 }judgment;
 #endif
 

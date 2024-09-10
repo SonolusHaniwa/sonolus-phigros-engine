@@ -97,7 +97,7 @@ class FlickNote: public Archetype {
 			IF (times.now > time) EntityDespawn.set(0, 1); FI
 			Return(0); 
 		FI
-		IF (hasSFX && autoSFX && !sfxPlayed && time - times.now <= scheduledSFXTime) PlayScheduled(Clips.Flick, time / levelSpeed, minSFXDistance); sfxPlayed = true; FI
+		IF (hasSFX && autoSFX && !sfxPlayed && time - times.now <= scheduledSFXTime + Max(0, RuntimeEnvironment.get(2))) PlayScheduled(Clips.Flick, time / levelSpeed, minSFXDistance); sfxPlayed = true; FI
 
 		// Claim
 		IF (played) {
