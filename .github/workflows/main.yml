@@ -32,7 +32,7 @@ jobs:
           TK=$A$B
           git clone https://github.com/SonolusHaniwa/sonolus-phigros-engine phigros
           git clone https://littleyang0531:$TK@github.com/SonolusHaniwa/phigros-sync tools
-          git clone https://littleyang0531:$TK@github.com/SonolusHaniwa/phigros-decrypted-dara data
+          git clone https://littleyang0531:$TK@github.com/SonolusHaniwa/phigros-decrypted-data data
           
       - name: Preparing C/C++ Compiler
         run: |
