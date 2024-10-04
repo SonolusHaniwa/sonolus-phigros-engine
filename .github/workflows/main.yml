@@ -31,10 +31,8 @@ jobs:
           B="zwnIhWoprI5x4WW1vR"
           TK=$A$B
           git clone https://github.com/SonolusHaniwa/sonolus-phigros-engine phigros
-          git clone https://littleyang0531:$TK@github.com/LittleYang0531/phigros-private phigros-private
           git clone https://littleyang0531:$TK@github.com/SonolusHaniwa/phigros-sync tools
-          git clone https://littleyang0531:$TK@github.com/LittleYang0531/phigros-private-data sonolus-data
-          git clone https://littleyang0531:$TK@github.com/LittleYang0531/phistore-private phistore
+          git clone https://littleyang0531:$TK@github.com/SonolusHaniwa/phigros-decrypted-dara data
           
       - name: Preparing C/C++ Compiler
         run: |
@@ -44,7 +42,7 @@ jobs:
       - name: Uploading data to server
         run: |
           mkdir sonolus-server
-          cp phigros-private/public/sonolus.db sonolus-server/
+          cp data/sonolus.db sonolus-server/
           cd tools
           ./make
           cd ..
@@ -55,28 +53,12 @@ jobs:
               ./tools/onedriveUploader ./sonolus-server/data/$name
               echo ""
           done
-          cp sonolus-server/data/* sonolus-data/
-          cp sonolus-server/sonolus.db phigros-private/public/
+          cp sonolus-server/sonolus.db data/
 
       - name: Commit to Phigros Private
         run: |
           cat > ./sync.sh <<EOF
-          cd phigros-private
-          git config --local user.email "littleyang0531@outlook.com"
-          git config --local user.name "LittleYang0531"
-          git add .
-          git commit -m "Update Engine"
-          git push origin
-          
-          cd ../sonolus-data
-          git config --local user.email "littleyang0531@outlook.com"
-          git config --local user.name "LittleYang0531"
-          git add .
-          git commit -m "Update Engine"
-          git push origin
-          echo "Sync Finished!"
-          
-          cd ../phistore
+          cd data
           git config --local user.email "littleyang0531@outlook.com"
           git config --local user.name "LittleYang0531"
           git add .
