@@ -60,6 +60,7 @@ class NormalNote: public Archetype {
 		// 	id = EntityDataArray[id].get(3);
 		// } DONE
 		// appearTime = Max(0, Min(appearTime, time - 0.5));
+		PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance);
 		return VOID;
 	}
 
@@ -120,7 +121,7 @@ class NormalNote: public Archetype {
 			IF (times.now > time) EntityDespawn.set(0, 1); FI
 			Return(0); 
 		FI
-		IF (autoSFX && hasSFX && !sfxPlayed && time - times.now <= scheduledSFXTime + Max(0, RuntimeEnvironment.get(2))) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); sfxPlayed = true; FI
+		// IF (autoSFX && hasSFX && !sfxPlayed && time - times.now <= scheduledSFXTime + Max(0, RuntimeEnvironment.get(2))) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); sfxPlayed = true; FI
 
 		// Claim
 		IF (times.now < inputTimeMin) Return(0); FI
