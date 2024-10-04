@@ -60,7 +60,7 @@ class FlickNote: public Archetype {
 		// 	id = EntityDataArray[id].get(3);
 		// } DONE
 		// appearTime = Max(0, Min(appearTime, time - 0.5));
-		PlayScheduled(Clips.Flick, time / levelSpeed, minSFXDistance);
+		IF (hasSFX && autoSFX) PlayScheduled(Clips.Flick, time / levelSpeed, minSFXDistance); FI
 		return VOID;
 	}
 

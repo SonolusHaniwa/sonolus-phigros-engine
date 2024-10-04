@@ -73,7 +73,7 @@ class HoldNote: public Archetype {
 		// 	id = EntityDataArray[id].get(3);
 		// } DONE
 		// appearTime = Max(0, Min(appearTime, time - 0.5));
-		PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance);
+		IF (hasSFX && autoSFX) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); FI
 		return VOID;
 	}
 
