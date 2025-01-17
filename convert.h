@@ -143,7 +143,7 @@ class HoldNoteEntity: public CommonNoteEntity {
 	public:
 
 	defineArchetypeName("Phigros Hold Note");
-	defineLevelDataValue(endFloorPosition);
+	defineLevelDataValue(endFloorPosition); // Decrypted
 };
 
 class FakeHoldNoteEntity: public HoldNoteEntity {
@@ -601,16 +601,16 @@ string fromPGS(string json, double bgmOffset = 0) {
 				case 3: {
 					HoldNoteEntity hold = transform<HoldNoteEntity>(note);
 					// 计算 endFloorPosition
-					int k = lower_bound(
-						speedEvents.begin(), 
-						speedEvents.end(), 
-						hold.time.value + hold.holdTime.value, 
-						[&](PGRSpeedEvent a, double b){ return a.startTime < b; }
-					) - speedEvents.begin() - 1;
-					auto e = speedEvents[k];
-					double t1 = e.startTime, t2 = hold.time.value + hold.holdTime.value;
-					double v1 = e.start, v2 = e.start + (t2 - t1) * (e.end - e.start) / (e.endTime - e.startTime);
-					hold.endFloorPosition = speedEvents[k].floorPosition + (v1 + v2) * (t2 - t1) / 2 / bpm * 1.875;
+					// int k = lower_bound(
+					// 	speedEvents.begin(), 
+					// 	speedEvents.end(), 
+					// 	hold.time.value + hold.holdTime.value, 
+					// 	[&](PGRSpeedEvent a, double b){ return a.startTime < b; }
+					// ) - speedEvents.begin() - 1;
+					// auto e = speedEvents[k];
+					// double t1 = e.startTime, t2 = hold.time.value + hold.holdTime.value;
+					// double v1 = e.start, v2 = e.start + (t2 - t1) * (e.end - e.start) / (e.endTime - e.startTime);
+					hold.endFloorPosition = hold.floorPosition.value + hold.holdTime.value * hold.speed.value / bpm * 1.875;
 					if (note.isFake.value) levelData.append(transform<FakeHoldNoteEntity>(hold)); 
 					else levelData.append(hold);
 				} break;
@@ -650,16 +650,16 @@ string fromPGS(string json, double bgmOffset = 0) {
 				case 3: {
 					HoldNoteEntity hold = transform<HoldNoteEntity>(note);
 					// 计算 endFloorPosition
-					int k = lower_bound(
-						speedEvents.begin(), 
-						speedEvents.end(), 
-						hold.time.value + hold.holdTime.value, 
-						[&](PGRSpeedEvent a, double b){ return a.startTime < b; }
-					) - speedEvents.begin() - 1;
-					auto e = speedEvents[k];
-					double t1 = e.startTime, t2 = hold.time.value + hold.holdTime.value;
-					double v1 = e.start, v2 = e.start + (t2 - t1) * (e.end - e.start) / (e.endTime - e.startTime);
-					hold.endFloorPosition = -1 * (speedEvents[k].floorPosition + (v1 + v2) * (t2 - t1) / 2 / bpm * 1.875);
+					// int k = lower_bound(
+					// 	speedEvents.begin(), 
+					// 	speedEvents.end(), 
+					// 	hold.time.value + hold.holdTime.value, 
+					// 	[&](PGRSpeedEvent a, double b){ return a.startTime < b; }
+					// ) - speedEvents.begin() - 1;
+					// auto e = speedEvents[k];
+					// double t1 = e.startTime, t2 = hold.time.value + hold.holdTime.value;
+					// double v1 = e.start, v2 = e.start + (t2 - t1) * (e.end - e.start) / (e.endTime - e.startTime);
+					hold.endFloorPosition = -1 * (hold.floorPosition.value + hold.holdTime.value * hold.speed.value / bpm * 1.875);
 					if (note.isFake.value) levelData.append(transform<FakeHoldNoteEntity>(hold)); 
 					else levelData.append(hold);
 				} break;

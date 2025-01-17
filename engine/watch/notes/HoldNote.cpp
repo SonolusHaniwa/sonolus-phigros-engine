@@ -55,6 +55,7 @@ class HoldNote: public Archetype {
 		lastSpawn = -1;
 		IF (mirror) positionX = -1 * positionX; FI
 		EntityInput.set(1, judgment.good);
+		endFloorPosition = If(isAbove, floorPosition + speed * holdTime, floorPosition - speed * holdTime);
 		// var id = EntityDataArray[judgeline].get(0);
 		// WHILE (id) {
 		// 	var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
@@ -134,8 +135,12 @@ class HoldNote: public Archetype {
 		var dx = positionX * stage.w * 0.05625;
 		var dy = If(isAbove, positionY + yOffset, positionY - yOffset) * stage.h * 0.6;
 		IF (times.now > time) dy = If(isAbove, yOffset, -1 * yOffset); FI
-		var dy2 = If(isAbove, endFloorPosition - line.get(5) + yOffset, endFloorPosition + line.get(5) - yOffset) * stage.h * 0.6;
-		
+		var dy2 = If(
+			time > times.now,
+			If(isAbove, endFloorPosition - line.get(5) + yOffset, endFloorPosition + line.get(5) - yOffset),
+			If(isAbove, speed * (holdTime - times.now + time), -1 * speed * (holdTime - times.now + time))
+		) * stage.h * 0.6;
+
 		var rotate = line.get(3);
 		var r = Power({dx * dx + dy * dy, 0.5});
 		var hr = Power({dx * dx + dy2 * dy2, 0.5});

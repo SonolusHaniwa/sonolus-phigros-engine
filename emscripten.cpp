@@ -33,23 +33,23 @@ void throwWarning(string s) { cerr << "Warning: " << s << endl; }
 #	endif
 #endif
 
-extern "C" EMSCRIPTEN_KEEPALIVE char* json2data(char* input) {
+extern "C" EMSCRIPTEN_KEEPALIVE char* json2data(char* input, double bgmOffset) {
 	string data; data = string(input, strlen(input));
-	string res = fromPGS(data, 0);
+	string res = fromPGS(data, bgmOffset);
 	char* result = const_cast<char*>(res.c_str());
 	return result;
 }
 
-extern "C" EMSCRIPTEN_KEEPALIVE char* pec2json(char* input) {
+extern "C" EMSCRIPTEN_KEEPALIVE char* pec2json(char* input, double bgmOffset) {
 	string data; data = string(input, strlen(input));
-	string res = fromPEC(data, 0);
+	string res = fromPEC(data, bgmOffset);
 	char* result = const_cast<char*>(res.c_str());
 	return result;
 }
 
-extern "C" EMSCRIPTEN_KEEPALIVE char* rpe2json(char* input) {
+extern "C" EMSCRIPTEN_KEEPALIVE char* rpe2json(char* input, double bgmOffset) {
 	string data; data = string(input, strlen(input));
-	string res = fromRPE(data, 0);
+	string res = fromRPE(data, bgmOffset);
 	char* result = const_cast<char*>(res.c_str());
 	return result;
 }
