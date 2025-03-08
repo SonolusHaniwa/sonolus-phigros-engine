@@ -223,9 +223,9 @@ class ErrorStyle {
 class ErrorPlacement {
     public:
 
-    string both = "both";
     string left = "left";
     string right = "right";
+    string leftRight = "leftRight";
 }ErrorPlacement;
 
 class RuntimeFunction {

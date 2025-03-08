@@ -64,7 +64,7 @@ EngineConfigurationUI configurationUI = {
         }
     },
     .judgmentErrorStyle = ErrorStyle.none,
-    .judgmentErrorPlacement = ErrorPlacement.both,
+    .judgmentErrorPlacement = ErrorPlacement.leftRight,
     .judgmentErrorMin = 20,
     .scope = Scope
 };
