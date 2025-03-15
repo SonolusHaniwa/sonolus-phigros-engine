@@ -30,6 +30,10 @@ class MoveXEvent: public Archetype {
 
 	SonolusApi updateSequential() {
 		FUNCBEGIN
+		IF (times.now >= endTime * timeMagic / bpm) 
+			EntityDespawn.set(0, 1); 
+			Return(0);
+		FI
 		var x = If(
 			bezier,
 			getBezierValue(
@@ -41,11 +45,8 @@ class MoveXEvent: public Archetype {
 				startTime * timeMagic / bpm, endTime * timeMagic / bpm, 
 				start, end, times.now, easingLeft, easingRight
 			)
-		);
-		IF (mirror) x = 1.0 - x; FI
-		x = x * stage.w + stage.l;
+		) - 0.5 + EntitySharedMemoryArray[judgelineId].get(1);
 		EntitySharedMemoryArray[judgelineId].set(1, x);
-		IF (times.now > endTime * timeMagic / bpm) EntityDespawn.set(0, 1); FI
 		return VOID;
 	}
 };
@@ -82,6 +83,10 @@ class MoveYEvent: public Archetype {
 
 	SonolusApi updateSequential() {
 		FUNCBEGIN
+		IF (times.now >= endTime * timeMagic / bpm) 
+			EntityDespawn.set(0, 1); 
+			Return(0);
+		FI
 		var y = If(
 			bezier,
 			getBezierValue(
@@ -93,10 +98,8 @@ class MoveYEvent: public Archetype {
 				startTime * timeMagic / bpm, endTime * timeMagic / bpm, 
 				start, end, times.now, easingLeft, easingRight
 			)
-		);
-		y = y * stage.h + stage.b;
+		) - 0.5 + EntitySharedMemoryArray[judgelineId].get(2);
 		EntitySharedMemoryArray[judgelineId].set(2, y);
-		IF (times.now > endTime * timeMagic / bpm) EntityDespawn.set(0, 1); FI
 		return VOID;
 	}
 };

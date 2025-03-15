@@ -26,10 +26,13 @@ class SpeedEvent: public Archetype {
 
 	SonolusApi updateSequential() {
 		FUNCBEGIN
+		IF (times.now >= endTime * timeMagic / bpm) 
+			EntityDespawn.set(0, 1); 
+			Return(0);
+		FI
 		var curr = (times.now - startTime * timeMagic / bpm) * (end - start) / ((endTime - startTime) * timeMagic / bpm) + start;
 		EntitySharedMemoryArray[judgelineId].set(0, curr);
 		EntitySharedMemoryArray[judgelineId].set(5, baseFloorPosition + (times.now - startTime * timeMagic / bpm) * (start + curr) / 2);
-		IF (times.now > endTime * timeMagic / bpm) EntityDespawn.set(0, 1); FI
 		return VOID;
 	}
 };

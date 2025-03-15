@@ -863,6 +863,24 @@ string fromPEC(string txt, double bgmOffset = 0) {
 
 
 
+int RPEEasingMap[] = {
+	0,
+	1,
+	18, 17, 
+	2, 1,
+	19, 3,
+	6, 5,
+	10, 9,
+	7, 11,
+	14, 13,
+	22, 21,
+	26, 25,
+	30, 39,
+	27, 31,
+	34, 33,
+	0, 0,
+	0, 0 // Bounce is not supported
+};
 int RPENoteTypeMap[] = { 0, 1, 3, 4, 2 };
 double BeatToDouble(Json::Value beat) {
 	return beat[0].asDouble() + beat[1].asDouble() / beat[2].asDouble();
@@ -876,8 +894,8 @@ void RPESolveSpeedEvent(vector<PGRSpeedEvent> &events, int id, double factor) {
 	sort(events.begin(), events.end(), [&](PGRSpeedEvent a, PGRSpeedEvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
 	// 处理异常 1
 	if (events.size() == 0) {
-		events.push_back({ 0, 999999, 0, 0, 0 });
-		cerr << "Warning: Invalid Speed Event List [" << id << "]: Empty Speed Event List." << endl;
+		// events.push_back({ 0, 999999, 0, 0, 0 });
+		// cerr << "Warning: Invalid Speed Event List [" << id << "]: Empty Speed Event List." << endl;
 		return;
 	}
 	if (events[0].startTime > 0) events.insert(events.begin(), { 0, events[0].startTime, 0, 0, 0 });
@@ -946,8 +964,8 @@ void RPESolveEvent(vector<PGREvent> &events, int id, string name) {
 	sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
 	// 处理异常 1 (事件延拓)
 	if (events.size() == 0) {
-		events.push_back({ 0, 999999, 0, 0, 0 });
-		cerr << "Warning: Invalid " << name << " List [" << id << "]: Empty " << name << " List." << endl;
+		// events.push_back({ 0, 999999, 0, 0, 0 });
+		// cerr << "Warning: Invalid " << name << " List [" << id << "]: Empty " << name << " List." << endl;
 		return;
 	}
 	if (events[0].startTime > 0) {
@@ -1094,21 +1112,31 @@ string fromRPE(string json, double bgmOffset = 0) {
 		judgelines[i].father = item["father"].asInt();
 		for (int j = 0; j < item["eventLayers"].size(); j++) {
 			auto layer = item["eventLayers"][j];
-			for (int k = 0; k < layer["speedEvents"].size(); k++)
-				judgelines[i].speedEvents.push_back({
+
+			vector<PGRSpeedEvent> speedEvents;
+			for (int k = 0; k < layer["speedEvents"].size(); k++) {
+				speedEvents.push_back({
 					rpe2pgr(BeatToDouble(layer["speedEvents"][k]["startTime"]), item["bpmfactor"].asDouble()),
 					rpe2pgr(BeatToDouble(layer["speedEvents"][k]["endTime"]), item["bpmfactor"].asDouble()),
 					layer["speedEvents"][k]["start"].asDouble() * 11 / 45,
 					layer["speedEvents"][k]["end"].asDouble() * 11 / 45,
 					0,
 				});
+			}
+			RPESolveSpeedEvent(speedEvents, i, judgelines[i].bpm / basicBpm);
+			for (int k = 0; k < speedEvents.size(); k++) {
+				judgelines[i].speedEvents.push_back(speedEvents[k]);
+				// if (i == 0) cout << speedEvents[k].startTime << " " << speedEvents[k].endTime << " " << speedEvents[k].floorPosition << endl;
+			}
+
+			vector<PGREvent> events;
 			for (int k = 0; k < layer["moveXEvents"].size(); k++)
-				judgelines[i].moveXEvents.push_back({
+				events.push_back({
 					rpe2pgr(BeatToDouble(layer["moveXEvents"][k]["startTime"]), item["bpmfactor"].asDouble()),
 					rpe2pgr(BeatToDouble(layer["moveXEvents"][k]["endTime"]), item["bpmfactor"].asDouble()),
 					(layer["moveXEvents"][k]["start"].asDouble() + 675.0) / 1350.0,
 					(layer["moveXEvents"][k]["end"].asDouble() + 675.0) / 1350.0,
-					PECEasingMap[layer["moveXEvents"][k]["easingType"].asInt()],
+					RPEEasingMap[layer["moveXEvents"][k]["easingType"].asInt()],
 					layer["moveXEvents"][k]["easingLeft"].asDouble(),
 					layer["moveXEvents"][k]["easingRight"].asDouble(),
 					layer["moveXEvents"][k]["bezier"].asBool(),
@@ -1117,13 +1145,18 @@ string fromRPE(string json, double bgmOffset = 0) {
 					layer["moveXEvents"][k]["bezierP3"].asDouble(),
 					layer["moveXEvents"][k]["bezierP4"].asDouble()
 				});
+			sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
+			RPESolveEvent(events, i, "MoveX Event");
+			for (int k = 0; k < events.size(); k++) judgelines[i].moveXEvents.push_back(events[k]);
+			
+			events.clear();
 			for (int k = 0; k < layer["moveYEvents"].size(); k++)
-				judgelines[i].moveYEvents.push_back({
+				events.push_back({
 					rpe2pgr(BeatToDouble(layer["moveYEvents"][k]["startTime"]), item["bpmfactor"].asDouble()),
 					rpe2pgr(BeatToDouble(layer["moveYEvents"][k]["endTime"]), item["bpmfactor"].asDouble()),
 					(layer["moveYEvents"][k]["start"].asDouble() + 450.0) / 900.0,
 					(layer["moveYEvents"][k]["end"].asDouble() + 450.0) / 900.0,
-					PECEasingMap[layer["moveYEvents"][k]["easingType"].asInt()],
+					RPEEasingMap[layer["moveYEvents"][k]["easingType"].asInt()],
 					layer["moveYEvents"][k]["easingLeft"].asDouble(),
 					layer["moveYEvents"][k]["easingRight"].asDouble(),
 					layer["moveYEvents"][k]["bezier"].asBool(),
@@ -1132,13 +1165,18 @@ string fromRPE(string json, double bgmOffset = 0) {
 					layer["moveYEvents"][k]["bezierP3"].asDouble(),
 					layer["moveYEvents"][k]["bezierP4"].asDouble()
 				});
+			sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
+			RPESolveEvent(events, i, "MoveY Event");
+			for (int k = 0; k < events.size(); k++) judgelines[i].moveYEvents.push_back(events[k]);
+
+			events.clear();
 			for (int k = 0; k < layer["rotateEvents"].size(); k++)
-				judgelines[i].rotateEvents.push_back({
+				events.push_back({
 					rpe2pgr(BeatToDouble(layer["rotateEvents"][k]["startTime"]), item["bpmfactor"].asDouble()),
 					rpe2pgr(BeatToDouble(layer["rotateEvents"][k]["endTime"]), item["bpmfactor"].asDouble()),
 					-layer["rotateEvents"][k]["start"].asDouble(),
 					-layer["rotateEvents"][k]["end"].asDouble(),
-					PECEasingMap[layer["rotateEvents"][k]["easingType"].asInt()],
+					RPEEasingMap[layer["rotateEvents"][k]["easingType"].asInt()],
 					layer["rotateEvents"][k]["easingLeft"].asDouble(),
 					layer["rotateEvents"][k]["easingRight"].asDouble(),
 					layer["rotateEvents"][k]["bezier"].asBool(),
@@ -1147,17 +1185,22 @@ string fromRPE(string json, double bgmOffset = 0) {
 					layer["rotateEvents"][k]["bezierP3"].asDouble(),
 					layer["rotateEvents"][k]["bezierP4"].asDouble()
 				});
+			sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
+			RPESolveEvent(events, i, "Rotate Event");
+			for (int k = 0; k < events.size(); k++) judgelines[i].rotateEvents.push_back(events[k]);
+
+			events.clear();
 			for (int k = 0; k < layer["alphaEvents"].size(); k++) {
 				int start = layer["alphaEvents"][k]["start"].asInt();
 				int end = layer["alphaEvents"][k]["end"].asInt();
 				if (start > 255) start = start & 255;
 				if (end > 255) end = end & 255;
-				judgelines[i].disappearEvents.push_back({
+				events.push_back({
 					rpe2pgr(BeatToDouble(layer["alphaEvents"][k]["startTime"]), item["bpmfactor"].asDouble()),
 					rpe2pgr(BeatToDouble(layer["alphaEvents"][k]["endTime"]), item["bpmfactor"].asDouble()),
 					1.0 * start / 255.0,
 					1.0 * end / 255.0,
-					PECEasingMap[layer["alphaEvents"][k]["easingType"].asInt()],
+					RPEEasingMap[layer["alphaEvents"][k]["easingType"].asInt()],
 					layer["alphaEvents"][k]["easingLeft"].asDouble(),
 					layer["alphaEvents"][k]["easingRight"].asDouble(),
 					layer["alphaEvents"][k]["bezier"].asBool(),
@@ -1167,11 +1210,14 @@ string fromRPE(string json, double bgmOffset = 0) {
 					layer["alphaEvents"][k]["bezierP4"].asDouble()
 				});
 			}
+			sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
+			RPESolveEvent(events, i, "Alpha Event");
+			for (int k = 0; k < events.size(); k++) judgelines[i].disappearEvents.push_back(events[k]);
 		}
 		// 添加按键
 		for (int j = 0; j < item["notes"].size(); j++) {
 			auto note = item["notes"][j];
-			(note["above"].asBool() ? judgelines[i].notesAbove : judgelines[i].notesBelow).push_back({
+			(note["above"].asInt() == 1 ? judgelines[i].notesAbove : judgelines[i].notesBelow).push_back({
 				RPENoteTypeMap[note["type"].asInt()],
 				i,
 				rpe2pgr(BeatToDouble(note["startTime"]), item["bpmfactor"].asDouble()),
@@ -1187,19 +1233,7 @@ string fromRPE(string json, double bgmOffset = 0) {
 				0
 			});
 		}
-	}
-
-	// 事件处理
-	int id = 0;
-	for (auto &j: judgelines) {
-		sort(j.moveXEvents.begin(), j.moveXEvents.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
-		sort(j.moveYEvents.begin(), j.moveYEvents.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
-		sort(j.rotateEvents.begin(), j.rotateEvents.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
-		sort(j.disappearEvents.begin(), j.disappearEvents.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
-		RPESolveSpeedEvent(j.speedEvents, id, j.bpm / basicBpm);
-		RPESolveEvent(j.moveXEvents, id, "MoveX Event"); RPESolveEvent(j.moveYEvents, id, "MoveY Event");
-		RPESolveEvent(j.rotateEvents, id, "Rotate Event"); RPESolveEvent(j.disappearEvents, id, "Alpha Event");
-		id++;
+		// cout << judgelines[i].notesAbove.size() << " " << judgelines[i].notesBelow.size() << endl;
 	}
 
 	// floorPosition 计算

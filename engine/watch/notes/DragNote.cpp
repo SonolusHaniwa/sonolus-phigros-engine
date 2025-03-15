@@ -170,7 +170,7 @@ class DragNote: public Archetype {
 		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
 		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
 		
-		Draw(sprite, x3, y3, x4, y4, x5, y5, x6, y6, 10000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1) * alpha);
+		Draw(sprite, x3, y3, x4, y4, x5, y5, x6, y6, 11000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1) * alpha);
 		return VOID;
 	}
 };

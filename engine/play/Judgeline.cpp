@@ -50,6 +50,19 @@ class Judgeline: public Archetype {
 	SonolusApi updateSequential() {
 		FUNCBEGIN
 		IF (disappear < 0) disappear = 0; FI
+		x = x + 0.5; y = y + 0.5;
+		IF (mirror) x = 1.0 - x; FI
+		x = x * stage.w + stage.l;
+		y = y * stage.h + stage.b;
+		rotate = rotate % 360;
+		IF (rotate < 0) rotate = rotate + 360; FI
+		rotate = rotate / 180 * PI;
+		IF (mirror) rotate = -1 * rotate; FI
+		IF (allocatedId == 1) 
+			Debuglog(x);
+			Debuglog(y);
+		FI
+
 		IF (father == 0) Return(0); FI
 		var angle1 = f.get(3), angle2 = Arctan2(y - stage.b - 0.5 * stage.h, x - stage.l - 0.5 * stage.w);
 		var angle = angle1 + angle2;

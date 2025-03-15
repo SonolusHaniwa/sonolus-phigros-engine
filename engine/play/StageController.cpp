@@ -8,6 +8,16 @@ class StageController: public Archetype {
     SonolusApi preprocess() {
         FUNCBEGIN
         lastClickMenuTime = -10000;
+
+        var entityCount = 0;
+        var lastEntity = EntityInfo.get(0);
+        WHILE (EntityInfoArray[entityCount].get(0) == entityCount) {
+            IF (EntityInfoArray[entityCount].get(1) == getArchetypeId(Judgeline)) {
+                EntitySharedMemoryArray[lastEntity].set(31, entityCount);
+                lastEntity.set(entityCount);
+            } FI
+            entityCount = entityCount + 1;
+        } DONE
         return VOID;
     }
 
@@ -18,6 +28,15 @@ class StageController: public Archetype {
     SonolusApi updateSequential() {
         FUNCBEGIN
         maxCombo = Max(maxCombo, combo);
+
+        // 给所有 judgeline 清空数据
+        var cur = EntitySharedMemory.get(31);
+        WHILE (cur != 0) {
+            FOR (i, 1, 5, 1) {
+                EntitySharedMemoryArray[cur].set(i, 0);
+            } DONE
+            cur = EntitySharedMemoryArray[cur].get(31);
+        } DONE
         return VOID;
     }
 

@@ -30,6 +30,10 @@ class RotateEvent: public Archetype {
 
 	SonolusApi updateSequential() {
 		FUNCBEGIN
+		IF (times.now >= endTime * timeMagic / bpm) 
+			EntityDespawn.set(0, 1); 
+			Return(0);
+		FI
 		var rotate = If(
 			bezier,
 			getBezierValue(
@@ -41,12 +45,8 @@ class RotateEvent: public Archetype {
 				startTime * timeMagic / bpm, endTime * timeMagic / bpm, 
 				start, end, times.now, easingLeft, easingRight
 			)
-		);
-		IF (rotate < 0) rotate = rotate + 360; FI
-		rotate = rotate / 180 * PI;
-		IF (mirror) rotate = -1 * rotate; FI
+		) + EntitySharedMemoryArray[judgelineId].get(3);
 		EntitySharedMemoryArray[judgelineId].set(3, rotate);
-		IF (times.now > endTime * timeMagic / bpm) EntityDespawn.set(0, 1); FI
 		return VOID;
 	}
 };

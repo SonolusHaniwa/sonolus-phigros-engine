@@ -43,7 +43,7 @@ class DisappearEvent: public Archetype {
 					startTime * timeMagic / bpm, endTime * timeMagic / bpm, 
 					start, end, times.now, easingLeft, easingRight
 				)
-			)
+			) + EntitySharedMemoryArray[judgelineId].get(4)
 		);
 		return VOID;
 	}

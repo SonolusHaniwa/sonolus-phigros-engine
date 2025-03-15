@@ -49,6 +49,22 @@ class HoldNote: public Archetype {
 	int preprocessOrder = 514;
 	SonolusApi preprocess() {
 		FUNCBEGIN
+		
+		// 查找并更正 speed
+		var currId = EntityDataArray[judgeline].get(0);
+		WHILE (currId) {
+			IF (EntityDataArray[currId].get(1) > time) {
+				speed.set(
+					(time - EntityDataArray[currId].get(0)) /
+					(EntityDataArray[currId].get(1) - EntityDataArray[currId].get(0)) *
+					(EntityDataArray[currId].get(3) - EntityDataArray[currId].get(2)) +
+					EntityDataArray[currId].get(2)
+				);
+				BREAK;
+			} FI
+			currId = EntityDataArray[currId].get(4);
+		} DONE
+
 		time = time * timeMagic / bpm;
 		holdTime = holdTime * timeMagic / bpm;
 		isMulti = isMulti && hasSimul;
@@ -174,6 +190,11 @@ class HoldNote: public Archetype {
 		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
 		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
 		
+		// IF (EntityInfo.get(0) == 723) {
+			// Debuglog(floorPosition);
+			// Debuglog(endFloorPosition);
+		// } FI
+
 		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 1000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > judgeTime2 && isReplay, 0.4, 1) * alpha);
 		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 1000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > judgeTime2 && isReplay, 0.4, 1) * alpha);
 		return VOID;

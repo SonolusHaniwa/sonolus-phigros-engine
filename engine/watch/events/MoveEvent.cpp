@@ -41,9 +41,7 @@ class MoveXEvent: public Archetype {
 				startTime * timeMagic / bpm, endTime * timeMagic / bpm, 
 				start, end, times.now, easingLeft, easingRight
 			)
-		);
-		IF (mirror) x = 1.0 - x; FI
-		x = x * stage.w + stage.l;
+		) - 0.5 + EntitySharedMemoryArray[judgelineId].get(1);
 		EntitySharedMemoryArray[judgelineId].set(1, x);
 		return VOID;
 	}
@@ -92,8 +90,10 @@ class MoveYEvent: public Archetype {
 				startTime * timeMagic / bpm, endTime * timeMagic / bpm, 
 				start, end, times.now, easingLeft, easingRight
 			)
-		);
-		y = y * stage.h + stage.b;
+		) - 0.5 + EntitySharedMemoryArray[judgelineId].get(2);
+		// IF (judgelineId == 43391) {
+		// 	Debuglog(y);
+		// } FI
 		EntitySharedMemoryArray[judgelineId].set(2, y);
 		return VOID;
 	}

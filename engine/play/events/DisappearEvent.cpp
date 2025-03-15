@@ -30,6 +30,10 @@ class DisappearEvent: public Archetype {
 
 	SonolusApi updateSequential() {
 		FUNCBEGIN
+		IF (times.now >= endTime * timeMagic / bpm) 
+			EntityDespawn.set(0, 1); 
+			Return(0);
+		FI
 		EntitySharedMemoryArray[judgelineId].set(4,
 			If(
 				bezier,
@@ -40,9 +44,8 @@ class DisappearEvent: public Archetype {
 				getEaseValue(
 					easing, 
 					startTime * timeMagic / bpm, endTime * timeMagic / bpm, start, end, times.now, easingLeft, easingRight)
-			)
+			) + EntitySharedMemoryArray[judgelineId].get(4)
 		);
-		IF (times.now > endTime * timeMagic / bpm) EntityDespawn.set(0, 1); FI
 		return VOID;
 	}
 };

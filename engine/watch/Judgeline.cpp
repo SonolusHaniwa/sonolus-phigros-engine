@@ -50,6 +50,24 @@ class Judgeline: public Archetype {
 	SonolusApi updateSequential() {
 		FUNCBEGIN
 		IF (disappear < 0) disappear = 0; FI
+		x = x + 0.5; y = y + 0.5;
+		IF (mirror) x = 1.0 - x; FI
+		x = x * stage.w + stage.l;
+		y = y * stage.h + stage.b;
+		rotate = rotate % 360;
+		IF (rotate < 0) rotate = rotate + 360; FI
+		rotate = rotate / 180 * PI;
+		IF (mirror) rotate = -1 * rotate; FI
+		
+		// IF (allocatedId == 62) {
+		// 	Debuglog(EntityInfo.get(0));
+		// 	Debuglog(x);
+		// 	Debuglog(y);
+		// 	Debuglog(rotate);
+		// 	Debuglog(disappear);
+		// } FI
+
+		// IF (EntityInfo.get(0) == 43391) Debuglog(floorPosition); FI
 		IF (father == 0) Return(0); FI
 		var angle1 = f.get(3), angle2 = Arctan2(y - stage.b - 0.5 * stage.h, x - stage.l - 0.5 * stage.w);
 		var angle = angle1 + angle2;
@@ -62,6 +80,11 @@ class Judgeline: public Archetype {
 	int updateParallelOrder = -114514;
 	SonolusApi updateParallel() {
 		FUNCBEGIN
+		// IF (allocatedId == 62) {
+			// Debuglog(allocatedId);
+			// Debuglog(x);
+			// Debuglog(y);
+		// } FI
 		IF (times.now < 0) Return(0); FI
 		var x1 = 0, y1 = 0, x2 = 0, y2 = 0;
 		IF (rotate == PI / 2 || rotate == PI * 3 / 2) x1 = x.get(), y1 = stage.b, x2 = x.get(), y2 = stage.t;

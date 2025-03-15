@@ -49,6 +49,22 @@ class HoldNote: public Archetype {
 	int preprocessOrder = 514;
 	SonolusApi preprocess() {
 		FUNCBEGIN
+		
+		// 查找并更正 speed
+		var currId = EntityDataArray[judgeline].get(0);
+		WHILE (currId) {
+			IF (EntityDataArray[currId].get(1) > time) {
+				speed.set(
+					(time - EntityDataArray[currId].get(0)) /
+					(EntityDataArray[currId].get(1) - EntityDataArray[currId].get(0)) *
+					(EntityDataArray[currId].get(3) - EntityDataArray[currId].get(2)) +
+					EntityDataArray[currId].get(2)
+				);
+				BREAK;
+			} FI
+			currId = EntityDataArray[currId].get(4);
+		} DONE
+		
 		time = time * timeMagic / bpm;
 		holdTime = holdTime * timeMagic / bpm;
 		IF (!isFake) notes = notes + 1; FI
