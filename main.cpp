@@ -174,4 +174,7 @@ int main(int argc, char** argv) {
         UpdateJudgment
     );
     #endif
+
+    PackSkin();
+    PackEffect();
 }
