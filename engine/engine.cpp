@@ -1,27 +1,12 @@
-#include"skins.cpp"
-#include"effects.cpp"
-#include"particles.cpp"
-#include"buckets.cpp"
-#include"icons.cpp"
-#include"texts.cpp"
+#include"shared/options.cpp"
+#include"shared/skins.cpp"
+#include"shared/effects.cpp"
+#include"shared/particles.cpp"
+#include"shared/instructions.cpp"
+#include"shared/constants.cpp"
+#include"shared/easing.cpp"
 
-#if play
-using namespace playData;
-#elif tutorial
-using namespace tutorialData;
-#elif preview
-using namespace previewData;
-#elif watch
-using namespace watchData;
-#endif
-
-string Scope = "phigros";
-#include"configuration/options.cpp"
-#include"configuration/ui.cpp"
-#include"constants.cpp"
-#include"easing.cpp"
-
-#if play
+#ifdef play
 #include"play/Initialization.cpp"
 #include"play/StageController.cpp"
 #include"play/InputManager.cpp"
@@ -35,28 +20,30 @@ string Scope = "phigros";
 #include"play/notes/DragNote.cpp"
 #include"play/notes/HoldNote.cpp"
 #include"play/notes/FlickNote.cpp"
-#elif tutorial
-#include"tutorial/Hands.cpp"
+#endif
+#ifdef tutorial
 #include"tutorial/Initialization.cpp"
+#include"tutorial/Hands.cpp"
 #include"tutorial/StageController.cpp"
 #include"tutorial/Judgeline.cpp"
 #include"tutorial/notes/NormalNote.cpp"
 #include"tutorial/notes/DragNote.cpp"
 #include"tutorial/notes/HoldNote.cpp"
 #include"tutorial/notes/FlickNote.cpp"
-#include"tutorial/Tutorial.cpp"
-#elif preview
+#endif
+#ifdef preview
 #include"preview/Initialization.cpp"
-#elif watch
-#include"watch/updateSpawn.cpp"
+#endif
+#ifdef watch
+#include"watch/UpdateSpawn.cpp"
 #include"watch/Initialization.cpp"
 #include"watch/StageController.cpp"
 #include"watch/Judgeline.cpp"
+#include"watch/UpdateJudgment.cpp"
 #include"watch/events/SpeedEvent.cpp"
 #include"watch/events/MoveEvent.cpp"
 #include"watch/events/RotateEvent.cpp"
 #include"watch/events/DisappearEvent.cpp"
-#include"watch/UpdateJudgment.cpp"
 #include"watch/notes/NormalNote.cpp"
 #include"watch/notes/DragNote.cpp"
 #include"watch/notes/HoldNote.cpp"

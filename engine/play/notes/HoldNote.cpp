@@ -1,73 +1,75 @@
+Bucket NormalHoldBucket = defineBucket({
+	EngineDataBucketSprite(Sprites.NormalHoldHead, 0, -1.95, 0.0, 2.0, 0.1, 270),
+	EngineDataBucketSprite(Sprites.NormalHoldBody, 0, 0.04, 0.0, 2.0, 3.9, 270),
+}, Text.MillisecondUnit);
+
 class HoldNote: public Archetype {
 	public:
 
-	static constexpr const char* name = "Phigros Hold Note";
+	string name = "Phigros Hold Note";
 	bool hasInput = true;
-	defineImports(time);
-	defineImports(positionX);
-	defineImports(holdTime);
-	defineImports(speed);
-	defineImports(floorPosition);
-	defineImports(endFloorPosition);
-	defineImports(isAbove);
-	defineImports(isMulti);
-	defineImports(isFake);
-	defineImports(judgeline);
-	defineImports(bpm);
-	defineImports(size);
-	defineImports(yOffset);
-	defineImports(visibleTime);
-	defineImports(alpha);
-	defineExports(accuracy);
-	defineExports(judgeResult);
-	defineExports(judgeTime);
-	defineExports(judgeResult2);
-	Variable<EntityMemoryId> positionY;
-	Variable<EntityMemoryId> effectX1;
-	Variable<EntityMemoryId> effectY1;
-	Variable<EntityMemoryId> effectX2;
-	Variable<EntityMemoryId> effectY2;
-	Variable<EntityMemoryId> effectX3;
-	Variable<EntityMemoryId> effectY3;
-	Variable<EntityMemoryId> effectX4;
-	Variable<EntityMemoryId> effectY4;
-	Variable<EntityMemoryId> inputTimeMax;
-	Variable<EntityMemoryId> inputTimeMin;
-	Variable<EntityMemoryId> isActive;
-	Variable<EntityMemoryId> released;
-	Variable<EntityMemoryId> isPerfect;
-	Variable<EntityMemoryId> comboChanged;
-	Variable<EntityMemoryId> lastSpawn;
-	Variable<EntityMemoryId> sfxPlayed;
-	Variable<EntityMemoryId> appearTime;
+	defineImport(time);
+	defineImport(positionX);
+	defineImport(holdTime);
+	defineImport(speed);
+	defineImport(floorPosition);
+	defineImport(endFloorPosition);
+	defineImport(isAbove);
+	defineImport(isMulti);
+	defineImport(isFake);
+	defineImport(judgeline);
+	defineImport(bpm);
+	defineImport(size);
+	defineImport(yOffset);
+	defineImport(visibleTime);
+	defineImport(alpha);
+	defineExport(accuracy);
+	defineExport(judgeResult);
+	defineExport(judgeTime);
+	defineExport(judgeResult2);
+	var positionY;
+	var effectX1;
+	var effectY1;
+	var effectX2;
+	var effectY2;
+	var effectX3;
+	var effectY3;
+	var effectX4;
+	var effectY4;
+	var inputTimeMax;
+	var inputTimeMin;
+	var isActive;
+	var released;
+	var isPerfect;
+	var comboChanged;
+	var lastSpawn;
+	var sfxPlayed;
+	var appearTime;
 
-	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
+	EntitySharedMemoryArrayGroup line = EntitySharedMemoryArray[judgeline];
 
 	SonolusApi spawnOrder() { return appearTime; }
 	SonolusApi shouldSpawn() { return times.now > appearTime; }
 
 	int preprocessOrder = 514;
 	SonolusApi preprocess() {
-		FUNCBEGIN
-		
 		// 查找并更正 speed
-		var currId = EntityDataArray[judgeline].get(0);
-		WHILE (currId) {
-			IF (EntityDataArray[currId].get(1) > time) {
-				speed.set(
-					(time - EntityDataArray[currId].get(0)) /
-					(EntityDataArray[currId].get(1) - EntityDataArray[currId].get(0)) *
-					(EntityDataArray[currId].get(3) - EntityDataArray[currId].get(2)) +
-					EntityDataArray[currId].get(2)
-				);
-				BREAK;
-			} FI
-			currId = EntityDataArray[currId].get(4);
-		} DONE
+		var currId = EntityDataArray[judgeline].generic[0];
+		while (currId) {
+			if (EntityDataArray[currId].generic[1] > time) {
+				speed =
+					(time - EntityDataArray[currId].generic[0]) /
+					(EntityDataArray[currId].generic[1] - EntityDataArray[currId].generic[0]) *
+					(EntityDataArray[currId].generic[3] - EntityDataArray[currId].generic[2]) +
+					EntityDataArray[currId].generic[2];
+				break;
+			}
+			currId = EntityDataArray[currId].generic[4];
+		}
 		
 		time = time * timeMagic / bpm;
 		holdTime = holdTime * timeMagic / bpm;
-		IF (!isFake) notes = notes + 1; FI
+		if (!isFake) notes = notes + 1;
 		isActive = false;
 		released = false;
 		isPerfect = 0;
@@ -79,90 +81,96 @@ class HoldNote: public Archetype {
 		maxTime = Max(maxTime, time);
 		maxTime = Max(maxTime, time + holdTime);
 		sfxPlayed = false;
-		IF (mirror) positionX = -1 * positionX; FI
-		EntityInput.set(1, judgment.good);
+		if (mirror) positionX = -1 * positionX;
+		input.accuracy = judgment.good;
 		endFloorPosition = If(isAbove, floorPosition + speed * holdTime, floorPosition - speed * holdTime);
 		// var id = EntityDataArray[judgeline].get(0);
 		// WHILE (id) {
 		// 	var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
-		// 	IF (deltaFloorPosition <= 10 / 3 / 1) BREAK; FI
+		// 	if (deltaFloorPosition <= 10 / 3 / 1) BREAK;
 		// 	appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 10 / 3 / 1) / EntityDataArray[id].get(2);
 		// 	id = EntityDataArray[id].get(3);
 		// } DONE
 		// appearTime = Max(0, Min(appearTime, time - 0.5));
-		IF (hasSFX && autoSFX) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); FI
-		return VOID;
+		if (hasSFX && autoSFX) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance);
 	}
 
 	int updateSequentialOrder = 1919810;
 	SonolusApi updateSequential() {
-		FUNCBEGIN
-		IF (times.now < 0) Return(0); FI
-		IF (isAbove) positionY = floorPosition - line.get(5);
-		ELSE positionY = floorPosition + line.get(5); FI
-		IF (isFake) {
+		if (times.now < 0) return;
+		if (isAbove) positionY = floorPosition - line.generic[5];
+		else positionY = floorPosition + line.generic[5];
+		if (isFake) {
 			released = false;
-			IF (times.now > time + holdTime) EntityDespawn.set(0, 1); FI
-			Return(0); 
-		} FI
-		IF (times.now > time + holdTime) {
-			IF (isActive && !released) {
+			if (times.now > time + holdTime) despawn.despawn = true;
+			return;
+		}
+		if (times.now > time + holdTime) {
+			if (isActive && !released) {
 				combo = combo + 1;
-				IF (isPerfect) {
+				if (isPerfect) {
 					accscore = accscore + score.perfect;
-					judgeStatus = Min(judgeStatus, 2); EntityInput.set(0, 1);
+					judgeStatus = Min(judgeStatus, 2); input.judgment = 1;
 					ExportValue(judgeResult, 2);
 					ExportValue(judgeTime, times.now - time);
-				} ELSE {
+				} else {
 					accscore = accscore + score.great;
-					judgeStatus = Min(judgeStatus, 1); EntityInput.set(0, 2); 
+					judgeStatus = Min(judgeStatus, 1); input.judgment = 2;
 					ExportValue(judgeResult, 2);
 					ExportValue(judgeTime, times.now - time);
-				} FI
-				SpawnParticleEffect(If(isPerfect, Effects.perfect, Effects.great), 
-					effectX1, effectY1, 
-					effectX2, effectY2,
-					effectX3, effectY3, 
-					effectX4, effectY4, effectDurationTime);
-			} ELSE {
-				IF (!comboChanged) {
+				}
+				SpawnParticleEffect(
+					If(isPerfect, Effects.Perfect, Effects.Great), 
+					{ effectX1, effectY1 }, 
+					{ effectX2, effectY2 },
+					{ effectX3, effectY3 }, 
+					{ effectX4, effectY4 }, 
+					effectDurationTime,
+					false
+				);
+			} else {
+				if (!comboChanged) {
 					combo = 0;
 					judgeStatus = Min(judgeStatus, 0); 
 					ExportValue(judgeResult, 0);
 					ExportValue(judgeTime, times.now - time);
-				} FI
-				EntityInput.set(0, 0);
-			} FI
-			EntityDespawn.set(0, 1);
-		} FI
-		// IF (hasSFX && autoSFX && !sfxPlayed && time - times.now <= scheduledSFXTime + Max(0, RuntimeEnvironment.get(2))) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); sfxPlayed = true; FI
+				}
+				input.judgment = 0;
+			}
+			despawn.despawn = true;
+		}
+		// if (hasSFX && autoSFX && !sfxPlayed && time - times.now <= scheduledSFXTime + Max(0, RuntimeEnvironment.get(2))) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); sfxPlayed = true;
 
 		// 检测
-		IF (isActive && !released && times.now < time + holdTime - holdTailTime) {
-			IF (!hasTouch(EntityInfo.get(0))) {
+		if (isActive && !released && times.now < time + holdTime - holdTailTime) {
+			if (!hasTouch(info.index)) {
 				released = true;
 				judgeStatus = Min(judgeStatus, 0); combo = 0;
 				ExportValue(judgeResult, 0);
 				ExportValue(judgeTime, times.now - time);
 				comboChanged = true;
-				Return(0);
-			} FI
-		} FI
+				return;
+			}
+		}
 
 		// 画粒子效果
-		IF (isActive && !released && times.now <= time + holdTime && times.now - lastSpawn >= 30 / bpm) {
-			SpawnParticleEffect(If(isPerfect, Effects.perfect, Effects.great), 
-				effectX1, effectY1, 
-				effectX2, effectY2, 
-				effectX3, effectY3, 
-				effectX4, effectY4, effectDurationTime);
+		if (isActive && !released && times.now <= time + holdTime && times.now - lastSpawn >= 30 / bpm) {
+			SpawnParticleEffect(
+				If(isPerfect, Effects.Perfect, Effects.Great), 
+				{ effectX1, effectY1 }, 
+				{ effectX2, effectY2 }, 
+				{ effectX3, effectY3 }, 
+				{ effectX4, effectY4 }, 
+				effectDurationTime,
+				false
+			);
 			lastSpawn = times.now;
-		} FI
+		}
 
 		// Claim
-		IF (isActive || released) Return(0); FI
-		IF (times.now < inputTimeMin) Return(0); FI
-		IF (times.now > inputTimeMax) {
+		if (isActive || released) return;
+		if (times.now < inputTimeMin) return;
+		if (times.now > inputTimeMax) {
 			combo = 0;
 			judgeStatus = Min(judgeStatus, 0); 
 			ExportValue(judgeResult, 0);
@@ -171,57 +179,53 @@ class HoldNote: public Archetype {
 			isActive = true;
 			released = true;
 			comboChanged = true;
-			Return(0);
-		} FI
+			return;
+		}
 		ExportValue(accuracy, times.now - time);
-		claimStart(EntityInfo.get(0));
-		return VOID;
+		claimStart(info.index);
 	}
 
 	SonolusApi touch() {
-		FUNCBEGIN
-		IF (isActive) Return(0); FI
-		IF (times.now < inputTimeMin) Return(0); FI
-		IF (times.now > inputTimeMax) Return(0); FI
-		IF (isFake) Return(0); FI
-		let index = getClaimedStart(EntityInfo.get(0));
-		IF (index == -1) Return(0); FI
+		if (isActive) return;
+		if (times.now < inputTimeMin) return;
+		if (times.now > inputTimeMax) return;
+		if (isFake) return;
+		var index = getClaimedStart(info.index);
+		if (index == -1) return;
 
 		isActive = true;
-		IF (Abs(times.now - time) <= judgment.perfect) isPerfect = 1; FI
-		IF (hasSFX && !autoSFX) Play(Clips.Note, minSFXDistance); FI 
-		EntityInput.set(1, times.now - time);
-		EntityInput.set(2, Buckets.hold);
-		EntityInput.set(3, (times.now - time) * 1000);
-		return VOID;
+		if (Abs(times.now - time) <= judgment.perfect) isPerfect = 1;
+		if (hasSFX && !autoSFX) Play(Clips.Note, minSFXDistance); 
+		input.accuracy = times.now - time;
+		input.bucketIndex = int(NormalHoldBucket);
+		input.bucketValue = (times.now - time) * 1000;
 	}
 
 	SonolusApi updateParallel() {
-		FUNCBEGIN
-		IF (times.now < 0 || time - times.now > visibleTime) Return(0); FI
+		if (times.now < 0 || time - times.now > visibleTime) return;
 		var currentFloorPosition = If(isAbove, positionY, -1 * positionY);
-		IF (times.now < time && currentFloorPosition < floorPositionLimit) Return(0); FI
-		IF (currentFloorPosition * 1 > 10 / 3 * 5.85) Return(0); FI
+		if (times.now < time && currentFloorPosition < floorPositionLimit) return;
+		if (currentFloorPosition * 1 > 10 / 3 * 5.85) return;
 		var dx = positionX * stage.w * 0.05625;
 		var dy = If(isAbove, positionY + yOffset, positionY - yOffset) * stage.h * 0.6;
-		IF (times.now > time) dy = If(isAbove, yOffset, -1 * yOffset); FI
+		if (times.now > time) dy = If(isAbove, yOffset, -1 * yOffset);
 		var dy2 = If(
 			time > times.now,
-			If(isAbove, endFloorPosition - line.get(5) + yOffset, endFloorPosition + line.get(5) - yOffset),
+			If(isAbove, endFloorPosition - line.generic[5] + yOffset, endFloorPosition + line.generic[5] - yOffset),
 			If(isAbove, speed * (holdTime - times.now + time), -1 * speed * (holdTime - times.now + time))
 		) * stage.h * 0.6;
 		
-		var rotate = line.get(3);
+		var rotate = line.generic[3];
 		var r = Power({dx * dx + dy * dy, 0.5});
 		var hr = Power({dx * dx + dy2 * dy2, 0.5});
 		var angle = Arctan2(dy, dx);
 		var hangle = Arctan2(dy2, dx);
 		var newAngle = angle + rotate;
 		var hnewAngle = hangle + rotate;
-		var x = r * Cos(newAngle) + line.get(1), y = r * Sin(newAngle) + line.get(2);
-		var hx = hr * Cos(hnewAngle) + line.get(1), hy = hr * Sin(hnewAngle) + line.get(2);
-		var x0 = dx * Cos(rotate) + line.get(1), y0 = dx * Sin(rotate) + line.get(2);
-		IF (EntityInfo.get(0) == 3094) Debuglog(positionY); Debuglog(speed); FI
+		var x = r * Cos(newAngle) + line.generic[1], y = r * Sin(newAngle) + line.generic[2];
+		var hx = hr * Cos(hnewAngle) + line.generic[1], hy = hr * Sin(hnewAngle) + line.generic[2];
+		var x0 = dx * Cos(rotate) + line.generic[1], y0 = dx * Sin(rotate) + line.generic[2];
+		// if (EntityInfo.get(0) == 3094) Debuglog(positionY); Debuglog(speed);
 		
 		var vec1Length = noteWidth * size / 2 * If(isMulti, 1062.0 / 989.0, 1), vec1X = vec1Length * Cos(rotate), vec1Y = vec1Length * Sin(rotate);
 		var x1 = x - vec1X, y1 = y - vec1Y, x2 = x + vec1X, y2 = y + vec1Y;
@@ -233,27 +237,42 @@ class HoldNote: public Archetype {
 		var x4 = x1 + If(isAbove, 1, -1) * 2 * vec2X, y4 = y1 + If(isAbove, 1, -1) * 2 * vec2Y;
 		var x5 = x2 + If(isAbove, 1, -1) * 2 * vec2X, y5 = y2 + If(isAbove, 1, -1) * 2 * vec2Y;
 		var x6 = x2, y6 = y2;
-		IF (isMulti) {
+		if (isMulti) {
 			x3 = x3 + If(isAbove, 1, -1) * vec3X; y3 = y3 + If(isAbove, 1, -1) * vec3Y;
 			x4 = x4 + If(isAbove, 1, -1) * vec3X; y4 = y4 + If(isAbove, 1, -1) * vec3Y;
 			x5 = x5 + If(isAbove, 1, -1) * vec3X; y5 = y5 + If(isAbove, 1, -1) * vec3Y;
 			x6 = x6 + If(isAbove, 1, -1) * vec3X; y6 = y6 + If(isAbove, 1, -1) * vec3Y;
-		} FI
+		}
 		// 粒子效果不用转
 		effectX1 = x0 - effectWidth, effectY1 = y0 - effectWidth;
 		effectX2 = x0 - effectWidth, effectY2 = y0 + effectWidth;
 		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
 		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
 		
-		Draw(If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), x3, y3, x4, y4, x5, y5, x6, y6, 1000 + 1000 - time + EntityInfo.get(0) / 10000, If(released, 0.4, 1) * alpha);
-		Draw(If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), x4, y4, hx1, hy1, hx2, hy2, x5, y5, 1000 + 1000 - time + EntityInfo.get(0) / 10000, If(released, 0.4, 1) * alpha);
-		return VOID;
+		Draw(
+			If(isMulti, Sprites.HLHoldHead, Sprites.NormalHoldHead), 
+			{ x3, y3 }, 
+			{ x4, y4 }, 
+			{ x5, y5 }, 
+			{ x6, y6 }, 
+			1000 + 1000 - time + info.index / 10000, 
+			If(released, 0.4, 1) * alpha
+		);
+		Draw(
+			If(isMulti, Sprites.HLHoldBody, Sprites.NormalHoldBody), 
+			{ x4, y4 }, 
+			{ hx1, hy1 }, 
+			{ hx2, hy2 }, 
+			{ x5, y5 }, 
+			1000 + 1000 - time + info.index / 10000, 
+			If(released, 0.4, 1) * alpha
+		);
 	}
 };
 
 class FakeHoldNote: public HoldNote {
 	public:
 
-	static constexpr const char* name = "Phigros Fake Hold Note";
+	string name = "Phigros Fake Hold Note";
 	bool hasInput = false;
 };

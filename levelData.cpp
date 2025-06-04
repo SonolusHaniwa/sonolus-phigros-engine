@@ -1,4 +1,3 @@
-#pragma once
 #define INFO if (levelData.size() * 100 / total != last) \
 	last = levelData.size() * 100 / total, cout << "[INFO] Processed: " << levelData.size() << "/" << total << "(" << last << "%)" << endl;
 
@@ -99,6 +98,7 @@ class DisappearEventEntity: public CommonEventEntity {
 class CommonNoteEntity: public LevelEntity {
 	public:
 
+	defineArchetypeName("Phigros Common Note");
 	defineLevelDataValue(time);
 	defineLevelDataValue(positionX);
 	defineLevelDataValue(holdTime);
@@ -113,6 +113,7 @@ class CommonNoteEntity: public LevelEntity {
 	defineLevelDataValue(yOffset);
 	defineLevelDataValue(visibleTime);
 	defineLevelDataValue(alpha);
+	defineLevelDataValue(endFloorPosition); // Only be used in Hold Note; Decrypted
 };
 
 class NormalNoteEntity: public CommonNoteEntity {
@@ -143,7 +144,6 @@ class HoldNoteEntity: public CommonNoteEntity {
 	public:
 
 	defineArchetypeName("Phigros Hold Note");
-	defineLevelDataValue(endFloorPosition); // Decrypted
 };
 
 class FakeHoldNoteEntity: public HoldNoteEntity {
@@ -265,23 +265,23 @@ struct PGRJudgeline {
 	Json::Value toJsonObject() {
 		Json::Value obj;
 		obj["bpm"] = bpm;
-		obj["numOfNotes"] = (int)notesAbove.size() + (int)notesBelow.size();
-		obj["numOfNotesAbove"] = (int)notesAbove.size();
-		obj["numOfNotesBelow"] = (int)notesBelow.size();
+		obj["numOfNotes"] = int(notesAbove.size()) + int(notesBelow.size());
+		obj["numOfNotesAbove"] = int(notesAbove.size());
+		obj["numOfNotesBelow"] = int(notesBelow.size());
 		obj["speedEvents"].resize(0);
-		for (auto &v: speedEvents) obj["speedEvents"].append(v.toJsonObject());
+		for (int i = 0; i < speedEvents.size(); i++) obj["speedEvents"].append(speedEvents[i].toJsonObject());
 		obj["judgeLineMoveXEvents"].resize(0);
-		for (auto &v: moveXEvents) obj["judgeLineMoveXEvents"].append(v.toJsonObject());
+		for (int i = 0; i < moveXEvents.size(); i++) obj["judgeLineMoveXEvents"].append(moveXEvents[i].toJsonObject());
 		obj["judgeLineMoveYEvents"].resize(0);
-		for (auto &v: moveYEvents) obj["judgeLineMoveYEvents"].append(v.toJsonObject());
+		for (int i = 0; i < moveYEvents.size(); i++) obj["judgeLineMoveYEvents"].append(moveYEvents[i].toJsonObject());
 		obj["judgeLineRotateEvents"].resize(0);
-		for (auto &v: rotateEvents) obj["judgeLineRotateEvents"].append(v.toJsonObject());
+		for (int i = 0; i < rotateEvents.size(); i++) obj["judgeLineRotateEvents"].append(rotateEvents[i].toJsonObject());
 		obj["judgeLineDisappearEvents"].resize(0);
-		for (auto &v: disappearEvents) obj["judgeLineDisappearEvents"].append(v.toJsonObject());
+		for (int i = 0; i < disappearEvents.size(); i++) obj["judgeLineDisappearEvents"].append(disappearEvents[i].toJsonObject());
 		obj["notesAbove"].resize(0);
-		for (auto &v: notesAbove) obj["notesAbove"].append(v.toJsonObject());
+		for (int i = 0; i < notesAbove.size(); i++) obj["notesAbove"].append(notesAbove[i].toJsonObject());
 		obj["notesBelow"].resize(0);
-		for (auto &v: notesBelow) obj["notesBelow"].append(v.toJsonObject());
+		for (int i = 0; i < notesBelow.size(); i++) obj["notesBelow"].append(notesBelow[i].toJsonObject());
 		obj["father"] = father;
 		return obj;
 	}
@@ -364,7 +364,7 @@ string fromPGS(string json, double bgmOffset = 0) {
 		judgeline.speedEvent = item["speedEvents"].size()
 			? levelData.get<SpeedEventEntity>(tmpSize) 
 			: SpeedEventEntity();
-		sort(speedEvents.begin(), speedEvents.end(), [&](PGRSpeedEvent a, PGRSpeedEvent b){ return a.startTime + a.endTime < b.startTime + b.endTime; });
+		sort(speedEvents.begin(), speedEvents.end(), [&](PGRSpeedEvent a, PGRSpeedEvent b){ callStacks.push_back({}); return a.startTime + a.endTime < b.startTime + b.endTime; });
 		// 哈哈
 		// for 条件都是命名的 j 变量，结果语句用了 i 变量
 		// 居然导致 LevelRawData 在函数结束释放时报 free(): invalid next size (fast)
@@ -591,15 +591,15 @@ string fromPGS(string json, double bgmOffset = 0) {
 			note.alpha = v.isMember("alpha") ? v["alpha"].asDouble() : 1;
 			switch(v["type"].asInt()) {
 				case 1: {
-					if (note.isFake.value) levelData.append(transform<FakeNormalNoteEntity>(note)); 
-					else levelData.append(transform<NormalNoteEntity>(note)); 
+					if (note.isFake.value) levelData.append(Transform<FakeNormalNoteEntity>(note)); 
+					else levelData.append(Transform<NormalNoteEntity>(note)); 
 				} break;
 				case 2: {
-					if (note.isFake.value) levelData.append(transform<FakeDragNoteEntity>(note)); 
-					else levelData.append(transform<DragNoteEntity>(note)); 
+					if (note.isFake.value) levelData.append(Transform<FakeDragNoteEntity>(note)); 
+					else levelData.append(Transform<DragNoteEntity>(note)); 
 				} break;
 				case 3: {
-					HoldNoteEntity hold = transform<HoldNoteEntity>(note);
+					HoldNoteEntity hold = Transform<HoldNoteEntity>(note);
 					// 计算 endFloorPosition
 					// int k = lower_bound(
 					// 	speedEvents.begin(), 
@@ -611,12 +611,12 @@ string fromPGS(string json, double bgmOffset = 0) {
 					// double t1 = e.startTime, t2 = hold.time.value + hold.holdTime.value;
 					// double v1 = e.start, v2 = e.start + (t2 - t1) * (e.end - e.start) / (e.endTime - e.startTime);
 					hold.endFloorPosition = hold.floorPosition.value + hold.holdTime.value * hold.speed.value / bpm * 1.875;
-					if (note.isFake.value) levelData.append(transform<FakeHoldNoteEntity>(hold)); 
+					if (note.isFake.value) levelData.append(Transform<FakeHoldNoteEntity>(hold)); 
 					else levelData.append(hold);
 				} break;
 				case 4: {
-					if (note.isFake.value) levelData.append(transform<FakeFlickNoteEntity>(note)); 
-					else levelData.append(transform<FlickNoteEntity>(note)); 
+					if (note.isFake.value) levelData.append(Transform<FakeFlickNoteEntity>(note)); 
+					else levelData.append(Transform<FlickNoteEntity>(note)); 
 				} break;
 			} INFO;
 		}
@@ -640,15 +640,15 @@ string fromPGS(string json, double bgmOffset = 0) {
 			note.alpha = v.isMember("alpha") ? v["alpha"].asDouble() : 1;
 			switch(v["type"].asInt()) {
 				case 1: {
-					if (note.isFake.value) levelData.append(transform<FakeNormalNoteEntity>(note)); 
-					else levelData.append(transform<NormalNoteEntity>(note)); 
+					if (note.isFake.value) levelData.append(Transform<FakeNormalNoteEntity>(note)); 
+					else levelData.append(Transform<NormalNoteEntity>(note)); 
 				} break;
 				case 2: {
-					if (note.isFake.value) levelData.append(transform<FakeDragNoteEntity>(note)); 
-					else levelData.append(transform<DragNoteEntity>(note)); 
+					if (note.isFake.value) levelData.append(Transform<FakeDragNoteEntity>(note)); 
+					else levelData.append(Transform<DragNoteEntity>(note)); 
 				} break;
 				case 3: {
-					HoldNoteEntity hold = transform<HoldNoteEntity>(note);
+					HoldNoteEntity hold = Transform<HoldNoteEntity>(note);
 					// 计算 endFloorPosition
 					// int k = lower_bound(
 					// 	speedEvents.begin(), 
@@ -660,12 +660,12 @@ string fromPGS(string json, double bgmOffset = 0) {
 					// double t1 = e.startTime, t2 = hold.time.value + hold.holdTime.value;
 					// double v1 = e.start, v2 = e.start + (t2 - t1) * (e.end - e.start) / (e.endTime - e.startTime);
 					hold.endFloorPosition = -1 * (hold.floorPosition.value + hold.holdTime.value * hold.speed.value / bpm * 1.875);
-					if (note.isFake.value) levelData.append(transform<FakeHoldNoteEntity>(hold)); 
+					if (note.isFake.value) levelData.append(Transform<FakeHoldNoteEntity>(hold)); 
 					else levelData.append(hold);
 				} break;
 				case 4: {
-					if (note.isFake.value) levelData.append(transform<FakeFlickNoteEntity>(note)); 
-					else levelData.append(transform<FlickNoteEntity>(note)); 
+					if (note.isFake.value) levelData.append(Transform<FakeFlickNoteEntity>(note)); 
+					else levelData.append(Transform<FlickNoteEntity>(note)); 
 				} break;
 			} INFO;
 		}
@@ -721,7 +721,7 @@ void PECSolveEvent(vector<PGREvent> &events) {
 		double et = events[i].endTime, st = events[i + 1].startTime;
 		if (et < st) events.push_back({ et, st, events[i].end, events[i].end, 0 });
 		if (et > st) events[i + 1].startTime = events[i].endTime;
-	} sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
+	} sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ callStacks.push_back({}); return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
 }
 string fromPEC(string txt, double bgmOffset = 0) {
 	int easingSize = sizeof(PECEasingMap) / sizeof(int);
@@ -768,7 +768,7 @@ string fromPEC(string txt, double bgmOffset = 0) {
 	}
 
 	// 计算 BPM basicTime;
-	sort(bpms.begin(), bpms.end(), [&](BPM a, BPM b){ return a.startBeat < b.startBeat; });
+	sort(bpms.begin(), bpms.end(), [&](BPM a, BPM b){ callStacks.push_back({}); return a.startBeat < b.startBeat; });
 	for (int i = 0; i < bpms.size(); i++) bpms[i].basicTime = i ?
 		bpms[i - 1].basicTime + (bpms[i].startBeat - bpms[i - 1].startBeat) / bpms[i - 1].bpm :
 		0;
@@ -779,8 +779,10 @@ string fromPEC(string txt, double bgmOffset = 0) {
 		return round(((beat - bpms[i].startBeat) / bpms[i].bpm + bpms[i].basicTime) * basicBpm * 32);
 	};
 	// 先将所有的事件添加进判定线去
-	vector<PGRJudgeline> judgelines(maxLineId + 1);
-	for (auto e : events) {
+	vector<PGRJudgeline> judgelines;
+	judgelines.resize(maxLineId + 1);
+	for (int i = 0; i < events.size(); i++) {
+		auto e = events[i];
 		PGRJudgeline &j = judgelines[e.lineId];
 		double st = pec2pgr(e.startTime), et = pec2pgr(e.endTime);
 		if (e.type == 'v') j.speedEvents.push_back({ st, et, e.speed / 5.85, e.speed / 5.85, 0 });
@@ -794,25 +796,29 @@ string fromPEC(string txt, double bgmOffset = 0) {
 	}
 
 	// 添加按键
-	for (auto n : notes)
+	for (int i = 0; i < notes.size(); i++) {
+		auto n = notes[i];
 		n.time = pec2pgr(n.time), n.endTime = pec2pgr(n.endTime),
 		(n.isAbove ? judgelines[n.lineId].notesAbove : judgelines[n.lineId].notesBelow).push_back(n);
+	}
 
 	// 事件排序并补全
-	for (auto &j : judgelines) {
+	for (int ii = 0; ii < judgelines.size(); ii++) { 
+		auto &j = judgelines[ii];
 		j.bpm = basicBpm;
-		sort(j.speedEvents.begin(), j.speedEvents.end(), [&](PGRSpeedEvent a, PGRSpeedEvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime);});
-		sort(j.moveXEvents.begin(), j.moveXEvents.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
-		sort(j.moveYEvents.begin(), j.moveYEvents.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
-		sort(j.rotateEvents.begin(), j.rotateEvents.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
-		sort(j.disappearEvents.begin(), j.disappearEvents.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
+		sort(j.speedEvents.begin(), j.speedEvents.end(), [&](PGRSpeedEvent a, PGRSpeedEvent b){ callStacks.push_back({}); return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime);});
+		sort(j.moveXEvents.begin(), j.moveXEvents.end(), [&](PGREvent a, PGREvent b){ callStacks.push_back({}); return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
+		sort(j.moveYEvents.begin(), j.moveYEvents.end(), [&](PGREvent a, PGREvent b){ callStacks.push_back({}); return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
+		sort(j.rotateEvents.begin(), j.rotateEvents.end(), [&](PGREvent a, PGREvent b){ callStacks.push_back({}); return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
+		sort(j.disappearEvents.begin(), j.disappearEvents.end(), [&](PGREvent a, PGREvent b){ callStacks.push_back({}); return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
 		for (int i = j.speedEvents.size() - 2; i >= 0; i--) j.speedEvents[i].endTime = j.speedEvents[i + 1].startTime;
 		PECSolveEvent(j.moveXEvents); PECSolveEvent(j.moveYEvents);
 		PECSolveEvent(j.rotateEvents); PECSolveEvent(j.disappearEvents);
 	}
 
 	// 给所有的事件加上个尾巴，不然 tmd 会出事
-	for (auto &j : judgelines) {
+	for (int ii = 0; ii < judgelines.size(); ii++) { 
+		auto &j = judgelines[ii];
 		j.speedEvents.push_back({ j.speedEvents.back().endTime, 999999, j.speedEvents.back().end, j.speedEvents.back().end, 0 });
 		j.moveXEvents.push_back({ j.moveXEvents.back().endTime, 999999, j.moveXEvents.back().end, j.moveXEvents.back().end, 0 });
 		j.moveYEvents.push_back({ j.moveYEvents.back().endTime, 999999, j.moveYEvents.back().end, j.moveYEvents.back().end, 0 });
@@ -821,21 +827,25 @@ string fromPEC(string txt, double bgmOffset = 0) {
 	}
 
 	// floorPosition 计算
-	for (auto &j : judgelines) {
+	for (int ii = 0; ii < judgelines.size(); ii++) { 
+		auto &j = judgelines[ii];
 		double bpm = j.bpm; double fp = 0;
-		for (auto &s : j.speedEvents) {
+		for (int jj = 0; jj < j.speedEvents.size(); jj++) { 
+			auto &s = j.speedEvents[jj];
 			s.floorPosition = fp;
 			fp += (s.endTime - s.startTime) * (s.end + s.start) / 2 / bpm * 1.875;
 		}
 
-		for (auto &n : j.notesAbove) {
+		for (int jj = 0; jj < j.notesAbove.size(); jj++) { 
+			auto &n = j.notesAbove[jj];
 			int i = lower_bound(j.speedEvents.begin(), j.speedEvents.end(), n.time, [&](PGRSpeedEvent a, double b){ return a.startTime < b; }) - j.speedEvents.begin() - 1;
 			auto e = j.speedEvents[i];
 			double v1 = e.start, v2 = e.start + (n.time - e.startTime) * (e.end - e.start) / (e.endTime - e.startTime);
 			if (n.type == 3) n.speed *= v2;
 			n.floorPosition = e.floorPosition + (n.time - e.startTime) * (v1 + v2) / 2 / bpm * 1.875;
 		}
-		for (auto &n : j.notesBelow) {
+		for (int jj = 0; jj < j.notesBelow.size(); jj++) { 
+			auto &n = j.notesBelow[jj];
 			int i = lower_bound(j.speedEvents.begin(), j.speedEvents.end(), n.time, [&](PGRSpeedEvent a, double b){ return a.startTime < b; }) - j.speedEvents.begin() - 1;
 			auto e = j.speedEvents[i];
 			double v1 = e.start, v2 = e.start + (n.time - e.startTime) * (e.end - e.start) / (e.endTime - e.startTime);
@@ -849,7 +859,7 @@ string fromPEC(string txt, double bgmOffset = 0) {
 	obj["formatVersion"] = optimizer_version;
 	obj["judgeLineList"].resize(0);
 	obj["offset"] = offset;
-	for (auto &j : judgelines) obj["judgeLineList"].append(j.toJsonObject());
+	for (int i = 0; i < judgelines.size(); i++) obj["judgeLineList"].append(judgelines[i].toJsonObject());
 	return json_encode(obj);
 }
 
@@ -885,13 +895,13 @@ int RPENoteTypeMap[] = { 0, 1, 3, 4, 2 };
 double BeatToDouble(Json::Value beat) {
 	return beat[0].asDouble() + beat[1].asDouble() / beat[2].asDouble();
 }
-string to_string(double v, int precision) {
+string to_string2(double v, int precision) {
 	stringstream ss; ss << fixed << setprecision(precision) << v; return ss.str();
 }
 void RPESolveSpeedEvent(vector<PGRSpeedEvent> &events, int id, double factor) {
 	// 排序
 	vector<PGRSpeedEvent> extra;
-	sort(events.begin(), events.end(), [&](PGRSpeedEvent a, PGRSpeedEvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
+	sort(events.begin(), events.end(), [&](PGRSpeedEvent a, PGRSpeedEvent b){ callStacks.push_back({}); return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
 	// 处理异常 1
 	if (events.size() == 0) {
 		// events.push_back({ 0, 999999, 0, 0, 0 });
@@ -906,10 +916,10 @@ void RPESolveSpeedEvent(vector<PGRSpeedEvent> &events, int id, double factor) {
 		if (events[i].startTime > events[i].endTime) {
 			cerr << "Warning: Invalid Speed Event [" <<
 				id << ", " <<
-				to_string(events[i].startTime, 2) << ", " <<
-				to_string(events[i].endTime, 2) << ", " <<
-				to_string(events[i].start, 2) << ", " <<
-				to_string(events[i].end, 2) <<
+				to_string2(events[i].startTime, 2) << ", " <<
+				to_string2(events[i].endTime, 2) << ", " <<
+				to_string2(events[i].start, 2) << ", " <<
+				to_string2(events[i].end, 2) <<
 			"]: Start Time is greater than End Time." << endl;
 			events[i].endTime = events[i].startTime;
 			events[i].start = events[i].end;
@@ -919,16 +929,16 @@ void RPESolveSpeedEvent(vector<PGRSpeedEvent> &events, int id, double factor) {
 		if (lastTime > events[i].startTime) { // 相交/包含
 			cerr << "Warning: Overlapped Speed Event [" <<
 				to_string(id) << ", " <<
-				to_string(events[i - 1].startTime, 2) << ", " << 
-				to_string(events[i - 1].endTime, 2) << ", " << 
-				to_string(events[i - 1].start, 2) << ", " << 
-				to_string(events[i - 1].end, 2) << 
+				to_string2(events[i - 1].startTime, 2) << ", " << 
+				to_string2(events[i - 1].endTime, 2) << ", " << 
+				to_string2(events[i - 1].start, 2) << ", " << 
+				to_string2(events[i - 1].end, 2) << 
 			"] and [" <<
 				to_string(id) << ", " <<
-				to_string(events[i].startTime, 2) << ", " << 
-				to_string(events[i].endTime, 2) << ", " <<
-				to_string(events[i].start, 2) << ", " <<
-				to_string(events[i].end, 2) << 
+				to_string2(events[i].startTime, 2) << ", " << 
+				to_string2(events[i].endTime, 2) << ", " <<
+				to_string2(events[i].start, 2) << ", " <<
+				to_string2(events[i].end, 2) << 
 			"]." << endl;
 			// 截断上一事件
 			events[i - 1].end = events[i - 1].start + 
@@ -941,7 +951,7 @@ void RPESolveSpeedEvent(vector<PGRSpeedEvent> &events, int id, double factor) {
 	}
 	// 插入额外事件并排序
 	events.insert(events.end(), extra.begin(), extra.end());
-	sort(events.begin(), events.end(), [&](PGRSpeedEvent a, PGRSpeedEvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
+	sort(events.begin(), events.end(), [&](PGRSpeedEvent a, PGRSpeedEvent b){ callStacks.push_back({}); return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
 	// 添加尾巴
 	if (events.back().endTime < 999999) events.push_back({ events.back().endTime, 999999, events.back().end, events.back().end, 0 });
 	// floorPosition 计算
@@ -961,7 +971,7 @@ void RPESolveSpeedEvent(vector<PGRSpeedEvent> &events, int id, double factor) {
 void RPESolveEvent(vector<PGREvent> &events, int id, string name) {
 	// 排序
 	vector<PGREvent> extra;
-	sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
+	sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ callStacks.push_back({}); return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
 	// 处理异常 1 (事件延拓)
 	if (events.size() == 0) {
 		// events.push_back({ 0, 999999, 0, 0, 0 });
@@ -981,10 +991,10 @@ void RPESolveEvent(vector<PGREvent> &events, int id, string name) {
 		if (events[i].startTime > events[i].endTime) {
 			cerr << "Warning: Invalid " << name << " [" <<
 				id << ", " <<
-				to_string(events[i].startTime, 2) << ", " <<
-				to_string(events[i].endTime, 2) << ", " <<
-				to_string(events[i].start, 2) << ", " <<
-				to_string(events[i].end, 2) <<
+				to_string2(events[i].startTime, 2) << ", " <<
+				to_string2(events[i].endTime, 2) << ", " <<
+				to_string2(events[i].start, 2) << ", " <<
+				to_string2(events[i].end, 2) <<
 			"]: Start Time is greater than End Time." << endl;
 			events[i].endTime = events[i].startTime;
 			events[i].start = events[i].end;
@@ -1007,16 +1017,16 @@ void RPESolveEvent(vector<PGREvent> &events, int id, string name) {
 		if (last.endTime > curr.startTime) {
 			cerr << "Warning: Overlapped " << name << " [" <<
 				to_string(id) << ", " <<
-				to_string(events[i - 1].startTime, 2) << ", " << 
-				to_string(events[i - 1].endTime, 2) << ", " << 
-				to_string(events[i - 1].start, 2) << ", " << 
-				to_string(events[i - 1].end, 2) << 
+				to_string2(events[i - 1].startTime, 2) << ", " << 
+				to_string2(events[i - 1].endTime, 2) << ", " << 
+				to_string2(events[i - 1].start, 2) << ", " << 
+				to_string2(events[i - 1].end, 2) << 
 			"] and [" <<
 				to_string(id) << ", " <<
-				to_string(events[i].startTime, 2) << ", " << 
-				to_string(events[i].endTime, 2) << ", " <<
-				to_string(events[i].start, 2) << ", " <<
-				to_string(events[i].end, 2) << 
+				to_string2(events[i].startTime, 2) << ", " << 
+				to_string2(events[i].endTime, 2) << ", " <<
+				to_string2(events[i].start, 2) << ", " <<
+				to_string2(events[i].end, 2) << 
 			"]." << endl;
 			// 截断上一事件
 			last.easingRight = 
@@ -1029,7 +1039,7 @@ void RPESolveEvent(vector<PGREvent> &events, int id, string name) {
 	}
 	// 插入额外事件并排序
 	events.insert(events.end(), extra.begin(), extra.end());
-	sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
+	sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ callStacks.push_back({}); return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
 	// 加个尾巴
 	if (events.back().endTime < 999999) events.push_back({ events.back().endTime, 999999, events.back().end, events.back().end, 0 });
 	// cout << name << " [" << id << "]: [" << endl;
@@ -1058,7 +1068,7 @@ string fromRPE(string json, double bgmOffset = 0) {
 		});
 	
 	// 计算 BPM basicTime;
-	sort(bpms.begin(), bpms.end(), [&](BPM a, BPM b){ return a.startBeat < b.startBeat; });
+	sort(bpms.begin(), bpms.end(), [&](BPM a, BPM b){ callStacks.push_back({}); return a.startBeat < b.startBeat; });
 	for (int i = 0; i < bpms.size(); i++) bpms[i].basicTime = i ?
 		bpms[i - 1].basicTime + (bpms[i].startBeat - bpms[i - 1].startBeat) / bpms[i - 1].bpm :
 		0;
@@ -1068,7 +1078,8 @@ string fromRPE(string json, double bgmOffset = 0) {
 		if (i < 0) return 0.0;
 		return round(((beat - bpms[i].startBeat) / bpms[i].bpm + bpms[i].basicTime) * basicBpm * factor * 32);
 	};
-	vector<PGRJudgeline> judgelines(rpe["judgeLineList"].size());
+	vector<PGRJudgeline> judgelines;
+	judgelines.resize(rpe["judgeLineList"].size());
 	for (int i = 0; i < rpe["judgeLineList"].size(); i++) {
 		auto item = rpe["judgeLineList"][i];
 		// 判断判定线材质
@@ -1145,7 +1156,7 @@ string fromRPE(string json, double bgmOffset = 0) {
 					layer["moveXEvents"][k]["bezierP3"].asDouble(),
 					layer["moveXEvents"][k]["bezierP4"].asDouble()
 				});
-			sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
+			sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ callStacks.push_back({}); return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
 			RPESolveEvent(events, i, "MoveX Event");
 			for (int k = 0; k < events.size(); k++) judgelines[i].moveXEvents.push_back(events[k]);
 			
@@ -1165,7 +1176,7 @@ string fromRPE(string json, double bgmOffset = 0) {
 					layer["moveYEvents"][k]["bezierP3"].asDouble(),
 					layer["moveYEvents"][k]["bezierP4"].asDouble()
 				});
-			sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
+			sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ callStacks.push_back({}); return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
 			RPESolveEvent(events, i, "MoveY Event");
 			for (int k = 0; k < events.size(); k++) judgelines[i].moveYEvents.push_back(events[k]);
 
@@ -1185,7 +1196,7 @@ string fromRPE(string json, double bgmOffset = 0) {
 					layer["rotateEvents"][k]["bezierP3"].asDouble(),
 					layer["rotateEvents"][k]["bezierP4"].asDouble()
 				});
-			sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
+			sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ callStacks.push_back({}); return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
 			RPESolveEvent(events, i, "Rotate Event");
 			for (int k = 0; k < events.size(); k++) judgelines[i].rotateEvents.push_back(events[k]);
 
@@ -1210,7 +1221,7 @@ string fromRPE(string json, double bgmOffset = 0) {
 					layer["alphaEvents"][k]["bezierP4"].asDouble()
 				});
 			}
-			sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
+			sort(events.begin(), events.end(), [&](PGREvent a, PGREvent b){ callStacks.push_back({}); return a.startTime < b.startTime || (a.startTime == b.startTime && a.endTime < b.endTime); });
 			RPESolveEvent(events, i, "Alpha Event");
 			for (int k = 0; k < events.size(); k++) judgelines[i].disappearEvents.push_back(events[k]);
 		}
@@ -1237,16 +1248,19 @@ string fromRPE(string json, double bgmOffset = 0) {
 	}
 
 	// floorPosition 计算
-	for (auto &j : judgelines) {
+	for (int ii = 0; ii < judgelines.size(); ii++) { 
+		auto &j = judgelines[ii];
 		double bpm = j.bpm; double fp = 0;
-		for (auto &n : j.notesAbove) {
+		for (int jj = 0; jj < j.notesAbove.size(); jj++) { 
+			auto &n = j.notesAbove[jj];
 			int i = lower_bound(j.speedEvents.begin(), j.speedEvents.end(), n.time, [&](PGRSpeedEvent a, double b){ return a.startTime < b; }) - j.speedEvents.begin() - 1;
 			auto e = j.speedEvents[i];
 			double v1 = e.start, v2 = e.start + (n.time - e.startTime) * (e.end - e.start) / (e.endTime - e.startTime);
 			if (n.type == 3) n.speed *= v2;
 			n.floorPosition = e.floorPosition + (n.time - e.startTime) * (v1 + v2) / 2 / bpm * 1.875;
 		}
-		for (auto &n : j.notesBelow) {
+		for (int jj = 0; jj < j.notesBelow.size(); jj++) { 
+			auto &n = j.notesBelow[jj];
 			int i = lower_bound(j.speedEvents.begin(), j.speedEvents.end(), n.time, [&](PGRSpeedEvent a, double b){ return a.startTime < b; }) - j.speedEvents.begin() - 1;
 			auto e = j.speedEvents[i];
 			double v1 = e.start, v2 = e.start + (n.time - e.startTime) * (e.end - e.start) / (e.endTime - e.startTime);
@@ -1298,6 +1312,6 @@ string fromRPE(string json, double bgmOffset = 0) {
 	obj["formatVersion"] = optimizer_version;
 	obj["judgeLineList"].resize(0);
 	obj["offset"] = offset;
-	for (auto &j : judgelines) obj["judgeLineList"].append(j.toJsonObject());
+	for (int i = 0; i < judgelines.size(); i++) obj["judgeLineList"].append(judgelines[i].toJsonObject());
 	return json_encode(obj);
 }

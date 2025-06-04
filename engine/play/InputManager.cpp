@@ -1,173 +1,142 @@
-Map<LevelMemoryId, let, let> disallowEmptiesNow(16);
-Map<LevelMemoryId, let, let> disallowEmptiesOld(16);
+Map<var, var, 16> disallowEmptiesNow;
+Map<var, var, 16> disallowEmptiesOld;
 
 class ClaimManager {
 	public:
 
-	Map<LevelMemoryId, let, let> claimed = Map<LevelMemoryId, let, let>(16);
+	Map<var, var, 16> claimed;
 
 	class ClaimInfo {
 		public:
 
-		let cx, cy, rotate; // 中心点位置和判定角度
-		let time;
+		var cx, cy, rotate; // 中心点位置和判定角度
+		var time;
 		
-		SonolusApi getDis(let x, let y) {
-			FUNCBEGIN
-			IF (rotate == PI / 2 || rotate == PI / 2 * 3) {
-				Return(Abs(x - cx));
-			} FI
-			let k = Tan(rotate), b = cy - k * cx;
-			let dis = Abs(-1 * k * x + y - b) / Power({k * k + 1, 0.5});
-			Return(dis);
-			return VAR;
+		SonolusApi getDis(var x, var y) {
+			if (rotate == PI / 2 || rotate == PI / 2 * 3) return Abs(x - cx);
+			var k = Tan(rotate), b = cy - k * cx;
+			var dis = Abs(-1 * k * x + y - b) / Power({k * k + 1, 0.5});
+			return dis;
 		}
-		SonolusApi contain(let x, let y) {
-			FUNCBEGIN
-			Return(getDis(x, y) <= judgeDistanceLimit);
-			return VAR;
+		SonolusApi contain(var x, var y) {
+			return getDis(x, y) <= judgeDistanceLimit;
 		}
 	};
 
-	ClaimInfo getInfo(let index) {
+	ClaimInfo getInfo(var index) {
 		auto note = EntityDataArray[index];
 		auto judgeline = EntitySharedMemoryArray[
-			note.get(If(EntityInfoArray[index].get(1) == getArchetypeId(HoldNote), 9, 8))
+			note.generic[If(EntityInfoArray[index].archetype == getAid(HoldNote), 9, 8)]
 		];
-		let dx = note.get(1) * stage.w * 0.05625;
-		let jx = judgeline.get(1), jy = judgeline.get(2);
-		let rotate = judgeline.get(3);
-		let vecX = dx * Cos(rotate), vecY = dx * Sin(rotate);
-		let cx = jx + vecX, cy = jy + vecY;
+		var dx = note.generic[1] * stage.w * 0.05625;
+		var jx = judgeline.generic[1], jy = judgeline.generic[2];
+		var rotate = judgeline.generic[3];
+		var vecX = dx * Cos(rotate), vecY = dx * Sin(rotate);
+		var cx = jx + vecX, cy = jy + vecY;
 		return {
 			cx: cx,
 			cy: cy,
 			rotate: rotate + PI / 2,
-			time: note.get(0)
+			time: note.generic[0]
 		};
 	}
 
-	SonolusApi findBestTouchIndex(let index) {
-		FUNCBEGIN
+	SonolusApi findBestTouchIndex(var index) {
 		ClaimInfo origin = getInfo(index);
 		var res = -1, minDis = 1e9;
-		FOR (i, 0, touches.size, 1) {
-			IF (touches[i].started == 0) CONTINUE; FI
-			IF (origin.contain(touches[i].x, touches[i].y) == 0) CONTINUE; FI
+		for (var i = 0; i < touchCount; i++) {
+			if (touches[i].started == 0) continue;
+			if (origin.contain(touches[i].x, touches[i].y) == 0) continue;
 
-			let dis = origin.getDis(touches[i].x, touches[i].y);
-			IF (res != -1 && minDis <= dis) CONTINUE; FI
+			var dis = origin.getDis(touches[i].x, touches[i].y);
+			if (res != -1 && minDis <= dis) continue;
 
-			let claimIndex = claimed.indexOf(touches[i].id);
-			IF (claimIndex == -1) {
+			var claimIndex = claimed.indexOf(touches[i].id);
+			if (claimIndex == -1) {
 				res = touches[i].id; minDis = dis;
-				CONTINUE;
-			} FI
+				continue;
+			}
 
-			ClaimInfo claim = getInfo(claimed.getValById(claimIndex));
-			IF (origin.time > claim.time) CONTINUE; FI
-			IF (origin.time < claim.time) {
+			ClaimInfo claim = getInfo(claimed.getValue(claimIndex));
+			if (origin.time > claim.time) continue;
+			if (origin.time < claim.time) {
 				res = touches[i].id; minDis = dis;
-				CONTINUE;
-			} FI
+				continue;
+			}
          
-			IF (dis > claim.getDis(touches[i].x, touches[i].y)) CONTINUE; FI
-			IF (index > claimed.getValById(claimIndex)) CONTINUE; FI // nmd 如果 time 和 dis 完全相等的话会导致一直 claim，然后 Sonolus 死机
+			if (dis > claim.getDis(touches[i].x, touches[i].y)) continue;
+			if (index > claimed.getValue(claimIndex)) continue; // nmd 如果 time 和 dis 完全相等的话会导致一直 claim，然后 Sonolus 死机
 			// mlgb 老子在这里调了 6 个小时结果是 nm 这个问题
 			res = touches[i].id; minDis = dis;
-		} DONE
-		Return(res);
-		return VAR;
+		}
+		return res;
 	}
 
-	SonolusApi claim(let index) {
-		FUNCBEGIN
+	SonolusApi claim(var index) {
 		var currentId = index;
 		ClaimInfo info = getInfo(currentId);
-		WHILE (true) {
+		while (true) {
 			var touchIndex = findBestTouchIndex(currentId);
-			IF (touchIndex == -1) BREAK; FI
+			if (touchIndex == -1) break;
 			disallowEmptiesNow.set(touchIndex, 1);
 			
-			let claimIndex = claimed.indexOf(touchIndex);
-			IF (claimIndex == -1) {
+			var claimIndex = claimed.indexOf(touchIndex);
+			if (claimIndex == -1) {
 				claimed.set(touchIndex, currentId); 
-				BREAK;
-			} FI
+				break;
+			}
 
 			var tmp = currentId;
-			currentId = claimed.getValById(claimIndex);
+			currentId = claimed.getValue(claimIndex);
 			claimed.set(touchIndex, tmp);
-		} DONE
-		return VOID;
+		}
 	}
 
-	SonolusApi getClaimedTouchIndex(let index) {
-		FUNCBEGIN
-		FOR (i, 0, claimed.size, 1) {
-			IF (claimed.getValById(i) == index) {
-				Return(claimed.getKeyById(i)); 
-			} FI
-		} DONE 
-		Return(-1);
-		return VAR;
+	SonolusApi getClaimedTouchIndex(var index) {
+		for (var i = 0; i < claimed.count; i++)
+			if (claimed.getValue(i) == index) return claimed.getKey(i);
+		return -1;
 	}
 
-	SonolusApi clear() {
-		FUNCBEGIN
+	Blocked SonolusApi clear() {
 		claimed.clear();
-		return VOID;
 	}
 };
 
 ClaimManager claimStartManager = ClaimManager();
-SonolusApi claimStart(let index) {
-	FUNCBEGIN
+SonolusApi claimStart(var index) {
 	claimStartManager.claim(index);
-	return VOID;
 }
-SonolusApi getClaimedStart(let index) {
-	FUNCBEGIN
-	Return(claimStartManager.getClaimedTouchIndex(index));
-	return VAR;
+SonolusApi getClaimedStart(var index) {
+	return claimStartManager.getClaimedTouchIndex(index);
 }
 
-SonolusApi hasTouch(let index) {
-	FUNCBEGIN
+SonolusApi hasTouch(var index) {
 	ClaimManager::ClaimInfo info = claimStartManager.getInfo(index);
-	FOR (i, 0, touches.size, 1) {
-		IF (info.contain(touches[i].x, touches[i].y)) {
-			Return(1);
-		} FI
-	} DONE
-	Return(0);
-	return VAR;
+	for (var i = 0; i < touchCount; i++)
+		if (info.contain(touches[i].x, touches[i].y)) return true;
+	return false;
 }
 
 class InputManager: public Archetype {
 	public:
 
-	static constexpr const char* name = "Phigros Input Manager";
+	string name = "Phigros Input Manager";
 
 	SonolusApi spawnOrder() { return 0; }
 	SonolusApi shouldSpawn() { return true; }
 	
 	SonolusApi updateSequential() {
-		FUNCBEGIN
 		claimStartManager.clear();
 		disallowEmptiesOld.clear();
-		FOR (i, 0, disallowEmptiesNow.size, 1) {
+		for (var i = 0; i < disallowEmptiesNow.count; i++)
 			disallowEmptiesOld.set(
-				disallowEmptiesNow.getKeyById(i), 
-				disallowEmptiesNow.getValById(i)
+				disallowEmptiesNow.getKey(i), 
+				disallowEmptiesNow.getValue(i)
 			);
-		} DONE
 		disallowEmptiesNow.clear();
-		FOR (i, 0, touches.size, 1) {
-			IF (disallowEmptiesOld.indexOf(touches[i].id) != -1)
-				disallowEmptiesNow.add(touches[i].id, 1); 
-			FI
-		} DONE
-		return VOID;
+		for (var i = 0; i < touchCount; i++)
+			if (disallowEmptiesOld.indexOf(touches[i].id) != -1)
+				disallowEmptiesNow.set(touches[i].id, 1);
 	}
 };

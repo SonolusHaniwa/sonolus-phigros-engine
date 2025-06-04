@@ -1,18 +1,17 @@
 class UpdateJudgment: public Archetype {
 	public:
 
-	static const bool disableGlobalPreprocess = true;
-	static constexpr const char* name = "Phigros Update Judgment";
-	Variable<EntityMemoryId> entityId;
-	BlockPointer<EntitySharedMemoryArrayId> entity = EntitySharedMemoryArray[entityId];
+	string name = "Phigros Update Judgment";
+	var entityId;
+	EntitySharedMemoryArrayGroup entity = EntitySharedMemoryArray[entityId];
 
-	SonolusApi spawnTime() { return entity.get(1); }
+	SonolusApi spawnTime() { return entity.generic[1]; }
 	SonolusApi despawnTime() { 
 		return Max(
-			entity.get(1) + 1,
+			entity.generic[1] + 1,
 			If(
-				EntitySharedMemoryArray[entity.get(0)].get(1) >= entity.get(1),
-				EntitySharedMemoryArray[entity.get(0)].get(1),
+				EntitySharedMemoryArray[entity.generic[0]].generic[1] >= entity.generic[1],
+				EntitySharedMemoryArray[entity.generic[0]].generic[1],
 				999999
 			)
 		);
@@ -20,13 +19,12 @@ class UpdateJudgment: public Archetype {
 
  	// int updateSequentialOrder = 1;
 	SonolusApi updateSequential() {
-		FUNCBEGIN
-		IF (lastUpdatedId > entity.get(6)) Return(0); FI
-		combo = entity.get(2);
-		maxCombo = entity.get(3);
-		judgeStatus = entity.get(4);
-		accscore = entity.get(5);
-		lastUpdatedId = entity.get(6);
-		return VOID;
+		// DebugLog(entityId); DebugLog(entity.generic[1]);
+		if (lastUpdatedId > entity.generic[6]) return;
+		combo = entity.generic[2];
+		maxCombo = entity.generic[3];
+		judgeStatus = entity.generic[4];
+		accscore = entity.generic[5];
+		lastUpdatedId = entity.generic[6];
 	}
 };

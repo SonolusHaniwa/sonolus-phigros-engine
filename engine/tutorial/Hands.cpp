@@ -1,13 +1,11 @@
-let handSize = 0.25 * ui.instructionConfiguration.scale;
-let handCircleR = handSize;
-let handStartAngle = 30;
-let handEndAngle = 60;
-let handUpperLength = 0.5;
-let handHorizontalLength = 0.5;
+FuncNode handSize = 0.25 * configuration.instruction.scale;
+FuncNode handCircleR = handSize;
+FuncNode handStartAngle = 30;
+FuncNode handEndAngle = 60;
+FuncNode handUpperLength = 0.5;
 
-SonolusApi drawFrozenHand(let hands, let x, let y, var percent, bool in = true, bool out = true) {
-	FUNCBEGIN
-	let angle = If(
+SonolusApi drawFrozenHand(var hands, var x, var y, var percent, bool in = true, bool out = true) {
+	var angle = If(
 		percent < 0.25, 
 		handStartAngle,
 		If(
@@ -16,12 +14,12 @@ SonolusApi drawFrozenHand(let hands, let x, let y, var percent, bool in = true, 
 			handEndAngle
 		)
 	);
-	let goalX = x, goalY = y;
-	let centerX = goalX + handCircleR * Sin(handEndAngle / 180 * acos(-1));
-	let centerY = goalY - handCircleR * Cos(handEndAngle / 180 * acos(-1));
-	let currentX = centerX - handCircleR * Sin(angle / 180 * acos(-1));
-	let currentY = centerY + handCircleR * Cos(angle / 180 * acos(-1));
-	let a = If(
+	var goalX = x, goalY = y;
+	var centerX = goalX + handCircleR * Sin(handEndAngle / 180 * acos(-1));
+	var centerY = goalY - handCircleR * Cos(handEndAngle / 180 * acos(-1));
+	var currentX = centerX - handCircleR * Sin(angle / 180 * acos(-1));
+	var currentY = centerY + handCircleR * Cos(angle / 180 * acos(-1));
+	var a = If(
 		percent < 0.25,
 		(!in) ? 1 : 1.0 * percent / 0.25,
 		If(
@@ -31,15 +29,13 @@ SonolusApi drawFrozenHand(let hands, let x, let y, var percent, bool in = true, 
 		)
 	);
 	Paint(hands, currentX, currentY, handSize, angle, 1919810, a);
-	return VOID;
 }
 
-SonolusApi drawUpperHand(let hands, let x, let y, let percent, let angle, bool in = false, bool out = true) {
-	FUNCBEGIN
-	let goalX = x;
-	let goalY = y;
-	let currentX = goalX;
-	let currentY = goalY + If(
+SonolusApi drawUpperHand(var hands, var x, var y, var percent, var angle, bool in = false, bool out = true) {
+	var goalX = x;
+	var goalY = y;
+	var currentX = goalX;
+	var currentY = goalY + If(
 		percent < 0.25,
 		0,
 		If(
@@ -48,7 +44,7 @@ SonolusApi drawUpperHand(let hands, let x, let y, let percent, let angle, bool i
 			handUpperLength
 		)
 	);
-	let a = If(
+	var a = If(
 		percent < 0.25,
 		(!in) ? 1 : 1.0 * percent / 0.25,
 		If(
@@ -57,25 +53,23 @@ SonolusApi drawUpperHand(let hands, let x, let y, let percent, let angle, bool i
 			(!out) ? 1 : 1.0 - 1.0 * (percent - 0.75) / 0.25
 		)
 	);
-	Paint(hands, currentX, currentY, handSize, angle, 2000, a);
-	return VOID;
+	Paint(hands, currentX, currentY, handSize, angle, 1919810, a);
 }
 
-SonolusApi drawHorizontalHand(let hands, let x, let y, let percent, let angle, bool in = false, bool out = true) {
-	FUNCBEGIN
-	let goalX = x;
-	let goalY = y;
-	let currentX = goalX + If(
+SonolusApi drawHorizontalHand(var hands, var x, var y, var dx, var percent, var angle, bool in = false, bool out = true) {
+	var goalX = x;
+	var goalY = y;
+	var currentX = goalX + If(
 		percent < 0.25,
 		0,
 		If(
 			percent < 0.75,
-			(percent - 0.25) / 0.5 * handHorizontalLength,
-			handHorizontalLength
+			(percent - 0.25) / 0.5 * dx,
+			dx
 		)
 	);
-	let currentY = goalY;
-	let a = If(
+	var currentY = goalY;
+	var a = If(
 		percent < 0.25,
 		(!in) ? 1 : 1.0 * percent / 0.25,
 		If(
@@ -84,6 +78,5 @@ SonolusApi drawHorizontalHand(let hands, let x, let y, let percent, let angle, b
 			(!out) ? 1 : 1.0 - 1.0 * (percent - 0.75) / 0.25
 		)
 	);
-	Paint(hands, currentX, currentY, handSize, angle, 2000, a);
-	return VOID;
+	Paint(hands, currentX, currentY, handSize, angle, 1919810, a);
 }

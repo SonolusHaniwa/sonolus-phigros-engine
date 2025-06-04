@@ -6,7 +6,7 @@
   	  	"localization": "default",
   	  	"title": "PhiStore",
         "subtitle": "PhiStore Default Skin",
-        "author": "LittleYang0531",
+        "author": "LittleYang0531#84718",
         "description": "Version: 1.2.0"
   	  }
   	]
@@ -18,7 +18,7 @@
   	  	"localization": "default",
   	  	"title": "PhiStore",
         "subtitle": "PhiStore Default SFX",
-        "author": "LittleYang0531",
+        "author": "LittleYang0531#84718",
         "description": "Version: 1.2.0"
   	  }
   	]
@@ -30,12 +30,12 @@
         "localization": "default",
         "title": "Phigros",
         "subtitle": "Sonolus Phigros Engine",
-        "author": "LittleYang0531",
+        "author": "LittleYang0531#84718",
         "skin": "phistore",
         "background": "phigros-0",
         "effect": "phistore",
         "particle": "phigros",
-        "description": "A recreation of Phigros engine in Sonolus.\nVersion: 1.1.0_20240727_beta\n\nGithub Repository\nhttps://github.com/SonolusHaniwa/sonolus-phigros-engine"
+        "description": "A recreation of Phigros engine in Sonolus.\nVersion: 2.0.0_20250604_beta\n\nGithub Repository\nhttps://github.com/SonolusHaniwa/sonolus-phigros-engine"
       }
     ]
   },

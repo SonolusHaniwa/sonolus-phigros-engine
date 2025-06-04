@@ -1,67 +1,61 @@
-SonolusApi getValue(let index) {
-    FUNCBEGIN
-    Return(EntitySharedMemoryArray[index].get(1));
-    return VAR;
+SonolusApi getValue(var index) {
+    return EntitySharedMemoryArray[index].generic[1];
 }
 
-SonolusApi merge(let a, let b, let Asize, let Bsize) {
-    FUNCBEGIN
+SonolusApi merge2(var a, var b, var Asize, var Bsize) {
     var Alen = 0, Blen = 0, A = a, B = b;
     var newHead = If(getValue(A) > getValue(B), B, A);
-    var pointer = newHead.get();
-    IF (getValue(A) > getValue(B)) {
-        Blen = Blen + 1; 
-        B = EntitySharedMemoryArray[B].get(0);
-    } ELSE {
-        Alen = Alen + 1; 
-        A = EntitySharedMemoryArray[A].get(0);
-    } FI
-    WHILE (Alen < Asize && Blen < Bsize) {
-        IF (getValue(A) > getValue(B)) {
-            EntitySharedMemoryArray[pointer].set(0, B);
-            pointer = B.get();
-            B = EntitySharedMemoryArray[B].get(0);
-            Blen = Blen + 1;
-        } ELSE {
-            EntitySharedMemoryArray[pointer].set(0, A);
-            pointer = A.get();
-            A = EntitySharedMemoryArray[A].get(0);
-            Alen = Alen + 1;
-        } FI
-    } DONE
+    var pointer = newHead;
+    if (getValue(A) > getValue(B)) {
+        Blen++; 
+        B = EntitySharedMemoryArray[B].generic[0];
+    } else {
+        Alen++; 
+        A = EntitySharedMemoryArray[A].generic[0];
+    }
+    while (Alen < Asize && Blen < Bsize) {
+        if (getValue(A) > getValue(B)) {
+            EntitySharedMemoryArray[pointer].generic[0] = B;
+            pointer = B;
+            B = EntitySharedMemoryArray[B].generic[0];
+            Blen++;
+        } else {
+            EntitySharedMemoryArray[pointer].generic[0] = A;
+            pointer = A;
+            A = EntitySharedMemoryArray[A].generic[0];
+            Alen++;
+        }
+    }
     // 一定要记得把两个链表连起来，不然就爆了！！！
-    IF (Alen < Asize) EntitySharedMemoryArray[pointer].set(0, A); FI
-    IF (Blen < Bsize) EntitySharedMemoryArray[pointer].set(0, B); FI
-    	// DebugPause();
-    Return(newHead);
-    return VAR;
+    if (Alen < Asize) EntitySharedMemoryArray[pointer].generic[0] = A;
+    if (Blen < Bsize) EntitySharedMemoryArray[pointer].generic[0] = B;
+    return newHead;
 }
 
 SonolusApi StageController::calcCombo() {
-    FUNCBEGIN
     // 获取实体总数 n
     // 通过 EntityIndex 是否正确判断是否为最后一个实体
     // 时间复杂度 O(n)
     var entityCount = 0;
-    WHILE (EntityInfoArray[entityCount].get(0) == entityCount) entityCount = entityCount + 1; DONE
+    while (EntityInfoArray[entityCount].index == entityCount) entityCount++;
     // 构建按键实体链表
     // 设其长度为 m 
     // 时间复杂度 O(n)
     var next = 0, lineLength = 0;
-    FOR (i, 0, entityCount, 1) {
+    for (var i = 0; i < entityCount; i++) {
         var ii = entityCount - 1 - i;
-        var archetypeIndex = EntityInfoArray[ii].get(1);
-        IF (
-            archetypeIndex == getArchetypeId(NormalNote) ||
-            archetypeIndex == getArchetypeId(DragNote) ||
-            archetypeIndex == getArchetypeId(HoldNote) ||
-            archetypeIndex == getArchetypeId(FlickNote)
+        var archetypeIndex = EntityInfoArray[ii].archetype;
+        if (
+            archetypeIndex == getAid(NormalNote) ||
+            archetypeIndex == getAid(DragNote) ||
+            archetypeIndex == getAid(HoldNote) ||
+            archetypeIndex == getAid(FlickNote)
         ) {
             lineLength = lineLength + 1;
-            EntitySharedMemoryArray[ii].set(0, next);
-            next = ii.get();
-        } FI
-    } DONE
+            EntitySharedMemoryArray[ii].generic[0] = next;
+            next = ii;
+        }
+    }
     // 链表的归并排序非递归版本
     // Sonolus 不支持任何形式的递归函数
     // 因为归并排序的非递归版本就像线段树上传一样
@@ -71,44 +65,45 @@ SonolusApi StageController::calcCombo() {
     // 空间复杂度 O(logm)
     // 该算法在 C++ 中的实现: 见根目录下的 mergeSort.cpp
     // 该算法的正确性: 见 https://www.luogu.com.cn/record/167007458
-    Array<TemporaryMemoryId, var> cachedSortedListHead(32);
-    var currentEntity = next.get();
-    FOR (i, 0, lineLength, 1) {
-        var currentHead = currentEntity.get();
-        currentEntity = EntitySharedMemoryArray[currentEntity].get(0);
-        FOR (j, 0, 32, 1) {
-            IF (cachedSortedListHead.get(j) == 0) {
-                cachedSortedListHead.set(j, currentHead); 
-                BREAK;
-            } FI
-            var A = cachedSortedListHead.get(j);
-            var B = currentHead.get();
-            cachedSortedListHead.set(j, 0);
-            currentHead = merge(A, B, Power({2, j}), Power({2, j}));
-        } DONE
-    } DONE
+    Array<var, 32> cachedSortedListHead;
+    for (var i = 0; i < 32; i++) cachedSortedListHead[i] = -1;
+    var currentEntity = next;
+    for (var i = 0; i < lineLength; i++) {
+        var currentHead = currentEntity;
+        currentEntity = EntitySharedMemoryArray[currentEntity].generic[0];
+        for (var j = 0; j < 32; j++) {
+            if (cachedSortedListHead[j] == -1) {
+                cachedSortedListHead[j] = currentHead; 
+                // DebugLog(i); DebugLog(j); DebugLog(currentHead);
+                break;
+            }
+            var A; A = cachedSortedListHead[j];
+            var B = currentHead;
+            cachedSortedListHead[j] = -1;
+            currentHead = merge2(A, B, Power({2, j}), Power({2, j}));
+        }
+    }
     // 剩余片段合并
     var head = -1, currentLen = 0;
-    FOR (i, 0, 32, 1) {
-        IF (cachedSortedListHead.get(i) == 0) CONTINUE; FI
-        IF (head == -1) {
-            head.set(cachedSortedListHead.get(i));
-            currentLen.set(Power({2, i}));
-            CONTINUE;
-        } FI
-        var A = head.get();
-        var B = cachedSortedListHead.get(i);
-        var Asize = currentLen.get(), Bsize = Power({2, i});
-        cachedSortedListHead.set(i, 0);
-        head = merge(A, B, Asize, Bsize);
+    for (var i = 0; i < 32; i++) {
+        if (cachedSortedListHead[i] == -1) continue;
+        if (head == -1) {
+            head = cachedSortedListHead[i];
+            currentLen = Power({2, i});
+            continue;
+        }
+        var A = head;
+        var B; B = cachedSortedListHead[i];
+        cachedSortedListHead[i] = 0;
+        var Asize = currentLen, Bsize = Power({2, i});
+        head = merge2(A, B, Asize, Bsize);
         currentLen = Asize + Bsize;
-    } DONE
-    EntityMemory.set(1, head);
-    EntityMemory.set(2, lineLength);
+    }
+    EntityMemory[2] = head;
+    EntityMemory[3] = lineLength;
     // 验证(只要没有输出就是正序)
-    // FOR (i, 0, lineLength, 1) {
-    //     IF (head < lineLength - 1 && getValue(head) > getValue(EntitySharedMemoryArray[head].get(0))) Debuglog(head); FI
-    //     head = EntitySharedMemoryArray[head].get(0);
-    // } DONE
-    return VOID;
+    // for (var i = 0; i < lineLength; i++) {
+    //     if (head < lineLength - 1 && getValue(head) > getValue(EntitySharedMemoryArray[head].generic[0])) DebugLog(head);
+    //     head = EntitySharedMemoryArray[head].generic[0];
+    // }
 }

@@ -1,39 +1,36 @@
 class RotateEvent: public Archetype {
 	public:
 
-	static constexpr const char* name = "Phigros Judgeline Rotate Event";
-	defineImports(startTime);
-	defineImports(endTime);
-	defineImports(start);
-	defineImports(end);
-	defineImports(easing);
-	defineImports(easingLeft);
-	defineImports(easingRight);
-	defineImports(bezier);
-	defineImports(bezierP1);
-	defineImports(bezierP2);
-	defineImports(bezierP3);
-	defineImports(bezierP4);
-	defineImports(next);
-	Variable<EntityMemoryId> bpm;
-	Variable<EntitySharedMemoryId> judgelineId;
+	string name = "Phigros Judgeline Rotate Event";
+	defineImport(startTime);
+	defineImport(endTime);
+	defineImport(start);
+	defineImport(end);
+	defineImport(easing);
+	defineImport(easingLeft);
+	defineImport(easingRight);
+	defineImport(bezier);
+	defineImport(bezierP1);
+	defineImport(bezierP2);
+	defineImport(bezierP3);
+	defineImport(bezierP4);
+	defineImport(next);
+	Variable bpm;
+	Variable judgelineId = Variable(EntitySharedMemoryId, 0);
 
 	SonolusApi spawnOrder() { return startTime * timeMagic / bpm; }
 	SonolusApi shouldSpawn() { return times.now >= startTime * timeMagic / bpm; }
 
 	int preprocessOrder = 114;
 	SonolusApi preprocess() {
-		FUNCBEGIN
-		bpm = EntityDataArray[judgelineId].get(5);
-		return VOID;
+		bpm = EntityDataArray[judgelineId].generic[5];
 	}
 
 	SonolusApi updateSequential() {
-		FUNCBEGIN
-		IF (times.now >= endTime * timeMagic / bpm) 
-			EntityDespawn.set(0, 1); 
-			Return(0);
-		FI
+		if (times.now >= endTime * timeMagic / bpm) {
+			despawn.despawn = true;
+			return;
+		}
 		var rotate = If(
 			bezier,
 			getBezierValue(
@@ -45,8 +42,7 @@ class RotateEvent: public Archetype {
 				startTime * timeMagic / bpm, endTime * timeMagic / bpm, 
 				start, end, times.now, easingLeft, easingRight
 			)
-		) + EntitySharedMemoryArray[judgelineId].get(3);
-		EntitySharedMemoryArray[judgelineId].set(3, rotate);
-		return VOID;
+		) + EntitySharedMemoryArray[judgelineId].generic[3];
+		EntitySharedMemoryArray[judgelineId].generic[3] = rotate;
 	}
 };

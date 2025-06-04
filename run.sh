@@ -15,17 +15,16 @@ cd sonolus-server && unzip -n sonolus.zip
 echo -e $YELLOW"Syncing data into database..."$RESET
 wget "https://raw.githubusercontent.com/SonolusHaniwa/sonolus-server-cpp/main/data.sql" -O data.sql
 sqlite3 sonolus.db ".read ./data.sql"
-./sonolus serve >/dev/null 2>&1 &
 
 # 资源导入
 ./sonolus import ../phigros/phistore.scp
 ./sonolus import ../phigros/phigros-official.scp
 ./sonolus import ../phigros/phigros-2024-april.scp
 
-./sonolus buildcpp play ../phigros -DDISABLE_TRACE
-./sonolus buildcpp tutorial ../phigros -DDISABLE_TRACE
-./sonolus buildcpp preview ../phigros -DDISABLE_TRACE
-./sonolus buildcpp watch ../phigros -DDISABLE_TRACE
+./sonolus synccpp
+cp plugins ../../ -r
+./sonolus serve >/dev/null 2>&1 &
+./sonolus buildcpp all .. -DDISABLE_TRACE
 # sqlite3 sonolus.db "SELECT * FROM Engine";
 
 # 数据导出

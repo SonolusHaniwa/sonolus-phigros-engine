@@ -1,35 +1,32 @@
 class MoveXEvent: public Archetype {
 	public:
 
-	static constexpr const char* name = "Phigros Judgeline Move X Event";
-	defineImports(startTime);
-	defineImports(endTime);
-	defineImports(start);
-	defineImports(end);
-	defineImports(easing);
-	defineImports(easingLeft);
-	defineImports(easingRight);
-	defineImports(bezier);
-	defineImports(bezierP1);
-	defineImports(bezierP2);
-	defineImports(bezierP3);
-	defineImports(bezierP4);
-	defineImports(next);
-	Variable<EntityMemoryId> bpm;
-	Variable<EntitySharedMemoryId> judgelineId;
+	string name = "Phigros Judgeline Move X Event";
+	defineImport(startTime);
+	defineImport(endTime);
+	defineImport(start);
+	defineImport(end);
+	defineImport(easing);
+	defineImport(easingLeft);
+	defineImport(easingRight);
+	defineImport(bezier);
+	defineImport(bezierP1);
+	defineImport(bezierP2);
+	defineImport(bezierP3);
+	defineImport(bezierP4);
+	defineImport(next);
+	var bpm;
+	var judgelineId = var(EntitySharedMemoryId, 0);
 
 	SonolusApi spawnTime() { return startTime * timeMagic / bpm; }
 	SonolusApi despawnTime() { return endTime * timeMagic / bpm; }
 	
 	int preprocessOrder = 114514;
 	SonolusApi preprocess() {
-		FUNCBEGIN
-		bpm = EntityDataArray[judgelineId].get(5);
-		return VOID;
+		bpm = EntityDataArray[judgelineId].generic[5];
 	}
 
 	SonolusApi updateSequential() {
-		FUNCBEGIN
 		var x = If(
 			bezier,
 			getBezierValue(
@@ -41,44 +38,40 @@ class MoveXEvent: public Archetype {
 				startTime * timeMagic / bpm, endTime * timeMagic / bpm, 
 				start, end, times.now, easingLeft, easingRight
 			)
-		) - 0.5 + EntitySharedMemoryArray[judgelineId].get(1);
-		EntitySharedMemoryArray[judgelineId].set(1, x);
-		return VOID;
+		) - 0.5 + EntitySharedMemoryArray[judgelineId].generic[1];
+		EntitySharedMemoryArray[judgelineId].generic[1] = x;
 	}
 };
 
 class MoveYEvent: public Archetype {
 	public:
 
-	static constexpr const char* name = "Phigros Judgeline Move Y Event";
-	defineImports(startTime);
-	defineImports(endTime);
-	defineImports(start);
-	defineImports(end);
-	defineImports(easing);
-	defineImports(easingLeft);
-	defineImports(easingRight);
-	defineImports(bezier);
-	defineImports(bezierP1);
-	defineImports(bezierP2);
-	defineImports(bezierP3);
-	defineImports(bezierP4);
-	defineImports(next);
-	Variable<EntityMemoryId> bpm;
-	Variable<EntitySharedMemoryId> judgelineId;
+	string name = "Phigros Judgeline Move Y Event";
+	defineImport(startTime);
+	defineImport(endTime);
+	defineImport(start);
+	defineImport(end);
+	defineImport(easing);
+	defineImport(easingLeft);
+	defineImport(easingRight);
+	defineImport(bezier);
+	defineImport(bezierP1);
+	defineImport(bezierP2);
+	defineImport(bezierP3);
+	defineImport(bezierP4);
+	defineImport(next);
+	var bpm;
+	var judgelineId = var(EntitySharedMemoryId, 0);
 
 	SonolusApi spawnTime() { return startTime * timeMagic / bpm; }
 	SonolusApi despawnTime() { return endTime * timeMagic / bpm; }
 	
 	int preprocessOrder = 114514;
 	SonolusApi preprocess() {
-		FUNCBEGIN
-		bpm = EntityDataArray[judgelineId].get(5);
-		return VOID;
+		bpm = EntityDataArray[judgelineId].generic[5];
 	}
 
 	SonolusApi updateSequential() {
-		FUNCBEGIN
 		var y = If(
 			bezier,
 			getBezierValue(
@@ -90,11 +83,10 @@ class MoveYEvent: public Archetype {
 				startTime * timeMagic / bpm, endTime * timeMagic / bpm, 
 				start, end, times.now, easingLeft, easingRight
 			)
-		) - 0.5 + EntitySharedMemoryArray[judgelineId].get(2);
+		) - 0.5 + EntitySharedMemoryArray[judgelineId].generic[2];
 		// IF (judgelineId == 43391) {
 		// 	Debuglog(y);
 		// } FI
-		EntitySharedMemoryArray[judgelineId].set(2, y);
-		return VOID;
+		EntitySharedMemoryArray[judgelineId].generic[2] = y;
 	}
 };

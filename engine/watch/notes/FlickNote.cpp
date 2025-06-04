@@ -1,50 +1,54 @@
+Bucket NormalFlickBucket = defineBucket({
+	EngineDataBucketSprite(Sprites.NormalFlick, 0, 0.0, 0.0, 4.0, 2.0, 0)
+}, Text.MillisecondUnit);
+
 class FlickNote: public Archetype {
 	public:
 
-	static constexpr const char* name = "Phigros Flick Note";
+	string name = "Phigros Flick Note";
 	bool hasInput = true;
-	defineImports(time);
-	defineImports(positionX);
-	defineImports(holdTime);
-	defineImports(speed);
-	defineImports(floorPosition);
-	defineImports(isAbove);
-	defineImports(isMulti);
-	defineImports(isFake);
-	defineImports(judgeline);
-	defineImports(bpm);
-	defineImports(size);
-	defineImports(yOffset);
-	defineImports(visibleTime);
-	defineImports(alpha);
-	defineImports(accuracy);
-	defineImports(judgeResult);
-	Variable<EntityMemoryId> positionY;
-	Variable<EntityMemoryId> effectX1;
-	Variable<EntityMemoryId> effectY1;
-	Variable<EntityMemoryId> effectX2;
-	Variable<EntityMemoryId> effectY2;
-	Variable<EntityMemoryId> effectX3;
-	Variable<EntityMemoryId> effectY3;
-	Variable<EntityMemoryId> effectX4;
-	Variable<EntityMemoryId> effectY4;
-	Variable<EntityMemoryId> appearTime;
-	Variable<EntitySharedMemoryId> nextNote; // 下一个按键信息
-	Variable<EntitySharedMemoryId> judgeTime; // 判定时间
-	Variable<EntitySharedMemoryId> currentCombo; // 当前 Combo 数
-	Variable<EntitySharedMemoryId> currentMaxCombo; // 当前最大 Combo 数
-	Variable<EntitySharedMemoryId> currentJudgeStatus; // 当前判定结果
-	Variable<EntitySharedMemoryId> currentAccScore; // 当前准度得分
-	Variable<EntitySharedMemoryId> comboId; // Combo 排行
+	defineImport(time);
+	defineImport(positionX);
+	defineImport(holdTime);
+	defineImport(speed);
+	defineImport(floorPosition);
+	defineImport(isAbove);
+	defineImport(isMulti);
+	defineImport(isFake);
+	defineImport(judgeline);
+	defineImport(bpm);
+	defineImport(size);
+	defineImport(yOffset);
+	defineImport(visibleTime);
+	defineImport(alpha);
+	defineImport(accuracy);
+	defineImport(judgeResult);
+	var positionY;
+	var effectX1;
+	var effectY1;
+	var effectX2;
+	var effectY2;
+	var effectX3;
+	var effectY3;
+	var effectX4;
+	var effectY4;
+	var appearTime;
+	var nextNote = var(EntitySharedMemoryId, 0); // 下一个按键信息
+	var judgeTime = var(EntitySharedMemoryId, 1); // 判定时间
+	var currentCombo = var(EntitySharedMemoryId, 2); // 当前 Combo 数
+	var currentMaxCombo = var(EntitySharedMemoryId, 3); // 当前最大 Combo 数
+	var currentJudgeStatus = var(EntitySharedMemoryId, 4); // 当前判定结果
+	var currentAccScore = var(EntitySharedMemoryId, 5); // 当前准度得分
+	var comboId = var(EntitySharedMemoryId, 6); // Combo 排行
 
-	BlockPointer<EntitySharedMemoryArrayId> line = EntitySharedMemoryArray[judgeline];
+	EntitySharedMemoryArrayGroup line = EntitySharedMemoryArray[judgeline];
 
 	SonolusApi spawnTime() { return appearTime; }
 	SonolusApi despawnTime() { return 
 		If (
 			isFake,
 			time,
-			If(isReplay,
+			If(replay,
 				If(Abs(time + accuracy + 1) < 0.001, time + judgment.good, time + accuracy),
 				time
 			)
@@ -53,45 +57,43 @@ class FlickNote: public Archetype {
 	
 	int preprocessOrder = 514;
 	SonolusApi preprocess() {
-		FUNCBEGIN
 		time = time * timeMagic / bpm;
 		isMulti = isMulti && hasSimul;
 		maxTime = Max(maxTime, time);
-		IF (mirror) positionX = -1 * positionX; FI
-		EntityInput.set(1, judgment.good);
+		if (mirror) positionX = -1 * positionX;
 		// var id = EntityDataArray[judgeline].get(0);
 		// WHILE (id) {
 		// 	var deltaFloorPosition = Abs(floorPosition) - EntitySharedMemoryArray[id].get(1);
-		// 	IF (deltaFloorPosition <= 10 / 3 / speed * 5.85) BREAK; FI
+		// 	if (deltaFloorPosition <= 10 / 3 / speed * 5.85) BREAK;
 		// 	appearTime = EntityDataArray[id].get(0) * timeMagic / bpm + (deltaFloorPosition - 10 / 3 / speed * 5.85) / EntityDataArray[id].get(2);
 		// 	id = EntityDataArray[id].get(3);
 		// } DONE
 		// appearTime = Max(0, Min(appearTime, time - 0.5));
-		IF (!isFake) {
+		if (!isFake) {
 			notes = notes + 1;
-			IF (isReplay) {
+			if (replay) {
 				judgeTime = If(Abs(time + accuracy + 1) < 0.001, time + judgment.good, time + accuracy);
-				IF (judgeResult != 0 && hasSFX && !autoSFX) PlayScheduled(Clips.Flick, time / levelSpeed + accuracy, minSFXDistance); FI
-				IF (autoSFX && hasSFX) PlayScheduled(Clips.Flick, time / levelSpeed, minSFXDistance); FI
-				Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
-				Set(EntityInputId, 0, time + accuracy);
-				Set(EntityInputId, 1, Buckets.flick);
-				Set(EntityInputId, 2, accuracy * 1000);
-			} ELSE {
-				judgeTime = time.get();
-				IF (hasSFX) PlayScheduled(Clips.Flick, time / levelSpeed, minSFXDistance); FI
-				Spawn(getArchetypeId(UpdateJudgment), {EntityInfo.get(0)});
-				Set(EntityInputId, 0, time);
-				Set(EntityInputId, 1, Buckets.flick);
-			} FI
-		} FI
-		return VOID;
+				if (judgeResult != 0 && hasSFX && !autoSFX) PlayScheduled(Clips.Flick, time / levelSpeed + accuracy, minSFXDistance);
+				if (autoSFX && hasSFX) PlayScheduled(Clips.Flick, time / levelSpeed, minSFXDistance);
+				Spawn(getAid(UpdateJudgment), {EntityInfo.index});
+				input.time = time + accuracy;
+				input.bucketIndex = int(NormalFlickBucket);
+				input.bucketValue = accuracy * 1000;
+			} else {
+				judgeTime = time;
+				if (hasSFX) PlayScheduled(Clips.Flick, time / levelSpeed, minSFXDistance);
+				Spawn(getAid(UpdateJudgment), {EntityInfo.index});
+				input.time = 0;
+				input.bucketIndex = int(NormalFlickBucket);
+				input.bucketValue = 0;
+			}
+		}
 	}
 
 	// SonolusApi complete(let hitTime) {
 	// 	FUNCBEGIN
-	// 	IF (Abs(hitTime - time) <= judgment.good) {
-	// 		IF (hasSFX) Play(Clips.Flick, minSFXDistance); FI
+	// 	if (Abs(hitTime - time) <= judgment.good) {
+	// 		if (hasSFX) Play(Clips.Flick, minSFXDistance);
 	// 		judgeStatus = Min(judgeStatus, 2); combo = combo + 1;
 	// 		accscore = accscore + score.perfect;
 	// 		SpawnParticleEffect(Effects.perfect, 
@@ -102,47 +104,50 @@ class FlickNote: public Archetype {
 	// 		EntityInput.set(1, hitTime - time);
 	// 		EntityInput.set(2, Buckets.flick);
 	// 		EntityInput.set(3, hitTime - time);
-	// 	} FI
-	// 	IF (Abs(hitTime - time) > judgment.good) {
+	// 	}
+	// 	if (Abs(hitTime - time) > judgment.good) {
 	// 		judgeStatus = Min(judgeStatus, 0); combo = 0;
-	// 	} FI
+	// 	}
 	// 	EntityDespawn.set(0, 1);
 	// 	return VOID;
 	// }
 	int updateSequentialOrder = 1919810;
 	SonolusApi updateSequential() {
-		FUNCBEGIN
-		IF (times.now < 0) Return(0); FI
-		positionY = If(isAbove, floorPosition - line.get(5), floorPosition + line.get(5));
-		return VOID;
+		if (times.now < 0) return;
+		positionY = If(isAbove, floorPosition - line.generic[5], floorPosition + line.generic[5]);
 	}
 
 	SonolusApi terminate() {
-		FUNCBEGIN
-		IF (times.skip || isFake) Return(0); FI
-		IF (isReplay && judgeResult == 0) Return(0); FI
-		SpawnParticleEffect(If(judgeResult == 2 || !isReplay, Effects.perfect, Effects.great), 
-			effectX1, effectY1, effectX2, effectY2,
-			effectX3, effectY3, effectX4, effectY4,
-			effectDurationTime);
-		return VOID;
+		if (skip || isFake) return;
+		if (replay && judgeResult == 0) return;
+		// if (currentCombo == 10)
+		// 	Debuglog(effectX1); Debuglog(effectY1);
+		//
+		SpawnParticleEffect(
+			If(judgeResult == 2 || !replay, Effects.Perfect, Effects.Great), 
+			{ effectX1, effectY1 }, 
+			{ effectX2, effectY2 },
+			{ effectX3, effectY3 }, 
+			{ effectX4, effectY4 },
+			effectDurationTime,
+			false
+		);
 	}
 
 	SonolusApi updateParallel() {
-		FUNCBEGIN
-		IF (times.now < 0 || time - times.now > visibleTime) Return(0); FI
+		if (times.now < 0 || time - times.now > visibleTime) return;
 		var currentFloorPosition = If(isAbove, positionY, -1 * positionY);
-		IF (times.now < time && currentFloorPosition < floorPositionLimit) Return(0); FI
-		IF (currentFloorPosition * speed > 10 / 3 * 5.85) Return(0); FI
+		if (times.now < time && currentFloorPosition < floorPositionLimit) return;
+		if (currentFloorPosition * speed > 10 / 3 * 5.85) return;
 		var dx = positionX * stage.w * 0.05625;
 		var dy = If(isAbove, positionY + yOffset, positionY - yOffset) * speed * stage.h * 0.6;
 		
-		var rotate = line.get(3);
+		var rotate = line.generic[3];
 		var r = Power({dx * dx + dy * dy, 0.5});
 		var angle = Arctan2(dy, dx);
 		var newAngle = angle + rotate;
-		var x = r * Cos(newAngle) + line.get(1), y = r * Sin(newAngle) + line.get(2);
-		var x0 = dx * Cos(rotate) + line.get(1), y0 = dx * Sin(rotate) + line.get(2);
+		var x = r * Cos(newAngle) + line.generic[1], y = r * Sin(newAngle) + line.generic[2];
+		var x0 = dx * Cos(rotate) + line.generic[1], y0 = dx * Sin(rotate) + line.generic[2];
 		
 		var sprite = If(
 			HasSkinSprite(Sprites.NormalFlick), 
@@ -169,15 +174,23 @@ class FlickNote: public Archetype {
 		effectX2 = x0 - effectWidth, effectY2 = y0 + effectWidth;
 		effectX3 = x0 + effectWidth, effectY3 = y0 + effectWidth;
 		effectX4 = x0 + effectWidth, effectY4 = y0 - effectWidth;
+		// if (x3 >= 0 && x3 <= stage.r && y3 <= 0 && y3 >= stage.b) Debuglog(EntityInfo.generic[0]);
 		
-		Draw(sprite, x3, y3, x4, y4, x5, y5, x6, y6, 12000 + 1000 - time + EntityInfo.get(0) / 10000, If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1) * alpha);
-		return VOID;
+		Draw(
+			sprite, 
+			{ x3, y3 }, 
+			{ x4, y4 }, 
+			{ x5, y5 }, 
+			{ x6, y6 }, 
+			12000 + 1000 - time + info.index / 10000, 
+			If(times.now > time, Max(1 - (times.now - time) / judgment.great, 0), 1) * alpha
+		);
 	}
 };
 
 class FakeFlickNote: public FlickNote {
 	public:
 
-	static constexpr const char* name = "Phigros Fake Flick Note";
+	string name = "Phigros Fake Flick Note";
 	bool hasInput = false;
 };

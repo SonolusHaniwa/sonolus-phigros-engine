@@ -13,3 +13,4 @@ test*
 *.pec
 emsdk
 libphigros*
+.sonolus

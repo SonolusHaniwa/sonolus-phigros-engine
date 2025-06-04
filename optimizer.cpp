@@ -1,6 +1,26 @@
 #include<bits/stdc++.h>
-#include"sonolus/modules/json.h"
 using namespace std;
+
+#include<jsoncpp/json/json.h>
+string json_encode(Json::Value val) {
+    Json::StreamWriterBuilder write;
+    write.settings_["precision"] = 4;
+    write.settings_["precisionType"] = "decimal";
+    write.settings_["indentation"] = "";
+    auto p = write.newStreamWriter();
+    stringstream ss;
+    p->write(val, &ss);
+    return ss.str();
+}
+bool json_decode(string json, Json::Value& res) {
+    Json::Reader reader;
+    return reader.parse(json, res);
+}
+Json::Value json_decode(string json) {
+    Json::Reader reader; Json::Value res;
+    reader.parse(json, res);
+    return res;
+}
 
 string readFile(string path) {
     ifstream fin(path);
