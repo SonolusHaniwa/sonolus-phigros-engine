@@ -77,7 +77,7 @@ SonolusApi StageController::calcCombo() {
                 // DebugLog(i); DebugLog(j); DebugLog(currentHead);
                 break;
             }
-            var A; A = cachedSortedListHead[j];
+            var A = cachedSortedListHead[j];
             var B = currentHead;
             cachedSortedListHead[j] = -1;
             currentHead = merge2(A, B, Power({2, j}), Power({2, j}));
@@ -93,7 +93,7 @@ SonolusApi StageController::calcCombo() {
             continue;
         }
         var A = head;
-        var B; B = cachedSortedListHead[i];
+        var B = cachedSortedListHead[i];
         cachedSortedListHead[i] = 0;
         var Asize = currentLen, Bsize = Power({2, i});
         head = merge2(A, B, Asize, Bsize);

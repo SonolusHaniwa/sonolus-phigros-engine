@@ -116,7 +116,7 @@ class HoldNote: public Archetype {
 				} else {
 					accscore = accscore + score.great;
 					judgeStatus = Min(judgeStatus, 1); input.judgment = 2;
-					ExportValue(judgeResult, 2);
+					ExportValue(judgeResult, 1);
 					ExportValue(judgeTime, times.now - time);
 				}
 				SpawnParticleEffect(

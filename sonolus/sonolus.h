@@ -2575,8 +2575,11 @@ class VariablesArray {
     Constructor VariablesArray(){}
     Constructor VariablesArray(FuncNode offset, FuncNode siz): offset(offset), siz(siz){}
 
-    Variable operator [] (FuncNode index) {
-        return Variable(allocatorId, offset + index);
+    Variable *tmp = NULL;
+    Variable& operator [] (FuncNode index) {
+        if (tmp != NULL) delete tmp;
+        tmp = new Variable(allocatorId, offset + index);
+        return *tmp;
     }
 };
 
@@ -7139,7 +7142,8 @@ class Array {
         for (int i = 0; i < size; i++) (*this)[i] = value[i];
     }
 
-    T operator[] (FuncNode i) {
+    T *tmp = NULL;
+    T& operator[] (FuncNode i) {
         int backupDefaultAllocatorId = defaultAllocatorId;
         defaultAllocatorId = currentDefaultAllocatorId;
         map<int, FuncNode> offsets;
@@ -7151,13 +7155,14 @@ class Array {
         auto backupSonolusMemoryDelta = SonolusMemoryDelta;
         SonolusMemoryIndex = offsets;
         SonolusMemoryDelta.clear();
-        T res;
+        if (tmp != NULL) delete tmp;
+        tmp = new T();
         SonolusMemoryIndex = backupSonolusMemoryIndex;
         SonolusMemoryDelta = backupSonolusMemoryDelta;
         defaultAllocatorId = backupDefaultAllocatorId;
-        return res;
+        return *tmp;
     }
-    T operator[] (FuncNode i) const {
+    T& operator[] (FuncNode i) const {
         return (*this)[i];
     }
     Array<T, size>& operator = (const Array<T, size>& value) {
@@ -7205,7 +7210,7 @@ class Collection {
         count = 0;
     }
 
-    T operator[] (FuncNode i) {
+    T& operator[] (FuncNode i) {
         return array[i];
     }
 };
@@ -7256,7 +7261,7 @@ class Dictionary {
         count = 0;
     }
 
-    T2 operator [] (const T1 &key) {
+    T2& operator [] (const T1 &key) {
         Variable id = indexOf(key);
         return getValue(id);
     }

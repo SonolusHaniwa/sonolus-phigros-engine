@@ -81,8 +81,7 @@ class StageController: public Archetype {
         lastUpdatedId = 0;
 
         // 给所有 judgeline 清空数据
-        var cur;
-        cur = sharedMemory[31];
+        var cur = sharedMemory[31];
         while (cur != 0) {
             for (var i = 1; i < 5; i++)
                 EntitySharedMemoryArray[cur].generic[i] = 0;
