@@ -46,6 +46,7 @@ class FlickNote: public Archetype {
 	int preprocessOrder = 514;
 	SonolusApi preprocess() {
 		time = time * timeMagic / bpm;
+		time /= levelSpeed;
 		if (!isFake) notes = notes + 1;
 		played = false;
 		inputTimeMax = time + judgment.good;
@@ -63,7 +64,7 @@ class FlickNote: public Archetype {
 		// 	id = EntityDataArray[id].generic[3];
 		// } DONE
 		// appearTime = Max(0, Min(appearTime, time - 0.5));
-		if (hasSFX && autoSFX) PlayScheduled(Clips.Flick, time / levelSpeed, minSFXDistance);
+		if (hasSFX && autoSFX) PlayScheduled(Clips.Flick, time, minSFXDistance);
 	}
 
 	SonolusApi complete(var hitTime) {

@@ -46,6 +46,7 @@ class NormalNote: public Archetype {
 	int preprocessOrder = 514;
 	SonolusApi preprocess() {
 		time = time * timeMagic / bpm;
+		time /= levelSpeed;
 		if (!isFake) notes = notes + 1;
 		played = false;
 		inputTimeMax = time + judgment.good;
@@ -63,7 +64,7 @@ class NormalNote: public Archetype {
 		// 	id = EntityDataArray[id].get(3);
 		// } DONE
 		// appearTime = Max(0, Min(appearTime, time - 0.5));
-		if (hasSFX && autoSFX) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance);
+		if (hasSFX && autoSFX) PlayScheduled(Clips.Note, time, minSFXDistance);
 		setBucket(
 			NormalNoteBucket, 
 			-1 * judgment.perfect * 1000, judgment.perfect * 1000, 

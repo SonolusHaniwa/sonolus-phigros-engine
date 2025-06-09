@@ -57,7 +57,7 @@ class NormalNote: public Archetype {
 
 	int preprocessOrder = 514;
 	SonolusApi preprocess() {
-		time = time * timeMagic / bpm;
+		time = time * timeMagic / bpm / levelSpeed;
 		isMulti = isMulti && hasSimul;
 		maxTime = Max(maxTime, time);
 		if (mirror) positionX = -1 * positionX;
@@ -73,15 +73,15 @@ class NormalNote: public Archetype {
 			notes = notes + 1;
 			if (replay) {
 				judgeTime = If(Abs(time + accuracy + 1) < 0.001, time + judgment.good, time + accuracy);
-				if (judgeResult != 0 && hasSFX && !autoSFX) PlayScheduled(Clips.Note, time / levelSpeed + accuracy, minSFXDistance);
-				if (autoSFX && hasSFX) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance);
+				if (judgeResult != 0 && hasSFX && !autoSFX) PlayScheduled(Clips.Note, time + accuracy, minSFXDistance);
+				if (autoSFX && hasSFX) PlayScheduled(Clips.Note, time, minSFXDistance);
 				Spawn(getAid(UpdateJudgment), {EntityInfo.index});
 				input.time = time + accuracy;
 				input.bucketIndex = int(NormalNoteBucket);
 				input.bucketValue = accuracy * 1000;
 			} else {
 				judgeTime = time;
-				if (hasSFX) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance); 
+				if (hasSFX) PlayScheduled(Clips.Note, time, minSFXDistance); 
 				Spawn(getAid(UpdateJudgment), {EntityInfo.index});
 				input.time = 0;
 				input.bucketIndex = int(NormalNoteBucket);

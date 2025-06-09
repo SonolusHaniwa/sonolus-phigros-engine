@@ -40,6 +40,7 @@ class Judgeline: public Archetype {
         id = rotateEvent; jump(id, 12);
         id = disappearEvent; jump(id, 12);
 		speed = 0; x = 0; y = 0; rotate = 0; disappear = 1; floorPosition = 0;
+		bpm *= levelSpeed;
 	}
 	
 	int updateSequentialOrder = 114514;

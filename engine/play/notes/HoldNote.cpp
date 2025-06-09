@@ -68,7 +68,9 @@ class HoldNote: public Archetype {
 		}
 		
 		time = time * timeMagic / bpm;
+		time /= levelSpeed;
 		holdTime = holdTime * timeMagic / bpm;
+		holdTime /= levelSpeed;
 		if (!isFake) notes = notes + 1;
 		isActive = false;
 		released = false;
@@ -92,7 +94,7 @@ class HoldNote: public Archetype {
 		// 	id = EntityDataArray[id].get(3);
 		// } DONE
 		// appearTime = Max(0, Min(appearTime, time - 0.5));
-		if (hasSFX && autoSFX) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance);
+		if (hasSFX && autoSFX) PlayScheduled(Clips.Note, time, minSFXDistance);
 	}
 
 	int updateSequentialOrder = 1919810;

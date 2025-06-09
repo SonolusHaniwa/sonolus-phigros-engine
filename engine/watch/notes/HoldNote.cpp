@@ -67,8 +67,8 @@ class HoldNote: public Archetype {
 			currId = EntityDataArray[currId].generic[4];
 		}
 
-		time = time * timeMagic / bpm;
-		holdTime = holdTime * timeMagic / bpm;
+		time = time * timeMagic / bpm / levelSpeed;
+		holdTime = holdTime * timeMagic / bpm / levelSpeed;
 		isMulti = isMulti && hasSimul;
 		lastSpawn = -1;
 		if (mirror) positionX = -1 * positionX;
@@ -85,15 +85,15 @@ class HoldNote: public Archetype {
 			notes = notes + 1;
 			if (replay) {
 				judgeTime2 = time + judgeTime;
-				if ((accuracy != 0 || judgeResult != 0) && hasSFX && !autoSFX) PlayScheduled(Clips.Note, time / levelSpeed + accuracy, minSFXDistance);
-				if (autoSFX && hasSFX) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance);
+				if ((accuracy != 0 || judgeResult != 0) && hasSFX && !autoSFX) PlayScheduled(Clips.Note, time + accuracy, minSFXDistance);
+				if (autoSFX && hasSFX) PlayScheduled(Clips.Note, time, minSFXDistance);
 				Spawn(getAid(UpdateJudgment), {EntityInfo.index});
 				input.time = time + accuracy;
 				input.bucketIndex = int(NormalHoldBucket);
 				input.bucketValue = accuracy * 1000;
 			} else {
 				judgeTime2 = time + holdTime;
-				if (hasSFX) PlayScheduled(Clips.Note, time / levelSpeed, minSFXDistance);
+				if (hasSFX) PlayScheduled(Clips.Note, time, minSFXDistance);
 				Spawn(getAid(UpdateJudgment), {EntityInfo.index});
 				input.time = 0;
 				input.bucketIndex = int(NormalHoldBucket);
