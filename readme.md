@@ -1,5 +1,3 @@
-![b4b42df0b336e852d14b4d334c3d99f8992626d8](https://stellarity.littleyang.com.cn/data/e986a1b87126bb6760115a0c19a23f0cd3f999c1)
-
 # Shutdown Announcement
 
 I regret to announce that the Phigros Sonolus server will be officially shut down on 2026/9/15, before the official release of Chapter 9.
@@ -17,6 +15,8 @@ Meanwhile, Piegon Games recently announced Chapter 9 alongside the publication o
 In summary, Phigros Sonolus has ceased operations since the announcement, and all relevant data has been completely deleted from the server. Furthermore, the Phigros engine will be archived or deleted in the near future. I deeply apologize for any inconvenience caused.
 
 Attachment: "Phigros" Fan Creation and Third-Party Project Guidelines (2026 Edition) https://www.bilibili.com/opus/1243010548197490696
+
+<img width="1920" height="320" alt="banner" src="https://github.com/user-attachments/assets/e48d8a9d-34ee-4598-bd6c-c1b2d5df9a3c" />
 
 <h1 align="center">Sonolus Phigros Engine</h1>
 
